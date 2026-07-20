@@ -1,0 +1,38 @@
+[*]
+[*] GTKWave Analyzer v3.3.100 (w)1999-2019 BSI
+[*] Mon Jul 20 10:27:41 2026
+[*]
+[dumpfile] "build\adn_common_pipeline_tb.vcd"
+[dumpfile_mtime] "Mon Jul 20 10:25:35 2026"
+[dumpfile_size] 419660
+[savefile] "wcfg\adn_common_pipeline_tb.gtkw"
+[timestart] 0
+[size] 1536 793
+[pos] -191 -186
+*-16.078379 67400 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] adn_common_pipeline_tb.
+[sst_width] 197
+[signals_width] 237
+[sst_expanded] 1
+[sst_vpaned_height] 221
+@28
+[color] 3
+adn_common_pipeline_tb.dut.arst_ni
+[color] 3
+adn_common_pipeline_tb.dut.clk_i
+@22
+adn_common_pipeline_tb.dut.data_in_i[31:0]
+@29
+[color] 2
+adn_common_pipeline_tb.dut.data_in_valid_i
+[color] 2
+adn_common_pipeline_tb.dut.data_in_ready_o
+@22
+adn_common_pipeline_tb.dut.data_out_o[31:0]
+@29
+[color] 2
+adn_common_pipeline_tb.dut.data_out_valid_o
+[color] 2
+adn_common_pipeline_tb.dut.data_out_ready_i
+[pattern_trace] 1
+[pattern_trace] 0

@@ -1,0 +1,2 @@
+export ADN_COMMON=$(CURDIR)
+export REPO_NAME_EXP=ADN_COMMON
