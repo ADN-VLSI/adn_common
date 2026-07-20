@@ -11,7 +11,7 @@ To use this module, instantiate it between two modules communicating via a ready
 | 1.0      | 2026-07-20 | Foez Ahmed      | Stable release                                         |
 
 Author : Foez Ahmed (foez.official@gmail.com)
-This file is part of ADN-VLSI/ADN_COMMON
+This file is part of https://github.com/ADN-VLSI/adn_common
 Copyright (c) 2026 ADN Semiconductors
 Licensed under the MIT License
 See LICENSE file in the project root for full license information

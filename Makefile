@@ -35,7 +35,7 @@ PYTHON ?= python
 O_EW :=  | (grep -iE "Error|Warning" --color=auto || true)
 H_EW :=  | (grep -iE "Error|Warning|" --color=auto)
 
-LINE_1 := This file is part of ADN-VLSI:$(REPO_NAME_EXP)
+LINE_1 := This file is part of https://github.com/ADN-VLSI/$(REPO_FILE_EXT)
 LINE_2 := Copyright (c) $(shell date +%Y) ADN Semiconductors
 LINE_3 := Licensed under the MIT License
 LINE_4 := See LICENSE file in the project root for full license information
@@ -85,7 +85,7 @@ $(BUILD_DIR)/XSIM_ARGS:
 ifeq ($(GUI), 0)
 	@echo "-runall" > $@
 else
-	@echo "-gui --autoloadwcfg --view ../wcfg/$(TOP).wcfg" > $@
+	@echo "-gui --autoloadwcfg --view $(REPO_ROOT)/wcfg/$(TOP).wcfg" > $@
 endif
 	@echo "--testplusarg TN=$(TN)" >> $@
 	@echo "--testplusarg TC=$(TC)" >> $@
@@ -147,7 +147,7 @@ get_source_doc_header:
 gen_doc:
 	@echo "Creating document for $(FILE)"
 	@$(PYTHON) $(REPO_ROOT)/submodule/documenter/sv_documenter.py $(FILE) $(REPO_ROOT)/document/source
-	@sed -i "s/.*${LINE_1}.*/<br>**${LINE_1}**/g" ./document/source/$(shell basename $(FILE) | sed "s/\.sv/\.md/g")
-	@sed -i "s/.*${LINE_2}.*/<br>**${LINE_2}**/g" ./document/source/$(shell basename $(FILE) | sed "s/\.sv/\.md/g")
-	@sed -i "s/.*${LINE_3}.*/<br>**${LINE_3}**/g" ./document/source/$(shell basename $(FILE) | sed "s/\.sv/\.md/g")
-	@sed -i "s/.*${LINE_4}.*/<br>**${LINE_4}**/g" ./document/source/$(shell basename $(FILE) | sed "s/\.sv/\.md/g")
+	@sed -i "s|.*${LINE_1}.*|<br>**${LINE_1}**|g" $(REPO_ROOT)/document/source/$(shell basename $(FILE) | sed "s/\.sv/\.md/g")
+	@sed -i "s|.*${LINE_2}.*|<br>**${LINE_2}**|g" $(REPO_ROOT)/document/source/$(shell basename $(FILE) | sed "s/\.sv/\.md/g")
+	@sed -i "s|.*${LINE_3}.*|<br>**${LINE_3}**|g" $(REPO_ROOT)/document/source/$(shell basename $(FILE) | sed "s/\.sv/\.md/g")
+	@sed -i "s|.*${LINE_4}.*|<br>**${LINE_4}**|g" $(REPO_ROOT)/document/source/$(shell basename $(FILE) | sed "s/\.sv/\.md/g")
