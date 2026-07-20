@@ -1,41 +1,9 @@
 # adn_common_pipeline (module)
 
-### Author : 
+### Author : Foez Ahmed (foez.official@gmail.com)
 
 ## TOP IO
 <img src="./adn_common_pipeline_top.svg">
-
-## Description
-
-
-This module implements a 1-deep pipeline register (skid buffer) with a
-ready/valid handshake interface on both input and output sides. It provides
-backpressure handling to prevent data loss when the downstream consumer is
-not ready.
-
-## Functionality
-
-- **Data Storage**: Holds one data word of configurable width (`DATA_WIDTH`)
-- **Handshake Protocol**: Ready/valid interface on both input and output
-- **Backpressure**: Propagates `ready` signal upstream when pipeline is full
-- **Reset**: Active-low asynchronous reset clears the pipeline state
-
-## Behavior
-
-1. When pipeline is empty (`is_full = 0`):
-- `data_in_ready_o` is asserted (always ready to accept data)
-- On valid input, data is captured into `data_reg` and `is_full` becomes 1
-
-2. When pipeline is full (`is_full = 1`):
-- `data_out_valid_o` is asserted with `data_out_o` = `data_reg`
-- `data_in_ready_o` mirrors `data_out_ready_i` (backpressure)
-- When downstream asserts `data_out_ready_i`, pipeline becomes empty
-
-## Timing
-
-- Data is registered on the rising edge of `clk_i`
-- Ready/valid signals are combinational
-- Reset is asynchronous active-low
 
 ## Parameters
 |Name|Type|Dimension|Default Value|Description|
@@ -53,3 +21,21 @@ not ready.
 |data_out_o|output|logic [DATA_WIDTH-1:0]||Output data|
 |data_out_valid_o|output|logic||Output data valid|
 |data_out_ready_i|input|logic||Output ready (backpressure from downstream)|
+## Description
+
+
+### Purpose
+The `adn_common_pipeline` module implements a single-stage pipeline register with a standard ready/valid handshake protocol. It acts as a buffer to decouple timing paths between upstream and downstream modules, allowing for improved clock frequency by inserting a register stage in the data path while maintaining flow control.
+
+### Usage
+To use this module, instantiate it between two modules communicating via a ready/valid interface. Connect the upstream module's `data`, `valid`, and `ready` signals to the `data_in_*` ports, and the downstream module's signals to the `data_out_*` ports. The module will automatically buffer one word of data, asserting `data_in_ready_o` when it is ready to accept new data and driving `data_out_valid_o` when it has data ready for the downstream consumer.
+
+| REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
+|----------|------------|-----------------|--------------------------------------------------------|
+| 1.0      | 2026-07-20 | Foez Ahmed      | Stable release                                         |
+
+This file is part of ADN-VLSI/ADN_COMMON
+<br>**Copyright (c) 2026 ADN Semiconductors**
+<br>**Licensed under the MIT License**
+<br>**See LICENSE file in the project root for full license information**
+
