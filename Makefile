@@ -6,11 +6,15 @@ include ext.mk
 # Variables
 ####################################################################################################
 
+export REPO_FILE_EXT=$(shell echo $(REPO_NAME_EXP) | tr '[:upper:]' '[:lower:]')
+
 REPO_ROOT := $(CURDIR)
 
 BUILD_DIR := $(REPO_ROOT)/build
 LOG_DIR := $(REPO_ROOT)/log
 COVERAGE_DIR := $(REPO_ROOT)/coverage
+DOCUMENTER := $(REPO_ROOT)/submodule/documenter
+SOURCE_DOC_DIR := $(REPO_ROOT)/document/source
 
 TOP   := hello
 TN    := default
@@ -61,10 +65,6 @@ clean_full:
 	@rm -rf $(LOG_DIR)
 	@echo -e "\033[1;33m#\033[0m Cleaning coverage directories"
 	@rm -rf $(COVERAGE_DIR)
-
-pata:
-	@make -s $(REPO_ROOT)/reuse.f
-	@make -s $(REPO_ROOT)/local.f
 
 .PHONY: $(REPO_ROOT)/reuse.f
 $(REPO_ROOT)/reuse.f:
@@ -121,7 +121,7 @@ update_doc_list:
 	@cat readme_base.md > readme.md
 	@echo "" >> readme.md
 	@echo "## RTL" >> readme.md
-	@$(foreach file, $(shell find $(REPO_ROOT)/document/source -name "*.md"), make -s get_source_doc_header FILE=$(file);)
+	@$(foreach file, $(shell find $(SOURCE_DOC_DIR) -name "*.md"), make -s get_source_doc_header FILE=$(file);)
 	@echo "" >> readme.md
 
 .PHONY: create_all_docs
@@ -131,10 +131,10 @@ create_all_docs:
 
 .PHONY: clean_all_docs
 clean_all_docs:
-	@mkdir -p document/source
-	@rm -f document/source/*.md
-	@rm -f document/source/*_top.svg
-	@git submodule update --init --depth 1 -- $(REPO_ROOT)/submodule/documenter
+	@mkdir -p $(SOURCE_DOC_DIR)
+	@rm -f $(SOURCE_DOC_DIR)/*.md
+	@rm -f $(SOURCE_DOC_DIR)/*_top.svg
+	@git submodule update --init --depth 1 -- $(DOCUMENTER)
 
 .PHONY: get_source_doc_header
 get_source_doc_header:
@@ -146,8 +146,8 @@ get_source_doc_header:
 .PHONY: gen_doc
 gen_doc:
 	@echo "Creating document for $(FILE)"
-	@$(PYTHON) $(REPO_ROOT)/submodule/documenter/sv_documenter.py $(FILE) $(REPO_ROOT)/document/source
-	@sed -i "s|.*${LINE_1}.*|<br>**${LINE_1}**|g" $(REPO_ROOT)/document/source/$(shell basename $(FILE) | sed "s/\.sv/\.md/g")
-	@sed -i "s|.*${LINE_2}.*|<br>**${LINE_2}**|g" $(REPO_ROOT)/document/source/$(shell basename $(FILE) | sed "s/\.sv/\.md/g")
-	@sed -i "s|.*${LINE_3}.*|<br>**${LINE_3}**|g" $(REPO_ROOT)/document/source/$(shell basename $(FILE) | sed "s/\.sv/\.md/g")
-	@sed -i "s|.*${LINE_4}.*|<br>**${LINE_4}**|g" $(REPO_ROOT)/document/source/$(shell basename $(FILE) | sed "s/\.sv/\.md/g")
+	@$(PYTHON) $(DOCUMENTER)/sv_documenter.py $(FILE) $(SOURCE_DOC_DIR)
+	@sed -i "s|.*${LINE_1}.*|<br>**${LINE_1}**|g" $(SOURCE_DOC_DIR)/$(shell basename $(FILE) | sed "s/\.sv/\.md/g")
+	@sed -i "s|.*${LINE_2}.*|<br>**${LINE_2}**|g" $(SOURCE_DOC_DIR)/$(shell basename $(FILE) | sed "s/\.sv/\.md/g")
+	@sed -i "s|.*${LINE_3}.*|<br>**${LINE_3}**|g" $(SOURCE_DOC_DIR)/$(shell basename $(FILE) | sed "s/\.sv/\.md/g")
+	@sed -i "s|.*${LINE_4}.*|<br>**${LINE_4}**|g" $(SOURCE_DOC_DIR)/$(shell basename $(FILE) | sed "s/\.sv/\.md/g")
