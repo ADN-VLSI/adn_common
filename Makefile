@@ -36,7 +36,7 @@ O_EW :=  | (grep -iE "Error|Warning" --color=auto || true)
 H_EW :=  | (grep -iE "Error|Warning|" --color=auto)
 
 LINE_1 := This file is part of ADN-VLSI:$(REPO_NAME_EXP)
-LINE_2 := Copyright (c) $(shell date +%Y) ADN-VLSI
+LINE_2 := Copyright (c) $(shell date +%Y) ADN Semiconductors
 LINE_3 := Licensed under the MIT License
 LINE_4 := See LICENSE file in the project root for full license information
 
