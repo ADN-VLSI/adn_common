@@ -121,13 +121,13 @@ update_doc_list:
 	@cat readme_base.md > readme.md
 	@echo "" >> readme.md
 	@echo "## RTL" >> readme.md
-	@$(foreach file, $(shell find $(REPO_ROOT)/document/source -name "*.md"), make get_source_doc_header FILE=$(file);)
+	@$(foreach file, $(shell find $(REPO_ROOT)/document/source -name "*.md"), make -s get_source_doc_header FILE=$(file);)
 	@echo "" >> readme.md
 
 .PHONY: create_all_docs
 create_all_docs:
 	@make -s clean_all_docs
-	@$(foreach file, $(shell find $(REPO_ROOT)/source/ -type f -name "*.sv"), make gen_doc FILE=$(file);)
+	@$(foreach file, $(shell find $(REPO_ROOT)/source/ -type f -name "*.sv"), make -s gen_doc FILE=$(file);)
 
 .PHONY: clean_all_docs
 clean_all_docs:
@@ -139,7 +139,9 @@ clean_all_docs:
 .PHONY: get_source_doc_header
 get_source_doc_header:
 	@$(eval HEADER := $(shell cat $(FILE) | grep -E "# " | sed "s/^# //g" | sed "s/ .*//g"))
-	@echo "[$(HEADER)]($(FILE))<br>" >> readme.md
+	@echo -n "[\`$(HEADER)" | sed "s/ .*/\`\]\(/g" >> readme.md
+	@echo -n "$(FILE)" | sed "s|$(REPO_ROOT)/||g" >> readme.md
+	@echo ")" >> readme.md
 
 .PHONY: gen_doc
 gen_doc:
