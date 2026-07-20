@@ -26,7 +26,7 @@ DEBUG := 0
 XVLOG  ?= xvlog
 XELAB  ?= xelab
 XSIM   ?= xsim
-PYTHON ?= python3
+PYTHON ?= python
 
 ####################################################################################################
 # Macros

@@ -36,4 +36,4 @@ jobs:
 
           git add -A
           git commit -m "Process foez-bhai tagged files"
-          git push --set-upstream origin "$BRANCH_NAME"
+          git push origin HEAD
