@@ -1,0 +1,39 @@
+name: update_doc_list
+
+on: [push]
+
+jobs:
+  update_doc_list:
+    runs-on: [adn]
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.ADN_SECRET_FOEZ_PAT }}
+
+      - name: Update Documentations & Lists
+        shell: bash
+        run: |
+          git submodule update --init --recursive --depth 1
+          make update_doc_list
+
+      - name: Commit and push changes
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          git config user.name "Foez Ahmed"
+          git config user.email "foez.official@gmail.com"
+
+          rm -f tagged-files.txt
+
+          if [ -z "$(git status --porcelain)" ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          git add -A
+          git commit -m "Process foez-bhai tagged files"
+          git push --set-upstream origin "$BRANCH_NAME"
