@@ -1,35 +1,21 @@
 /*
 
-This module implements a 1-deep pipeline register (skid buffer) with a
-ready/valid handshake interface on both input and output sides. It provides
-backpressure handling to prevent data loss when the downstream consumer is
-not ready.
+@foez-bhai, write the purpose of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
 
-## Functionality
+@foez-bhai, describe the usage of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
 
-- **Data Storage**: Holds one data word of configurable width (`DATA_WIDTH`)
-- **Handshake Protocol**: Ready/valid interface on both input and output
-- **Backpressure**: Propagates `ready` signal upstream when pipeline is full
-- **Reset**: Active-low asynchronous reset clears the pipeline state
+| REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
+|----------|------------|-----------------|--------------------------------------------------------|
+| 1.0      | 2026-07-20 | Foez Ahmed      | Stable release                                         |
 
-## Behavior
-
-1. When pipeline is empty (`is_full = 0`):
-- `data_in_ready_o` is asserted (always ready to accept data)
-- On valid input, data is captured into `data_reg` and `is_full` becomes 1
-
-2. When pipeline is full (`is_full = 1`):
-- `data_out_valid_o` is asserted with `data_out_o` = `data_reg`
-- `data_in_ready_o` mirrors `data_out_ready_i` (backpressure)
-- When downstream asserts `data_out_ready_i`, pipeline becomes empty
-
-## Timing
-
-- Data is registered on the rising edge of `clk_i`
-- Ready/valid signals are combinational
-- Reset is asynchronous active-low
+Author : Foez Ahmed (foez.official@gmail.com)
+This file is part of ADN-VLSI/ADN_COMMON
+Copyright (c) 2026 ADN Semiconductors
+Licensed under the MIT License
+See LICENSE file in the project root for full license information
 
 */
+
 
 module adn_common_pipeline #(
     parameter int DATA_WIDTH = 32  // Data bus width
