@@ -34,7 +34,7 @@ To use this module, instantiate it between two modules communicating via a ready
 |----------|------------|-----------------|--------------------------------------------------------|
 | 1.0      | 2026-07-20 | Foez Ahmed      | Stable release                                         |
 
-This file is part of ADN-VLSI/ADN_COMMON
+<br>**This file is part of https://github.com/ADN-VLSI/adn_common**
 <br>**Copyright (c) 2026 ADN Semiconductors**
 <br>**Licensed under the MIT License**
 <br>**See LICENSE file in the project root for full license information**
