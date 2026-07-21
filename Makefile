@@ -140,8 +140,8 @@ __ENV_BUILD__:
 	@make -s compile_all
 	@make -s $(BUILD_DIR)/xelab_$(TOP)
 
-.PHONY: all
-all:
+.PHONY: simulate
+simulate:
 	@make -s __ENV_BUILD__ TOP=$(TOP)
 	@make -s $(BUILD_DIR)/XSIM_ARGS GUI=$(GUI) TN=$(TN) TC=$(TC) VCD=$(VCD) DEBUG=$(DEBUG)
 	@echo -e "\033[1;33m#\033[0m Simulating TOP:$(TOP) Test:$(TN) Count:$(TC)"
