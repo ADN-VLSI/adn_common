@@ -45,7 +45,7 @@ LINE_3 := Licensed under the MIT License
 LINE_4 := See LICENSE file in the project root for full license information
 
 ####################################################################################################
-# Rules
+# VIVADO
 ####################################################################################################
 
 $(BUILD_DIR) $(LOG_DIR) $(COVERAGE_DIR):
@@ -68,9 +68,12 @@ clean_full:
 
 .PHONY: $(REPO_ROOT)/reuse.f
 $(REPO_ROOT)/reuse.f:
-	@echo -e "\033[1;33m#\033[0m Generating Source Filelist"
+	@echo -e "\033[1;33m#\033[0m Generating Reusable IP Filelist"
 	@echo "-i $(REPO_ROOT)/include" > $(REPO_ROOT)/reuse.f
-	@echo "ADD INTERFACE FILES"
+ifeq ($(HAS_SUBMODULES), 1)
+	@((cat $$(find $(REPO_ROOT)/submodule -mindepth 2 -maxdepth 2 -name "reuse.f") || true) | grep -E "^-i " ) >> $(REPO_ROOT)/reuse.f
+endif
+	@find $(REPO_ROOT)/interface -maxdepth 1 -name "*.sv" >> $(REPO_ROOT)/reuse.f
 	@find $(REPO_ROOT)/source -maxdepth 1 -name "*.sv" >> $(REPO_ROOT)/reuse.f
 	@sed -i 's|$(REPO_ROOT)|$$\{$(REPO_NAME_EXP)\}|g' $(REPO_ROOT)/reuse.f
 
@@ -92,18 +95,55 @@ endif
 	@echo "--testplusarg VCD=$(VCD)" >> $@
 	@echo "--testplusarg DEBUG=$(DEBUG)" >> $@
 
-.PHONY: all
-all:
+.PHONY: compile_all
+compile_all:
+	@make -s compile_all_submodules
+	@make -s compile_this_module
+
+.PHONY: get_hash
+get_hash:
+	@touch $(BUILD_DIR)/hash_old
+	@$(eval var = $(shell grep -E "^-i " $(REPO_ROOT)/reuse.f | sed "s/-i //g" || echo ""))
+	@if [ -n "$(var)" ]; then find $(var) -type f > $(BUILD_DIR)/build_list; fi
+	@$(eval var = $(shell grep -E "^-i " $(REPO_ROOT)/local.f | sed "s/-i //g" || echo ""))
+	@if [ -n "$(var)" ]; then find $(var) -type f >> $(BUILD_DIR)/build_list; fi
+	@$(eval var = $(shell cat $(REPO_ROOT)/reuse.f | sed "s/^-i .*//g"))
+	@$(foreach file, $(var), echo $(file) >> $(BUILD_DIR)/build_list;)
+	@$(eval var = $(shell cat $(REPO_ROOT)/local.f | sed "s/^-i .*//g"))
+	@$(foreach file, $(var), echo $(file) >> $(BUILD_DIR)/build_list;)
+	@xargs -a $(BUILD_DIR)/build_list sha512sum > $(BUILD_DIR)/hash_new
+
+.PHONY: compile_this_module
+compile_this_module:
+	@make -s get_hash
+	@if cmp -s $(BUILD_DIR)/hash_old $(BUILD_DIR)/hash_new; then \
+		echo -e "\033[1;33m#\033[0m Source files have not changed, skipping compilation."; \
+	else \
+		echo -e "\033[1;33m#\033[0m Source files have changed, recompiling..."; \
+		cd $(BUILD_DIR) && $(XVLOG) -sv -f $(REPO_ROOT)/reuse.f -f $(REPO_ROOT)/local.f -log $(LOG_DIR)/xvlog_$(shell date +%Y%m%d_%H%M%S).log $(O_EW); \
+		cp $(BUILD_DIR)/hash_new $(BUILD_DIR)/hash_old; \
+		rm -rf $(BUILD_DIR)/xelab_*; \
+	fi
+
+# Elaborate
+$(BUILD_DIR)/xelab_$(TOP):
+	@echo -e "\033[1;33m#\033[0m Elaborating $(TOP)"
+	@cd $(BUILD_DIR) && $(XELAB) $(TOP) -s snap_$(TOP) -debug all -log $(LOG_DIR)/xelab_$(TOP)_$(shell date +%Y%m%d_%H%M%S).log $(O_EW)
+	@echo "" > $(BUILD_DIR)/xelab_$(TOP)
+
+.PHONY: __ENV_BUILD__
+__ENV_BUILD__:
 	@make -s $(BUILD_DIR)
 	@make -s $(LOG_DIR)
 	@make -s $(REPO_ROOT)/reuse.f
 	@make -s $(REPO_ROOT)/local.f
+	@make -s compile_all
+	@make -s $(BUILD_DIR)/xelab_$(TOP)
+
+.PHONY: all
+all:
+	@make -s __ENV_BUILD__ TOP=$(TOP)
 	@make -s $(BUILD_DIR)/XSIM_ARGS GUI=$(GUI) TN=$(TN) TC=$(TC) VCD=$(VCD) DEBUG=$(DEBUG)
-	@echo -e "\033[1;33m#\033[0m Compiling $(REPO_ROOT)"
-	@cd $(BUILD_DIR) && $(XVLOG) -sv -f $(REPO_ROOT)/reuse.f -f $(REPO_ROOT)/local.f -log $(LOG_DIR)/xvlog_$(shell date +%Y%m%d_%H%M%S).log $(O_EW)
-# TODO: Add Submodule compilation
-	@echo -e "\033[1;33m#\033[0m Elaborating $(TOP)"
-	@cd $(BUILD_DIR) && $(XELAB) $(TOP) -s snap_$(TOP) -debug all -log $(LOG_DIR)/xelab_$(TOP)_$(shell date +%Y%m%d_%H%M%S).log $(O_EW)
 	@echo -e "\033[1;33m#\033[0m Simulating TOP:$(TOP) Test:$(TN) Count:$(TC)"
 	@cd $(BUILD_DIR) && $(XSIM) snap_$(TOP) -f $(BUILD_DIR)/XSIM_ARGS -log $(LOG_DIR)/xsim_$(TOP)_$(shell date +%Y%m%d_%H%M%S).log $(H_EW)
 ifneq ($(VCD), 0)
@@ -111,8 +151,25 @@ ifneq ($(VCD), 0)
 	@gtkwave $(REPO_ROOT)/wcfg/$(TOP).gtkw || gtkwave $(BUILD_DIR)/$(TOP).vcd
 endif
 
+.PHONY: compile_submodule
+compile_submodule: 
+	@make -s $(BUILD_DIR)
+	@make -s $(LOG_DIR)
+	@touch $(BUILD_DIR)/$(SUB)_commit
+	@SUB_HASH=$$(git -C $(REPO_ROOT)/submodule/$(SUB) rev-parse HEAD 2>/dev/null || echo ""); \
+	FILE_HASH=$$(cat $(BUILD_DIR)/$(SUB)_commit 2>/dev/null || echo ""); \
+	if [ "$$SUB_HASH" != "$$FILE_HASH" ] || [ -z "$$SUB_HASH" ]; then \
+		echo -e "\033[1;33m#\033[0m Submodule $(SUB) commit has changed, recompiling..."; \
+		echo -n $(shell git submodule status $(REPO_ROOT)/submodule/$(SUB) | awk '{print $$1}') > $(BUILD_DIR)/$(SUB)_commit; \
+		cd $(BUILD_DIR) && $(XVLOG) -sv -f $(REPO_ROOT)/submodule/$(SUB)/reuse.f -log $(LOG_DIR)/xvlog_$(SUB)_$(shell date +%Y%m%d_%H%M%S).log $(O_EW); \
+		git submodule status $(REPO_ROOT)/submodule/$(SUB) | awk '{print $$1}' > $(BUILD_DIR)/$(SUB)_commit; \
+		rm -f $(BUILD_DIR)/xelab_*; \
+	else \
+		echo -e "\033[1;33m#\033[0m Submodule $(SUB) commit has not changed, skipping compilation."; \
+	fi
+
 ####################################################################################################
-# Update Doc List
+# UPDATE DOC LIST
 ####################################################################################################
 
 .PHONY: update_doc_list
