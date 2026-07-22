@@ -22,9 +22,10 @@
 
 # Handshake Combiner Module
 
-@foez-bhai, write the purpose of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+The hs_combiner module is designed to aggregate multiple handshake-based interfaces into a unified flow. It manages the synchronization and flow control signals between a set of transmitter (TX) ports and receiver (RX) ports, ensuring that data transfers are correctly arbitrated and acknowledged according to the handshake protocol.
 
-@foez-bhai, describe the usage of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+## Usage
+To use the `hs_combiner` module, instantiate it in your design by specifying the `NUM_TX` and `NUM_RX` parameters to match your interface requirements. Connect the `valid_i` and `ready_o` ports to your transmitter logic, and the `valid_o` and `ready_i` ports to your receiver logic. The module will automatically handle the handshake arbitration, asserting `ready_o` when the corresponding receiver is ready and propagating `valid_i` to the appropriate `valid_o` output based on the internal routing logic.
 
 | REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
 |----------|------------|-----------------|--------------------------------------------------------|
@@ -34,4 +35,3 @@ This file is part of ADN-VLSI/adn_common
 <br>**Copyright (c) 2026 ADN Semiconductors**
 <br>**Licensed under the MIT License**
 <br>**See LICENSE file in the project root for full license information**
-
