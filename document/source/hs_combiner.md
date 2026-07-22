@@ -22,9 +22,11 @@
 
 # Handshake Combiner Module
 
-@foez-bhai, write the purpose of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+The `hs_combiner` module is designed to aggregate and distribute handshake signals (valid/ready) between multiple transmitter and receiver interfaces. It facilitates the interconnection of multiple data sources to multiple data sinks, ensuring proper flow control synchronization across the combined interfaces.
 
-@foez-bhai, describe the usage of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+## Usage
+
+To use the `hs_combiner` module, instantiate it in your Verilog/SystemVerilog design by specifying the `NUM_TX` and `NUM_RX` parameters to match the number of transmitter and receiver interfaces in your system. Connect the `valid_i` and `ready_o` ports to your source interfaces, and the `valid_o` and `ready_i` ports to your destination interfaces. The module will automatically handle the handshake logic to ensure that data is transferred only when both the source and destination are ready.
 
 | REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
 |----------|------------|-----------------|--------------------------------------------------------|
@@ -34,4 +36,3 @@ This file is part of ADN-VLSI/adn_common
 <br>**Copyright (c) 2026 ADN Semiconductors**
 <br>**Licensed under the MIT License**
 <br>**See LICENSE file in the project root for full license information**
-
