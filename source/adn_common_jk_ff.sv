@@ -1,15 +1,9 @@
 /*
  
-### Purpose
-This module implements a synchronous JK flip-flop with an active-low asynchronous reset. It provides the fundamental logic for state transitions based on the J and K inputs, supporting set, reset, hold, and toggle operations on the rising edge of the clock.
- 
-### Usage
-To use this module, instantiate it in your design and connect the `j` and `k` inputs to control the state transitions, `clk_i` to your system clock, and `rst_ni` to an active-low reset signal. The output `q_o` will reflect the current state of the flip-flop.
-- **Hold:** J=0, K=0
-- **Reset:** J=0, K=1
-- **Set:** J=1, K=0
-- **Toggle:** J=1, K=1
- 
+@foez-bhai, write the purpose of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+
+@foez-bhai, describe the usage of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+
 | REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
 |----------|------------|-----------------|--------------------------------------------------------|
 | 1.0      | 2026-05-04 | Shuparna Haque  | Stable release                                         |
@@ -22,40 +16,32 @@ See LICENSE file in the project root for full license information
  
 */
 
+// @foez-bhai, add comments to the parameters, ports
 module adn_common_jk_ff (
-    input   logic arst_ni, // Active-low asynchronous reset
-    input   logic clk_i,  // Clock input
+    input logic arst_ni,  // Active-low asynchronous reset
+    input logic clk_i,    // Clock input
 
-    input   logic j,      // J input
-    input   logic k,      // K input
+    input logic j_i,  // J input
+    input logic k_i,  // K input
 
-    output  logic q_o     // Output state
-  );
+    output logic q_o  // Output state
+);
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // SEQUENTIALS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  always_ff@ (posedge clk_i )
-  begin
-    if (!arst_ni)
-    begin
+  // @foez-bhai, add comments to the functional blocks, signals, and submodules
+  always_ff @(posedge clk_i) begin
+    if (!arst_ni) begin
       q_o <= 1'b0;
-    end
-    else if (j==1'b1 && k==1'b0)
-    begin
+    end else if (j_i == 1'b1 && k_i == 1'b0) begin
       q_o <= 1'b1;
-    end
-    else if (j==1'b0 && k==1'b1)
-    begin
+    end else if (j_i == 1'b0 && k_i == 1'b1) begin
       q_o <= 1'b0;
-    end
-    else if (j==1'b1 && k==1'b1)
-    begin
+    end else if (j_i == 1'b1 && k_i == 1'b1) begin
       q_o <= ~q_o;
-    end
-    else
-    begin
+    end else begin
       q_o <= q_o;
     end
   end
