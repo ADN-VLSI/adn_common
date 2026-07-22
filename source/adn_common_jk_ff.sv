@@ -4,7 +4,7 @@
 This module implements a synchronous JK flip-flop with an active-low asynchronous reset. It provides the standard JK flip-flop functionality: holding the state, resetting to 0, setting to 1, or toggling the output based on the J and K inputs on the rising edge of the clock.
  
 ### Usage
-To use this module, instantiate it in your design and connect the `j`, `k`, `clk_i`, and `rst_ni` signals. The `q_o` output will reflect the state of the flip-flop.
+To use this module, instantiate it in your design and connect the `j`, `k`, `clk_i`, and `arst_ni` signals. The `q_o` output will reflect the state of the flip-flop.
 - `j=0, k=0`: Hold current state.
 - `j=0, k=1`: Reset output to 0.
 - `j=1, k=0`: Set output to 1.
@@ -23,10 +23,12 @@ See LICENSE file in the project root for full license information
 */
 
 module adn_common_jk_ff (
+    input   logic arst_ni, // Active-low asynchronous reset
+    input   logic clk_i,  // Clock input
+
     input   logic j,      // J input
     input   logic k,      // K input
-    input   logic clk_i,  // Clock input
-    input   logic rst_ni, // Active-low asynchronous reset
+
     output  logic q_o     // Output state
   );
 
@@ -36,7 +38,7 @@ module adn_common_jk_ff (
 
   always_ff@ (posedge clk_i )
   begin
-    if (!rst_ni)
+    if (!arst_ni)
     begin
       q_o <= 1'b0;
     end
