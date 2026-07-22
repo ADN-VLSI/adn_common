@@ -16,19 +16,17 @@
 |-|-|-|-|-|
 |arst_ni|input|logic||Active-low asynchronous reset|
 |clk_i|input|logic||Clock input|
-|j_i|input|logic||J input|
+|j_i|input|logic||J input (Set control)|
 |k_i|input|logic||Clock input|
 |q_o|output|logic||Output state|
 ## Description
 
-The `adn_common_jk_ff` module implements a standard JK flip-flop with an active-low asynchronous reset. It serves as a fundamental sequential building block, providing the logic to toggle, set, reset, or hold its output state based on the J and K inputs at the rising edge of the clock signal.
 
-## Usage
-To use this module, instantiate it in your Verilog/SystemVerilog design by connecting the `clk_i` to your system clock, `arst_ni` to your reset signal, and the `j_i` and `k_i` inputs to your control logic. The `q_o` port will reflect the state of the flip-flop based on the following truth table:
-- If `j=0, k=0`: Hold state.
-- If `j=0, k=1`: Reset state (`q=0`).
-- If `j=1, k=0`: Set state (`q=1`).
-- If `j=1, k=1`: Toggle state (`q=~q`).
+### Purpose
+This module implements a synchronous JK flip-flop with an active-low asynchronous reset. It provides the standard JK flip-flop functionality: holding the state, resetting to 0, setting to 1, or toggling the output based on the J and K inputs on the rising edge of the clock.
+
+### Usage
+To use this module, instantiate it in your design and connect the `clk_i` to your system clock, `arst_ni` to your active-low reset signal, and the `j_i` and `k_i` inputs to your control logic. The `q_o` output will reflect the current state of the flip-flop.
 
 | REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
 |----------|------------|-----------------|--------------------------------------------------------|
@@ -38,3 +36,4 @@ To use this module, instantiate it in your Verilog/SystemVerilog design by conne
 <br>**Copyright (c) 2026 ADN Semiconductors**
 <br>**Licensed under the MIT License**
 <br>**See LICENSE file in the project root for full license information**
+
