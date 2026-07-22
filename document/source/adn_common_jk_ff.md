@@ -16,21 +16,15 @@
 |-|-|-|-|-|
 |arst_ni|input|logic||Active-low asynchronous reset|
 |clk_i|input|logic||Clock input|
-|j|input|logic|||
-|k|input|logic|||
+|j_i|input|logic||J input|
+|k_i|input|logic||Clock input|
 |q_o|output|logic||Output state|
 ## Description
 
 
-### Purpose
-This module implements a synchronous JK flip-flop with an active-low asynchronous reset. It provides the fundamental logic for state transitions based on the J and K inputs, supporting set, reset, hold, and toggle operations on the rising edge of the clock.
+@foez-bhai, write the purpose of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
 
-### Usage
-To use this module, instantiate it in your design and connect the `j` and `k` inputs to control the state transitions, `clk_i` to your system clock, and `rst_ni` to an active-low reset signal. The output `q_o` will reflect the current state of the flip-flop.
-- **Hold:** J=0, K=0
-- **Reset:** J=0, K=1
-- **Set:** J=1, K=0
-- **Toggle:** J=1, K=1
+@foez-bhai, describe the usage of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
 
 | REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
 |----------|------------|-----------------|--------------------------------------------------------|
