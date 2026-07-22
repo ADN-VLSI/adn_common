@@ -49,17 +49,19 @@ module adn_common_pipeline #(
     input  logic                  data_out_ready_i   // Output ready (backpressure from downstream)
 );
 
-  // ---------------------------------------------------------------------------
-  // Internal Registers / State
-  // ---------------------------------------------------------------------------
+  // ===========================================================================
+  // DESIGN BLOCK: Internal Registers / State
+  // ===========================================================================
+
   logic [DATA_WIDTH-1:0] data_reg;  // Pipeline data register
 
   logic                  is_full;  // Pipeline full flag (valid data in data_reg)
   logic                  is_full_next;  // Next-state logic for is_full
 
   // ---------------------------------------------------------------------------
-  // Combinational Logic: Ready/Valid Handshake
+  // DESIGN BLOCK: Combinational Logic: Ready/Valid Handshake
   // ---------------------------------------------------------------------------
+
   // Input ready when pipeline not full, or when full and downstream is ready
   always_comb data_in_ready_o = is_full ? data_out_ready_i : '1;
 
@@ -74,8 +76,9 @@ module adn_common_pipeline #(
   always_comb is_full_next = data_in_valid_i ? '1 : (data_out_ready_i ? '0 : is_full);
 
   // ---------------------------------------------------------------------------
-  // Sequential Logic: State Registers
+  // DESIGN BLOCK: Sequential Logic: State Registers
   // ---------------------------------------------------------------------------
+
   // Pipeline full flag with async active-low reset
   always_ff @(posedge clk_i or negedge arst_ni) begin
     if (~arst_ni) begin
@@ -91,5 +94,99 @@ module adn_common_pipeline #(
       data_reg <= data_in_i;
     end
   end
+
+  // ===========================================================================
+  // ASSERTION BLOCK: SystemVerilog Assertions (SVA)
+  // ===========================================================================
+
+`ifndef SYNTHESIS
+
+  // Default clocking and reset context for properties
+  default clocking cb_clk @(posedge clk_i);
+  endclocking
+  default disable iff (!arst_ni);
+
+  // Internal Helper Handshake Signals
+  wire in_transfer = data_in_valid_i && data_in_ready_o;
+  wire out_transfer = data_out_valid_o && data_out_ready_i;
+
+  // -------------------------------------------------------------------------
+  // 1. Reset Checks
+  // -------------------------------------------------------------------------
+
+  property p_reset_state;
+    @(posedge clk_i) !arst_ni |-> (!is_full && !data_out_valid_o);
+  endproperty
+
+  check_reset_state :
+  assert property (p_reset_state)
+  else $error("[SVA ERROR] Pipeline state not cleared during reset!");
+
+  // -------------------------------------------------------------------------
+  // 2. Ready/Valid Protocol Rules
+  // -------------------------------------------------------------------------
+
+  // Output data must remain stable during backpressure
+  property p_output_data_stable;
+    data_out_valid_o && !data_out_ready_i |=> $stable(
+        data_out_o
+    );
+  endproperty
+
+  check_output_data_stable :
+  assert property (p_output_data_stable)
+  else $error("[SVA ERROR] Output data changed while valid was active!");
+
+  // Output valid must remain asserted until handshake completes
+  property p_output_valid_stable;
+    data_out_valid_o && !data_out_ready_i |=> data_out_valid_o;
+  endproperty
+
+  check_output_valid_stable :
+  assert property (p_output_valid_stable)
+  else $error("[SVA ERROR] Output valid dropped without handshake!");
+
+  // -------------------------------------------------------------------------
+  // 3. Data Integrity Checks
+  // -------------------------------------------------------------------------
+
+  // Transferred input data must land in the output on the next clock cycle
+  property p_data_propagation;
+    in_transfer |=> (data_out_o == $past(
+        data_in_i
+    ));
+  endproperty
+
+  check_data_propagation :
+  assert property (p_data_propagation)
+  else $error("[SVA ERROR] Transferred data corrupted in register!");
+
+  // -------------------------------------------------------------------------
+  // 4. Upstream Protocol Assumptions
+  // -------------------------------------------------------------------------
+
+  // Upstream must maintain valid data until ready is sampled
+  property p_input_data_stable;
+    data_in_valid_i && !data_in_ready_o |=> $stable(
+        data_in_i
+    ) && data_in_valid_i;
+  endproperty
+
+  assume_input_data_stable :
+  assume property (p_input_data_stable)
+  else $warning("[SVA WARNING] Upstream changed data/valid prior to ready!");
+
+  // -------------------------------------------------------------------------
+  // 5. Functional Coverage
+  // -------------------------------------------------------------------------
+
+  cover_single_transfer :
+  cover property (in_transfer ##1 out_transfer);
+  cover_backpressure :
+  cover property (is_full && !data_out_ready_i);
+  cover_simultaneous_in_out :
+  cover property (in_transfer && out_transfer);
+
+`endif
 
 endmodule
