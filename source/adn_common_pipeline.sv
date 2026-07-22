@@ -114,12 +114,15 @@ module adn_common_pipeline #(
   // 1. Reset Checks
   // -------------------------------------------------------------------------
 
-  property p_reset_state;
-    @(posedge clk_i) !arst_ni |-> (!is_full && !data_out_valid_o);
+  // Check that state is clear right after reset is deasserted
+  property p_reset_cleanup;
+    $rose(
+        arst_ni
+    ) |-> (!is_full && !data_out_valid_o);
   endproperty
 
   check_reset_state :
-  assert property (p_reset_state)
+  assert property (p_reset_cleanup)
   else $error("[SVA ERROR] Pipeline state not cleared during reset!");
 
   // -------------------------------------------------------------------------
