@@ -23,11 +23,13 @@ See LICENSE file in the project root for full license information
 */
 
 module adn_common_jk_ff (
-    input   logic j,      // J input for JK flip-flop logic
-    input   logic k,      // K input for JK flip-flop logic
-    input   logic clk_i,  // System clock input
-    input   logic rst_ni, // Active-low asynchronous reset
-    output  logic q_o     // Output state of the flip-flop
+    input   logic arst_ni, // Active-low asynchronous reset
+    input   logic clk_i,  // Clock input
+
+    input   logic j,      // J input
+    input   logic k,      // K input
+
+    output  logic q_o     // Output state
   );
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -36,7 +38,7 @@ module adn_common_jk_ff (
 
   always_ff@ (posedge clk_i )
   begin
-    if (!rst_ni)
+    if (!arst_ni)
     begin
       q_o <= 1'b0;
     end

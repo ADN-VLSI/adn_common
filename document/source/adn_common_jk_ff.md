@@ -14,11 +14,11 @@
 ## Ports
 |Name|Direction|Type|Dimension|Description|
 |-|-|-|-|-|
+|arst_ni|input|logic||Active-low asynchronous reset|
+|clk_i|input|logic||Clock input|
 |j|input|logic|||
 |k|input|logic|||
-|clk_i|input|logic||System clock input|
-|rst_ni|input|logic||Active-low asynchronous reset|
-|q_o|output|logic||Output state of the flip-flop|
+|q_o|output|logic||Output state|
 ## Description
 
 
