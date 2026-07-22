@@ -8,24 +8,29 @@
 ## Parameters
 |Name|Type|Dimension|Default Value|Description|
 |-|-|-|-|-|
-|NUM_TX|int||2||
-|NUM_RX|int||2||
+|NUM_TX|int||2|Number of source handshake interfaces|
+|NUM_RX|int||2|Number of destination handshake interfaces|
 
 ## Ports
 |Name|Direction|Type|Dimension|Description|
 |-|-|-|-|-|
-|valid_i|input|logic [NUM_TX-1:0]|||
-|ready_o|output|logic [NUM_TX-1:0]|||
-|valid_o|output|logic [NUM_RX-1:0]|||
-|ready_i|input|logic [NUM_RX-1:0]|||
+|valid_i|input|logic [NUM_TX-1:0]||Input valid signals from sources|
+|ready_o|output|logic [NUM_TX-1:0]||Output ready signals to sources|
+|valid_o|output|logic [NUM_RX-1:0]||Output valid signals to destinations|
+|ready_i|input|logic [NUM_RX-1:0]||Input ready signals from destinations|
 ## Description
 
 # Handshake Combiner Module
 
-The hs_combiner module is designed to aggregate multiple handshake-based interfaces into a unified flow. It manages the synchronization and flow control signals between a set of transmitter (TX) ports and receiver (RX) ports, ensuring that data transfers are correctly arbitrated and acknowledged according to the handshake protocol.
+This module acts as a synchronization bridge that combines multiple handshake interfaces. It asserts output valid and ready signals only when all input valid and ready signals are high, ensuring atomic transaction completion across the combined interface.
 
 ## Usage
-To use the `hs_combiner` module, instantiate it in your design by specifying the `NUM_TX` and `NUM_RX` parameters to match your interface requirements. Connect the `valid_i` and `ready_o` ports to your transmitter logic, and the `valid_o` and `ready_i` ports to your receiver logic. The module will automatically handle the handshake arbitration, asserting `ready_o` when the corresponding receiver is ready and propagating `valid_i` to the appropriate `valid_o` output based on the internal routing logic.
+
+The `hs_combiner` is used to aggregate multiple independent handshake channels into a single synchronized interface.
+
+1. **Instantiation**: Set `NUM_TX` to match the number of source interfaces and `NUM_RX` to match the number of destination interfaces.
+2. **Connectivity**: Connect the `valid_i` and `ready_o` ports to the source side, and `valid_o` and `ready_i` to the destination side.
+3. **Behavior**: The module performs a logical AND reduction on all input signals. A transaction is only considered valid and ready to proceed when every bit in the input vectors is asserted high.
 
 | REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
 |----------|------------|-----------------|--------------------------------------------------------|
@@ -35,3 +40,4 @@ This file is part of ADN-VLSI/adn_common
 <br>**Copyright (c) 2026 ADN Semiconductors**
 <br>**Licensed under the MIT License**
 <br>**See LICENSE file in the project root for full license information**
+
