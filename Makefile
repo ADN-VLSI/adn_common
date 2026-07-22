@@ -208,3 +208,38 @@ gen_doc:
 	@sed -i "s|.*${LINE_2}.*|<br>**${LINE_2}**|g" $(SOURCE_DOC_DIR)/$(shell basename $(FILE) | sed "s/\.sv/\.md/g")
 	@sed -i "s|.*${LINE_3}.*|<br>**${LINE_3}**|g" $(SOURCE_DOC_DIR)/$(shell basename $(FILE) | sed "s/\.sv/\.md/g")
 	@sed -i "s|.*${LINE_4}.*|<br>**${LINE_4}**|g" $(SOURCE_DOC_DIR)/$(shell basename $(FILE) | sed "s/\.sv/\.md/g")
+
+####################################################################################################
+# TESTBENCH & SOURCE GENERATION
+####################################################################################################
+
+.PHONY: gen_source
+gen_source:
+# if file doesn't exist, generate it
+	@if [ ! -f $(REPO_ROOT)/source/$(RTL).sv ]; then \
+		echo -e "\033[1;33m#\033[0m Generating source for $(RTL)"; \
+		cp $(DOCUMENTER)/source.sv $(REPO_ROOT)/source/$(RTL).sv; \
+		sed -i "s|nemotron|foez-bhai|g" $(REPO_ROOT)/source/$(RTL).sv; \
+		sed -i "s|__AUTHOR_NAME__|$$(git config user.name)|g" $(REPO_ROOT)/source/$(RTL).sv; \
+		sed -i "s|__AUTHOR_EMAIL__|$$(git config user.email)|g" $(REPO_ROOT)/source/$(RTL).sv; \
+		sed -i "s|squared-studio/__REPO_NAME__|ADN-VLSI/$(REPO_FILE_EXT)|g" $(REPO_ROOT)/source/$(RTL).sv; \
+		sed -i "s|__YEAR__ squared-studio|$$(date +%Y) ADN Semiconductors|g" $(REPO_ROOT)/source/$(RTL).sv; \
+		sed -i "s|source_model|$(RTL)|g" $(REPO_ROOT)/source/$(RTL).sv; \
+	fi
+	@code $(REPO_ROOT)/source/$(RTL).sv
+
+.PHONY: gen_testbench
+gen_testbench:
+# if file doesn't exist, generate it
+	@if [ ! -f $(REPO_ROOT)/testbench/$(TOP).sv ]; then \
+		echo -e "\033[1;33m#\033[0m Generating testbench for $(TOP)"; \
+		cp $(DOCUMENTER)/testbench.sv $(REPO_ROOT)/testbench/$(TOP).sv; \
+		sed -i "s|nemotron|foez-bhai|g" $(REPO_ROOT)/testbench/$(TOP).sv; \
+		sed -i "s|__AUTHOR_NAME__|$$(git config user.name)|g" $(REPO_ROOT)/testbench/$(TOP).sv; \
+		sed -i "s|__AUTHOR_EMAIL__|$$(git config user.email)|g" $(REPO_ROOT)/testbench/$(TOP).sv; \
+		sed -i "s|squared-studio/__REPO_NAME__|ADN-VLSI/$(REPO_FILE_EXT)|g" $(REPO_ROOT)/testbench/$(TOP).sv; \
+		sed -i "s|__YEAR__ squared-studio|$$(date +%Y) ADN Semiconductors|g" $(REPO_ROOT)/testbench/$(TOP).sv; \
+		sed -i "s|testbench_model|$(TOP)|g" $(REPO_ROOT)/testbench/$(TOP).sv; \
+		sed -i "s|tb_ess.sv|adn_common_tb_headers.sv|g" $(REPO_ROOT)/testbench/$(TOP).sv; \
+	fi
+	@code $(REPO_ROOT)/testbench/$(TOP).sv
