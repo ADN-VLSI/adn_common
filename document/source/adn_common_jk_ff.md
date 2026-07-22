@@ -10,39 +10,27 @@
 ## Parameters
 |Name|Type|Dimension|Default Value|Description|
 |-|-|-|-|-|
-|RESET_VAL|logic|1|1'b0|Initial state of the flip-flop after reset|
 
 ## Ports
 |Name|Direction|Type|Dimension|Description|
 |-|-|-|-|-|
-|j|input|logic||J input control signal|
-|k|input|logic||K input control signal|
-|clk_i|input|logic||Clock input signal|
+|j|input|logic|||
+|k|input|logic|||
+|clk_i|input|logic||System clock input|
 |rst_ni|input|logic||Active-low asynchronous reset|
 |q_o|output|logic||Output state of the flip-flop|
-
-## Internal Signals
-|Name|Type|Dimension|Description|
-|-|-|-|-|
-|q_next|logic||Next state logic for the flip-flop|
-
 ## Description
 
-The `adn_common_jk_ff` module implements a standard JK flip-flop, a fundamental sequential logic building block. It captures the state based on the J and K inputs at the rising edge of the clock signal, providing a toggle functionality when both inputs are high, a hold state when both are low, and set/reset operations based on the individual input levels.
 
-## Usage
-To use this module, instantiate it in your Verilog/SystemVerilog design by connecting the `j` and `k` control inputs, the `clk_i` clock signal, and the `rst_ni` active-low asynchronous reset. The output `q_o` will reflect the internal state of the flip-flop.
+### Purpose
+This module implements a synchronous JK flip-flop with an active-low asynchronous reset. It provides the fundamental logic for state transitions based on the J and K inputs, supporting set, reset, hold, and toggle operations on the rising edge of the clock.
 
-Example instantiation:
-```systemverilog
-adn_common_jk_ff u_jk_ff (
-    .j      (j_signal),
-    .k      (k_signal),
-    .clk_i  (clk),
-    .rst_ni (rst_n),
-    .q_o    (q_out)
-);
-```
+### Usage
+To use this module, instantiate it in your design and connect the `j` and `k` inputs to control the state transitions, `clk_i` to your system clock, and `rst_ni` to an active-low reset signal. The output `q_o` will reflect the current state of the flip-flop.
+- **Hold:** J=0, K=0
+- **Reset:** J=0, K=1
+- **Set:** J=1, K=0
+- **Toggle:** J=1, K=1
 
 | REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
 |----------|------------|-----------------|--------------------------------------------------------|
@@ -52,3 +40,4 @@ adn_common_jk_ff u_jk_ff (
 <br>**Copyright (c) 2026 ADN Semiconductors**
 <br>**Licensed under the MIT License**
 <br>**See LICENSE file in the project root for full license information**
+
