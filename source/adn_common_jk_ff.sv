@@ -1,10 +1,14 @@
 /*
  
-@foez-bhai, write the purpose of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+### Purpose
+This module implements a synchronous JK flip-flop with an active-low asynchronous reset. It provides the fundamental logic for state transitions based on the J and K inputs, supporting set, reset, hold, and toggle operations on the rising edge of the clock.
  
-@foez-bhai, describe the usage of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
- 
-@foez-bhai, add commments for the port, parameter and internal signal
+### Usage
+To use this module, instantiate it in your design and connect the `j` and `k` inputs to control the state transitions, `clk_i` to your system clock, and `rst_ni` to an active-low reset signal. The output `q_o` will reflect the current state of the flip-flop.
+- **Hold:** J=0, K=0
+- **Reset:** J=0, K=1
+- **Set:** J=1, K=0
+- **Toggle:** J=1, K=1
  
 | REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
 |----------|------------|-----------------|--------------------------------------------------------|
@@ -19,11 +23,11 @@ See LICENSE file in the project root for full license information
 */
 
 module adn_common_jk_ff (
-    input   logic j,
-    input   logic k,
-    input   logic clk_i,
-    input   logic rst_ni,
-    output  logic q_o
+    input   logic j,      // J input for JK flip-flop logic
+    input   logic k,      // K input for JK flip-flop logic
+    input   logic clk_i,  // System clock input
+    input   logic rst_ni, // Active-low asynchronous reset
+    output  logic q_o     // Output state of the flip-flop
   );
 
   //////////////////////////////////////////////////////////////////////////////////////////////////

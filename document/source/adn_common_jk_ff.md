@@ -10,23 +10,39 @@
 ## Parameters
 |Name|Type|Dimension|Default Value|Description|
 |-|-|-|-|-|
+|RESET_VAL|logic|1|1'b0|Initial state of the flip-flop after reset|
 
 ## Ports
 |Name|Direction|Type|Dimension|Description|
 |-|-|-|-|-|
-|j|input|logic|||
-|k|input|logic|||
-|clk_i|input|logic|||
-|rst_ni|input|logic|||
-|q_o|output|logic|||
+|j|input|logic||J input control signal|
+|k|input|logic||K input control signal|
+|clk_i|input|logic||Clock input signal|
+|rst_ni|input|logic||Active-low asynchronous reset|
+|q_o|output|logic||Output state of the flip-flop|
+
+## Internal Signals
+|Name|Type|Dimension|Description|
+|-|-|-|-|
+|q_next|logic||Next state logic for the flip-flop|
+
 ## Description
 
+The `adn_common_jk_ff` module implements a standard JK flip-flop, a fundamental sequential logic building block. It captures the state based on the J and K inputs at the rising edge of the clock signal, providing a toggle functionality when both inputs are high, a hold state when both are low, and set/reset operations based on the individual input levels.
 
-@foez-bhai, write the purpose of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+## Usage
+To use this module, instantiate it in your Verilog/SystemVerilog design by connecting the `j` and `k` control inputs, the `clk_i` clock signal, and the `rst_ni` active-low asynchronous reset. The output `q_o` will reflect the internal state of the flip-flop.
 
-@foez-bhai, describe the usage of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
-
-@foez-bhai, add commments for the port, parameter and internal signal
+Example instantiation:
+```systemverilog
+adn_common_jk_ff u_jk_ff (
+    .j      (j_signal),
+    .k      (k_signal),
+    .clk_i  (clk),
+    .rst_ni (rst_n),
+    .q_o    (q_out)
+);
+```
 
 | REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
 |----------|------------|-----------------|--------------------------------------------------------|
@@ -36,4 +52,3 @@
 <br>**Copyright (c) 2026 ADN Semiconductors**
 <br>**Licensed under the MIT License**
 <br>**See LICENSE file in the project root for full license information**
-
