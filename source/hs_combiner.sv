@@ -1,9 +1,10 @@
 /*
 # Handshake Combiner Module
 
-@foez-bhai, write the purpose of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+This module serves as a synchronization and aggregation unit that combines multiple handshake interfaces. It ensures that data transmission only proceeds when all input valid signals and all output ready signals are simultaneously asserted, effectively acting as a multi-channel AND-gate for handshake protocols.
 
-@foez-bhai, describe the usage of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+## Usage
+The `hs_combiner` is designed to synchronize multiple handshake channels. It monitors `NUM_TX` input channels and `NUM_RX` output channels. The module asserts the output valid signals and input ready signals only when all input valid signals are high and all output ready signals are high. This is typically used in data-path synchronization where multiple streams must be aligned before processing.
 
 | REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
 |----------|------------|-----------------|--------------------------------------------------------|
@@ -17,34 +18,39 @@ See LICENSE file in the project root for full license information
 
 */
 
-// @foez-bhai, add comments to the parameters, ports
 module hs_combiner #(
-    parameter int NUM_TX = 2,
-    parameter int NUM_RX = 2
+    parameter int NUM_TX = 2, // Number of input handshake channels
+    parameter int NUM_RX = 2  // Number of output handshake channels
 ) (
-    input  logic [NUM_TX-1:0] valid_i,
-    output logic [NUM_TX-1:0] ready_o,
+    // Input handshake interface signals
+    input  logic [NUM_TX-1:0] valid_i, // Input valid signals from source
+    output logic [NUM_TX-1:0] ready_o, // Output ready signals back to source
 
-    output logic [NUM_RX-1:0] valid_o,
-    input  logic [NUM_RX-1:0] ready_i
+    // Output handshake interface signals
+    output logic [NUM_RX-1:0] valid_o, // Output valid signals to destination
+    input  logic [NUM_RX-1:0] ready_i  // Input ready signals from destination
 );
-
-  // @foez-bhai, add comments to the functional blocks, signals, and submodules
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // ASSIGNMENTS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
+  // Combinational logic block to evaluate handshake readiness
   always_comb begin
-    logic ok_v;
-    logic ok_r;
-    logic ok;
+    logic ok_v; // Aggregated valid status
+    logic ok_r; // Aggregated ready status
+    logic ok;   // Global handshake synchronization signal
+    
+    // Check if all input valids are high
     ok_v = &valid_i;
+    // Check if all output readies are high
     ok_r = &ready_i;
+    // Transaction proceeds only if both conditions are met
     ok = ok_v & ok_r;
+    
+    // Drive output valid and ready signals based on synchronization status
     valid_o = ok ? '1 : '0;
     ready_o = ok ? '1 : '0;
   end
 
 endmodule
-
