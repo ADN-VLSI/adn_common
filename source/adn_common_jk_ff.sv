@@ -1,8 +1,10 @@
 /*
  
-@foez-bhai, write the purpose of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+### Purpose
+This module implements a synchronous JK flip-flop with an active-low asynchronous reset. It provides the standard JK flip-flop functionality: holding the state, resetting to 0, setting to 1, or toggling the output based on the J and K inputs on the rising edge of the clock.
 
-@foez-bhai, describe the usage of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+### Usage
+To use this module, instantiate it in your design and connect the `clk_i` to your system clock, `arst_ni` to your active-low reset signal, and the `j_i` and `k_i` inputs to your control logic. The `q_o` output will reflect the current state of the flip-flop.
 
 | REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
 |----------|------------|-----------------|--------------------------------------------------------|
@@ -16,31 +18,35 @@ See LICENSE file in the project root for full license information
  
 */
 
-// @foez-bhai, add comments to the parameters, ports
 module adn_common_jk_ff (
     input logic arst_ni,  // Active-low asynchronous reset
     input logic clk_i,    // Clock input
 
-    input logic j_i,  // J input
-    input logic k_i,  // K input
+    input logic j_i,      // J input (Set control)
+    input logic k_i,      // K input (Reset control)
 
-    output logic q_o  // Output state
+    output logic q_o      // Output state
 );
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // SEQUENTIALS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  // @foez-bhai, add comments to the functional blocks, signals, and submodules
-  always_ff @(posedge clk_i) begin
+  // Sequential logic block triggered on the rising edge of the clock
+  always_ff @(posedge clk_i or negedge arst_ni) begin
+    // Asynchronous reset logic: active-low
     if (!arst_ni) begin
       q_o <= 1'b0;
+    // Set condition: J=1, K=0
     end else if (j_i == 1'b1 && k_i == 1'b0) begin
       q_o <= 1'b1;
+    // Reset condition: J=0, K=1
     end else if (j_i == 1'b0 && k_i == 1'b1) begin
       q_o <= 1'b0;
+    // Toggle condition: J=1, K=1
     end else if (j_i == 1'b1 && k_i == 1'b1) begin
       q_o <= ~q_o;
+    // Hold condition: J=0, K=0
     end else begin
       q_o <= q_o;
     end
