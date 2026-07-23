@@ -234,7 +234,7 @@ gen_testbench:
 	@if [ ! -f $(REPO_ROOT)/testbench/$(TOP).sv ]; then \
 		echo -e "\033[1;33m#\033[0m Generating testbench for $(TOP)"; \
 		cp $(DOCUMENTER)/testbench.sv $(REPO_ROOT)/testbench/$(TOP).sv; \
-		sed -i "s|nemotron|foez-bhai|g" $(REPO_ROOT)/testbench/$(TOP).sv; \
+		sed -i "s|nemotron|foez---bhai|g" $(REPO_ROOT)/testbench/$(TOP).sv; \
 		sed -i "s|__AUTHOR_NAME__|$$(git config user.name)|g" $(REPO_ROOT)/testbench/$(TOP).sv; \
 		sed -i "s|__AUTHOR_EMAIL__|$$(git config user.email)|g" $(REPO_ROOT)/testbench/$(TOP).sv; \
 		sed -i "s|squared-studio/__REPO_NAME__|ADN-VLSI/$(REPO_FILE_EXT)|g" $(REPO_ROOT)/testbench/$(TOP).sv; \
