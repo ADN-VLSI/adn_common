@@ -25,27 +25,27 @@ module adn_common_cdc_fifo #(
     parameter int SYNC_STAGES = 2,
     parameter int ALMOST_FULL_THRESH = (1 << ADDR_WIDTH) - 2,
     parameter int ALMOST_EMPTY_THRESH = 2
-  ) (
+) (
     // PORTS
 
     //Write Clock Domain
-    input  logic                   wr_clk,
-    input  logic                   wr_rst_n,
-    input  logic                   wr_en,
-    input  logic [DATA_WIDTH-1:0]  wr_data,
-    output logic                   full,
-    output logic                   almost_full,
-    output logic [ADDR_WIDTH:0]    wr_count,
+    input  logic                  wr_clk,
+    input  logic                  wr_rst_n,
+    input  logic                  wr_en,
+    input  logic [DATA_WIDTH-1:0] wr_data,
+    output logic                  full,
+    output logic                  almost_full,
+    output logic [  ADDR_WIDTH:0] wr_count,
 
     //Read Clock Domain
-    input  logic                   rd_clk,
-    input  logic                   rd_rst_n,
-    input  logic                   rd_en,
-    output logic [DATA_WIDTH-1:0]  rd_data,
-    output logic                   empty,
-    output logic                   almost_empty,
-    output logic [ADDR_WIDTH:0]    rd_count
-  );
+    input  logic                  rd_clk,
+    input  logic                  rd_rst_n,
+    input  logic                  rd_en,
+    output logic [DATA_WIDTH-1:0] rd_data,
+    output logic                  empty,
+    output logic                  almost_empty,
+    output logic [  ADDR_WIDTH:0] rd_count
+);
 
   // @foez---bhai, add comments to the functional blocks, signals, and submodules
 
@@ -59,7 +59,7 @@ module adn_common_cdc_fifo #(
   // SIGNALS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  
+
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // ASSIGNMENTS
@@ -87,10 +87,8 @@ module adn_common_cdc_fifo #(
 
 `ifdef SIMULATION
 
-  initial
-  begin
-    if (DATA_WIDTH > 2)
-    begin
+  initial begin
+    if (DATA_WIDTH > 2) begin
       $display("\033[1;33m%m DATA_WIDTH\033[0m");
     end
   end
