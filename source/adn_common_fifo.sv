@@ -70,59 +70,29 @@ module adn_common_fifo #(
   // SEQUENTIALS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  always_ff @(posedge clk_i or negedge rst_ni)
-  begin
-    if (!rst_ni)
-    begin
-      wr_ptr <= '0;
-      rd_ptr <= '0;
-      data_o <= '0;
-      valid_o <= 1'b0;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+  if (!rst_ni) begin
+    wr_ptr  <= '0;
+    rd_ptr  <= '0;
+    data_o  <= '0;
+    valid_o <= 1'b0;
+  end else begin
+    valid_o <= 1'b0;
+
+    // Write
+    if (wr_en_i && !full_o) begin
+      mem[wr_ptr[ADDR_WIDTH-1:0]] <= data_i;
+      wr_ptr <= wr_ptr + 1'b1;
     end
-    else
-    begin
-      valid_o <= 1'b0;
 
-      //--------------------------------------
-      // Write
-      //--------------------------------------
-      if (wr_fire)
-      begin
-        mem[wr_ptr] <= data_i;
-
-        if (wr_ptr == DEPTH-1)
-          wr_ptr <= '0;
-        else
-          wr_ptr <= wr_ptr + 1'b1;
-      end
-
-      //--------------------------------------
-      // Read
-      //--------------------------------------
-      if (rd_fire)
-      begin
-        data_o <= mem[rd_ptr];
-        valid_o   <= 1'b1;
-
-        if (rd_ptr == DEPTH-1)
-          rd_ptr <= '0;
-        else
-          rd_ptr <= rd_ptr + 1'b1;
-      end
-
-      //--------------------------------------
-      // count_o
-      //--------------------------------------
-      case ({wr_fire, rd_fire})
-        2'b10:
-          count_o <= count_o + 1'b1;
-        2'b01:
-          count_o <= count_o - 1'b1;
-        default:
-          count_o <= count_o;
-      endcase
+    // Read
+    if (rd_en_i && !empty_o) begin
+      data_o  <= mem[rd_ptr[ADDR_WIDTH-1:0]];
+      valid_o <= 1'b1;
+      rd_ptr  <= rd_ptr + 1'b1;
     end
   end
+end
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // INITIAL CHECKS
@@ -138,17 +108,4 @@ module adn_common_fifo #(
               $fatal("ADDR_WIDTH is insufficient for DEPTH.");
           end
 `endif
-
-          //////////////////////////////////////////////////////////////////////////////////////////////////
-          // METHODS
-          //////////////////////////////////////////////////////////////////////////////////////////////////
-
-          function automatic logic is_full_o();
-            return (count_o == DEPTH);
-          endfunction
-
-          function automatic logic is_empty_o();
-            return (count_o == 0);
-          endfunction
-
-        endmodule
+ endmodule
