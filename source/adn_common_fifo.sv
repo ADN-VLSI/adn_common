@@ -28,32 +28,32 @@ module adn_common_fifo #(
     //////////////////////////////////////////////////////////////////////////////////////////////////
     // LOCALPARAMS
     //////////////////////////////////////////////////////////////////////////////////////////////////
-    localparam int ADDR_WIDTH = $clog2(DEPTH);
-  ) (
+    localparam int ADDR_WIDTH = $clog2(DEPTH)
+) (
     //////////////////////////////////////////////////////////////////////////////////////////////////
     // PORTS
     //////////////////////////////////////////////////////////////////////////////////////////////////
-    input  logic                  clk_i,
-    input  logic                  rst_ni,
+    input logic clk_i,
+    input logic rst_ni,
 
-    input  logic                  wr_en_i,
-    input  logic                  rd_en_i,
-    input  logic [DATA_WIDTH-1:0] data_i,
+    input logic                  wr_en_i,
+    input logic                  rd_en_i,
+    input logic [DATA_WIDTH-1:0] data_i,
 
     output logic [DATA_WIDTH-1:0] data_o,
     output logic                  full_o,
     output logic                  empty_o,
     output logic                  valid_o
-  );
+);
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // SIGNALS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  logic [DATA_WIDTH-1:0] mem [0:DEPTH-1];
+  logic [DATA_WIDTH-1:0] mem[0:DEPTH-1];
 
   logic [ADDR_WIDTH:0] wr_ptr;
-  logic [ADDR_WIDTH:0] rd_ptr;      // extra bit for msb that checks if the fifo is full or empty
+  logic [ADDR_WIDTH:0] rd_ptr;  // extra bit for msb that checks if the fifo is full or empty
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // ASSIGNMENTS
@@ -71,41 +71,39 @@ module adn_common_fifo #(
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
-  if (!rst_ni) begin
-    wr_ptr  <= '0;
-    rd_ptr  <= '0;
-    data_o  <= '0;
-    valid_o <= 1'b0;
-  end else begin
-    valid_o <= 1'b0;
+    if (!rst_ni) begin
+      wr_ptr  <= '0;
+      rd_ptr  <= '0;
+      data_o  <= '0;
+      valid_o <= 1'b0;
+    end else begin
+      valid_o <= 1'b0;
 
-    // Write
-    if (wr_en_i && !full_o) begin
-      mem[wr_ptr[ADDR_WIDTH-1:0]] <= data_i;
-      wr_ptr <= wr_ptr + 1'b1;
-    end
+      // Write
+      if (wr_en_i && !full_o) begin
+        mem[wr_ptr[ADDR_WIDTH-1:0]] <= data_i;
+        wr_ptr <= wr_ptr + 1'b1;
+      end
 
-    // Read
-    if (rd_en_i && !empty_o) begin
-      data_o  <= mem[rd_ptr[ADDR_WIDTH-1:0]];
-      valid_o <= 1'b1;
-      rd_ptr  <= rd_ptr + 1'b1;
+      // Read
+      if (rd_en_i && !empty_o) begin
+        data_o  <= mem[rd_ptr[ADDR_WIDTH-1:0]];
+        valid_o <= 1'b1;
+        rd_ptr  <= rd_ptr + 1'b1;
+      end
     end
   end
-end
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // INITIAL CHECKS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  `ifndef SYNTHESIS
-          initial
-          begin
-            if (DEPTH <= 0)
-              $fatal("DEPTH must be greater than 0.");
+`ifndef SYNTHESIS
+  initial begin
+    if (DEPTH <= 0) $fatal("DEPTH must be greater than 0.");
 
-            if ((1 << ADDR_WIDTH) < DEPTH)
-              $fatal("ADDR_WIDTH is insufficient for DEPTH.");
-          end
+    if ((1 << ADDR_WIDTH) < DEPTH) $fatal("ADDR_WIDTH is insufficient for DEPTH.");
+  end
 `endif
- endmodule
+endmodule
+
