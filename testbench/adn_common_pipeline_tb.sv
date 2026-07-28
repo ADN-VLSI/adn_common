@@ -42,8 +42,15 @@ module adn_common_pipeline_tb;
       .data_out_ready_i(data_out_ready_i)
   );
 
+  `include "coverage/pipeline_cov.sv"
+
+pipeline_cov cov;
+
   // Test stimulus
   initial begin
+
+    cov = new();
+
     // Initialize inputs
     data_in_i        <= '0;
     data_in_valid_i  <= 1'b0;
