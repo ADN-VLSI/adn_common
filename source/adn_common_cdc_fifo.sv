@@ -31,22 +31,22 @@ module adn_common_cdc_fifo #(
     // PORTS
 
     //Write Clock Domain
-    input  logic                  wr_clk,
-    input  logic                  wr_rst_n,
-    input  logic                  wr_en,
-    input  logic [DATA_WIDTH-1:0] wr_data,
-    output logic                  full,
-    output logic                  almost_full,
-    output logic [  ADDR_WIDTH:0] wr_count,
+    input  logic                  wr_clk_i,
+    input  logic                  wr_rst_n_i,
+    input  logic                  wr_en_i,
+    input  logic [DATA_WIDTH-1:0] wr_data_i,
+    output logic                  full_o,
+    output logic                  almost_full_o,
+    output logic [  ADDR_WIDTH:0] wr_count_o,
 
     //Read Clock Domain
-    input  logic                  rd_clk,
-    input  logic                  rd_rst_n,
-    input  logic                  rd_en,
-    output logic [DATA_WIDTH-1:0] rd_data,
-    output logic                  empty,
-    output logic                  almost_empty,
-    output logic [  ADDR_WIDTH:0] rd_count
+    input  logic                  rd_clk_i,
+    input  logic                  rd_rst_n_i,
+    input  logic                  rd_en_i,
+    output logic [DATA_WIDTH-1:0] rd_data_o,
+    output logic                  empty_o,
+    output logic                  almost_empty_o,
+    output logic [  ADDR_WIDTH:0] rd_count_o
 );
 
   // @foez-bhai, add comments to the functional blocks, signals, and submodules
@@ -62,12 +62,30 @@ module adn_common_cdc_fifo #(
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
   //Local Reset Syncronizers
-  logic [1:0] wr_rst_n_sync;
-  logic [1:0] rd_rst_n_sync;
-  logic       wr_rst_n_int;
-  logic       rd_rst_n_int;
+  logic                wr_rst_n_int;
+  logic                rd_rst_n_int;
 
+  //Write Domain Pointers
+  logic [PtrWidth-1:0] wr_ptr_bin;
+  logic [PtrWidth-1:0] wr_ptr_bin_next;
+  logic [PtrWidth-1:0] wr_ptr_gray;
+  logic [PtrWidth-1:0] wr_ptr_gray_next;
+  logic [PtrWidth-1:0] wr_ptr_gray_rdclk;
+  logic [PtrWidth-1:0] wr_ptr_bin_rdclk;
+  logic                wr_en_qualified;
 
+  //Read Domain Pointers
+  logic [PtrWidth-1:0] rd_ptr_bin;
+  logic [PtrWidth-1:0] rd_ptr_bin_next;
+  logic [PtrWidth-1:0] rd_ptr_gray;
+  logic [PtrWidth-1:0] rd_ptr_gray_next;
+  logic [PtrWidth-1:0] rd_ptr_gray_wrclk;
+  logic [PtrWidth-1:0] rd_ptr_bin_wrclk;
+  logic                rd_en_qualified;
+
+  //Enpty/Full Signals
+  logic                empty_next;
+  logic                full_next;
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // ASSIGNMENTS
@@ -76,6 +94,35 @@ module adn_common_cdc_fifo #(
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // SUBMODULES
   //////////////////////////////////////////////////////////////////////////////////////////////////
+
+  //Write Reset Syncronizers
+  adn_common_synchronizer #(
+      .WIDTH      (1),
+      .STAGES     (SYNC_STAGES),
+      .RESET_VALUE('0)
+  ) u_wr_rst_sync (
+      .clk_i  (wr_clk_i),
+      .rst_n_i(wr_rst_n_i),
+      .data_i ('1),
+      .data_o (wr_rst_n_int)
+  );
+
+  //Read Reset Syncronizers
+  adn_common_synchronizer #(
+      .WIDTH      (1),
+      .STAGES     (SYNC_STAGES),
+      .RESET_VALUE('0)
+  ) u_rd_rst_sync (
+      .clk_i  (rd_clk_i),
+      .rst_n_i(rd_rst_n_i),
+      .data_i ('1),
+      .data_o (rd_rst_n_int)
+  );
+
+
+
+
+
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // SEQUENTIALS
