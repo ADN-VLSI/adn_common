@@ -7,7 +7,7 @@
 | REVISION | DATE       | AUTHOR              | DESCRIPTION                                            |
 |----------|------------|---------------------|--------------------------------------------------------|
 | 0.1      | 2026-07-27 | Ahasan Ullah Khalid | Initial version                                        |
-| 1.0      | YYYY-MM-DD | Ahasan Ullah Khalid | Stable release                                         |
+| 1.0      | 2026-07-28 | Ahasan Ullah Khalid | Stable release                                         |
 
 Author : Ahasan Ullah Khalid (aukhalid02@gmail.com)
 This file is part of ADN-VLSI/adn_common
@@ -17,7 +17,7 @@ See LICENSE file in the project root for full license information
 
 */
 
-// @foez---bhai, add comments to the parameters, ports
+// @foez-bhai, add comments to the parameters, ports
 module adn_common_cdc_fifo #(
 
     //PARAMETERS
@@ -55,17 +55,18 @@ module adn_common_cdc_fifo #(
   // LOCALPARAMS GENERATED
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
+  // Pointer width includes 1 extra bit (MSB) to distinguish full from empty conditions
   localparam int PtrWidth = ADDR_WIDTH + 1;
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // SIGNALS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  //Local Reset Syncronizers
+  //Internal synchronized active-low resets
   logic                wr_rst_n_int;
   logic                rd_rst_n_int;
 
-  //Write Domain Pointers
+  //Write Domain Pointers & Control Signals
   logic [PtrWidth-1:0] wr_ptr_bin;
   logic [PtrWidth-1:0] wr_ptr_bin_next;
   logic [PtrWidth-1:0] wr_ptr_gray;
@@ -74,7 +75,7 @@ module adn_common_cdc_fifo #(
   logic [PtrWidth-1:0] wr_ptr_bin_rdclk;
   logic                wr_en_qualified;
 
-  //Read Domain Pointers
+  //Read Domain Pointers & Control Signals
   logic [PtrWidth-1:0] rd_ptr_bin;
   logic [PtrWidth-1:0] rd_ptr_bin_next;
   logic [PtrWidth-1:0] rd_ptr_gray;
@@ -83,7 +84,7 @@ module adn_common_cdc_fifo #(
   logic [PtrWidth-1:0] rd_ptr_bin_wrclk;
   logic                rd_en_qualified;
 
-  //Enpty-Full Signals
+  //Combinational Next-State Flag Calculations
   logic                empty_next;
   logic                full_next;
 
@@ -91,21 +92,28 @@ module adn_common_cdc_fifo #(
   // ASSIGNMENTS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
+  // Qualify write/read requests to ensure operations only occur when safe
   assign wr_en_qualified = wr_en_i && !full_o;
-  assign wr_ptr_bin_next = wr_ptr_bin + (wr_en_qualified ? {{(PtrWidth - 1) {1'b0}}, 1'b1} : '0);
-
   assign rd_en_qualified = rd_en_i && !empty_o;
+
+  // Calculate next binary pointers
+  assign wr_ptr_bin_next = wr_ptr_bin + (wr_en_qualified ? {{(PtrWidth - 1) {1'b0}}, 1'b1} : '0);
   assign rd_ptr_bin_next = rd_ptr_bin + (rd_en_qualified ? {{(PtrWidth - 1) {1'b0}}, 1'b1} : '0);
 
+  // Look-Ahead Empty Condition:
   assign empty_next = (rd_ptr_gray_next == wr_ptr_gray_rdclk);
+
+  // Look-Ahead Full Condition:
   assign full_next  =
         (wr_ptr_gray_next[ADDR_WIDTH]     != rd_ptr_gray_wrclk[ADDR_WIDTH])   &&
         (wr_ptr_gray_next[ADDR_WIDTH-1]   != rd_ptr_gray_wrclk[ADDR_WIDTH-1]) &&
         (wr_ptr_gray_next[ADDR_WIDTH-2:0] == rd_ptr_gray_wrclk[ADDR_WIDTH-2:0]);
 
+  // Occupancy Count Logic
   assign wr_count_o = wr_ptr_bin - rd_ptr_bin_wrclk;
   assign rd_count_o = wr_ptr_bin_rdclk - rd_ptr_bin;
 
+  // Threshold-based status indicators
   assign almost_full_o = (wr_count_o >= ALMOST_FULL_THRESH[ADDR_WIDTH:0]);
   assign almost_empty_o = (rd_count_o <= ALMOST_EMPTY_THRESH[ADDR_WIDTH:0]);
 
@@ -113,7 +121,7 @@ module adn_common_cdc_fifo #(
   // SUBMODULES
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  //Write Reset Syncronizers
+  // Reset Synchronizer: Write Clock Domain
   adn_common_synchronizer #(
       .WIDTH      (1),
       .STAGES     (SYNC_STAGES),
@@ -125,7 +133,7 @@ module adn_common_cdc_fifo #(
       .data_o (wr_rst_n_int)
   );
 
-  //Read Reset Syncronizers
+  // Reset Synchronizer: Read Clock Domain
   adn_common_synchronizer #(
       .WIDTH      (1),
       .STAGES     (SYNC_STAGES),
@@ -137,6 +145,7 @@ module adn_common_cdc_fifo #(
       .data_o (rd_rst_n_int)
   );
 
+  // Binary-to-Gray Code Converter: Write Pointer
   adn_endec_bin_to_gray #(
       .WIDTH(PtrWidth)
   ) u_wr_ptr_bin2gray (
@@ -144,6 +153,7 @@ module adn_common_cdc_fifo #(
       .gray_o(wr_ptr_gray_next)
   );
 
+  // Binary-to-Gray Code Converter: Read Pointer
   adn_endec_bin_to_gray #(
       .WIDTH(PtrWidth)
   ) u_rd_ptr_bin2gray (
@@ -151,6 +161,7 @@ module adn_common_cdc_fifo #(
       .gray_o(rd_ptr_gray_next)
   );
 
+  // Dual-Port RAM: Memory Storage Block
   adn_common_dual_port_ram #(
       .DATA_WIDTH(DATA_WIDTH),
       .ADDR_WIDTH(ADDR_WIDTH),
@@ -169,7 +180,7 @@ module adn_common_cdc_fifo #(
       .rd_data_o (rd_data_o)
   );
 
-  // wr_ptr_gray synchronized into rd_clk domain (needed for EMPTY calc)
+  // CDC Synchronizer: Write Gray Pointer -> Read Domain (For Empty calculation)
   adn_common_synchronizer #(
       .WIDTH      (PtrWidth),
       .STAGES     (SYNC_STAGES),
@@ -181,7 +192,7 @@ module adn_common_cdc_fifo #(
       .data_o (wr_ptr_gray_rdclk)
   );
 
-  // rd_ptr_gray synchronized into wr_clk domain (needed for FULL calc)
+  // CDC Synchronizer: Read Gray Pointer -> Write Domain (For Full calculation)
   adn_common_synchronizer #(
       .WIDTH      (PtrWidth),
       .STAGES     (SYNC_STAGES),
@@ -193,6 +204,7 @@ module adn_common_cdc_fifo #(
       .data_o (rd_ptr_gray_wrclk)
   );
 
+  // Gray-to-Binary Converters (Used for occupancy/fill count metrics)
   adn_endec_gray_to_bin #(
       .WIDTH(PtrWidth)
   ) u_rdptr_gray2bin_wrclk (
@@ -212,6 +224,7 @@ module adn_common_cdc_fifo #(
   // SEQUENTIALS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
+  // Write Domain Sequential Register Updating (Pointers)
   always_ff @(posedge wr_clk_i or negedge wr_rst_n_int) begin
     if (!wr_rst_n_int) begin
       wr_ptr_bin  <= '0;
@@ -222,6 +235,7 @@ module adn_common_cdc_fifo #(
     end
   end
 
+  // Read Domain Sequential Register Updating (Pointers)
   always_ff @(posedge rd_clk_i or negedge rd_rst_n_int) begin
     if (!rd_rst_n_int) begin
       rd_ptr_bin  <= '0;
@@ -232,13 +246,15 @@ module adn_common_cdc_fifo #(
     end
   end
 
+  // Read Domain Output Flag Registering
   always_ff @(posedge rd_clk_i or negedge rd_rst_n_int) begin
     if (!rd_rst_n_int) empty_o <= 1'b1;
     else empty_o <= empty_next;
   end
 
+  // Write Domain Output Flag Registering
   always_ff @(posedge wr_clk_i or negedge wr_rst_n_int) begin
-    if (!wr_rst_n_int) full <= 1'b0;
+    if (!wr_rst_n_int) full_o <= 1'b0;
     else full_o <= full_next;
   end
 
