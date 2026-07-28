@@ -1,3 +1,6 @@
 [submodule "submodule/documenter"]
 	path = submodule/documenter
 	url = https://github.com/squared-studio/documenter.git
+[submodule "submodule/adn_endec"]
+	path = submodule/adn_endec
+	url = https://github.com/ADN-VLSI/adn_endec.git
