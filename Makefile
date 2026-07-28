@@ -80,7 +80,8 @@ endif
 .PHONY: $(REPO_ROOT)/local.f
 $(REPO_ROOT)/local.f:
 	@echo -e "\033[1;33m#\033[0m Generating Testbench Filelist"
-	@find $(REPO_ROOT)/testbench -maxdepth 1 -name "*.sv" > $(REPO_ROOT)/local.f
+	@echo "-i $(REPO_ROOT)/testbench" > $(REPO_ROOT)/local.f
+	@find $(REPO_ROOT)/testbench -maxdepth 1 -name "*.sv" >> $(REPO_ROOT)/local.f
 	@sed -i 's|$(REPO_ROOT)|$$\{$(REPO_NAME_EXP)\}|g' $(REPO_ROOT)/local.f
 
 .PHONY: $(BUILD_DIR)/XSIM_ARGS
