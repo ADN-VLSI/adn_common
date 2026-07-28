@@ -83,13 +83,31 @@ module adn_common_cdc_fifo #(
   logic [PtrWidth-1:0] rd_ptr_bin_wrclk;
   logic                rd_en_qualified;
 
-  //Enpty/Full Signals
+  //Enpty-Full Signals
   logic                empty_next;
   logic                full_next;
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // ASSIGNMENTS
   //////////////////////////////////////////////////////////////////////////////////////////////////
+
+  assign wr_en_qualified = wr_en_i && !full_o;
+  assign wr_ptr_bin_next = wr_ptr_bin + (wr_en_qualified ? {{(PtrWidth - 1) {1'b0}}, 1'b1} : '0);
+
+  assign rd_en_qualified = rd_en_i && !empty_o;
+  assign rd_ptr_bin_next = rd_ptr_bin + (rd_en_qualified ? {{(PtrWidth - 1) {1'b0}}, 1'b1} : '0);
+
+  assign empty_next = (rd_ptr_gray_next == wr_ptr_gray_rdclk);
+  assign full_next  =
+        (wr_ptr_gray_next[ADDR_WIDTH]     != rd_ptr_gray_wrclk[ADDR_WIDTH])   &&
+        (wr_ptr_gray_next[ADDR_WIDTH-1]   != rd_ptr_gray_wrclk[ADDR_WIDTH-1]) &&
+        (wr_ptr_gray_next[ADDR_WIDTH-2:0] == rd_ptr_gray_wrclk[ADDR_WIDTH-2:0]);
+
+  assign wr_count_o = wr_ptr_bin - rd_ptr_bin_wrclk;
+  assign rd_count_o = wr_ptr_bin_rdclk - rd_ptr_bin;
+
+  assign almost_full_o = (wr_count_o >= ALMOST_FULL_THRESH[ADDR_WIDTH:0]);
+  assign almost_empty_o = (rd_count_o <= ALMOST_EMPTY_THRESH[ADDR_WIDTH:0]);
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // SUBMODULES
@@ -119,22 +137,110 @@ module adn_common_cdc_fifo #(
       .data_o (rd_rst_n_int)
   );
 
+  adn_endec_bin_to_gray #(
+      .WIDTH(PtrWidth)
+  ) u_wr_ptr_bin2gray (
+      .bin_i (wr_ptr_bin_next),
+      .gray_o(wr_ptr_gray_next)
+  );
 
+  adn_endec_bin_to_gray #(
+      .WIDTH(PtrWidth)
+  ) u_rd_ptr_bin2gray (
+      .bin_i (rd_ptr_bin_next),
+      .gray_o(rd_ptr_gray_next)
+  );
 
+  adn_common_dual_port_ram #(
+      .DATA_WIDTH(DATA_WIDTH),
+      .ADDR_WIDTH(ADDR_WIDTH),
+      .OUT_REG   (1'b0)
+  ) u_dual_port_ram (
+      .wr_clk_i  (wr_clk_i),
+      .wr_rst_n_i(wr_rst_n_int),
+      .wr_en_i   (wr_en_qualified),
+      .wr_addr_i (wr_ptr_bin[ADDR_WIDTH-1:0]),
+      .wr_data_i (wr_data_i),
 
+      .rd_clk_i  (rd_clk_i),
+      .rd_rst_n_i(rd_rst_n_int),
+      .rd_en_i   (rd_en_qualified),
+      .rd_addr_i (rd_ptr_bin[ADDR_WIDTH-1:0]),
+      .rd_data_o (rd_data_o)
+  );
+
+  // wr_ptr_gray synchronized into rd_clk domain (needed for EMPTY calc)
+  adn_common_synchronizer #(
+      .WIDTH      (PtrWidth),
+      .STAGES     (SYNC_STAGES),
+      .RESET_VALUE('0)
+  ) u_wr_ptr_sync (
+      .clk_i  (rd_clk_i),
+      .rst_n_i(rd_rst_n_int),
+      .data_i (wr_ptr_gray),
+      .data_o (wr_ptr_gray_rdclk)
+  );
+
+  // rd_ptr_gray synchronized into wr_clk domain (needed for FULL calc)
+  adn_common_synchronizer #(
+      .WIDTH      (PtrWidth),
+      .STAGES     (SYNC_STAGES),
+      .RESET_VALUE('0)
+  ) u_rd_ptr_sync (
+      .clk_i  (wr_clk_i),
+      .rst_n_i(wr_rst_n_int),
+      .data_i (rd_ptr_gray),
+      .data_o (rd_ptr_gray_wrclk)
+  );
+
+  adn_endec_gray_to_bin #(
+      .WIDTH(PtrWidth)
+  ) u_rdptr_gray2bin_wrclk (
+      .gray_i(rd_ptr_gray_wrclk),
+      .bin_o (rd_ptr_bin_wrclk)
+  );
+
+  adn_endec_gray_to_bin #(
+      .WIDTH(PtrWidth)
+  ) u_wrptr_gray2bin_rdclk (
+      .gray_i(wr_ptr_gray_rdclk),
+      .bin_o (wr_ptr_bin_rdclk)
+  );
 
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // SEQUENTIALS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  //////////////////////////////////////////////////////////////////////////////////////////////////
-  // INITIAL CHECKS
-  //////////////////////////////////////////////////////////////////////////////////////////////////
+  always_ff @(posedge wr_clk or negedge wr_rst_n_int) begin
+    if (!wr_rst_n_int) begin
+      wr_ptr_bin  <= '0;
+      wr_ptr_gray <= '0;
+    end else begin
+      wr_ptr_bin  <= wr_ptr_bin_next;
+      wr_ptr_gray <= wr_ptr_gray_next;
+    end
+  end
 
-  //////////////////////////////////////////////////////////////////////////////////////////////////
-  // METHODS
-  //////////////////////////////////////////////////////////////////////////////////////////////////
+  always_ff @(posedge rd_clk or negedge rd_rst_n_int) begin
+    if (!rd_rst_n_int) begin
+      rd_ptr_bin  <= '0;
+      rd_ptr_gray <= '0;
+    end else begin
+      rd_ptr_bin  <= rd_ptr_bin_next;
+      rd_ptr_gray <= rd_ptr_gray_next;
+    end
+  end
+
+  always_ff @(posedge rd_clk or negedge rd_rst_n_int) begin
+    if (!rd_rst_n_int) empty <= 1'b1;
+    else empty <= empty_next;
+  end
+
+  always_ff @(posedge wr_clk or negedge wr_rst_n_int) begin
+    if (!wr_rst_n_int) full <= 1'b0;
+    else full <= full_next;
+  end
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // ASSERTIONS
