@@ -63,19 +63,14 @@ module adn_common_dual_port_ram #(
   // SEQUENTIALS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-
-  // ----------------------------------------------------------------------------
   // Synchronous Write Channel (wr_clk_i Domain)
-  // ----------------------------------------------------------------------------
   always_ff @(posedge wr_clk_i) begin
     if (wr_en_i) begin
       mem_core[wr_addr_i] <= wr_data_i;
     end
   end
 
-  // ----------------------------------------------------------------------------
   // Synchronous Read Channel (rd_clk_i Domain)
-  // ----------------------------------------------------------------------------
   always_ff @(posedge rd_clk_i) begin
     if (!rd_rst_n_i) begin
       ram_data_out <= '0;
@@ -86,9 +81,7 @@ module adn_common_dual_port_ram #(
     end
   end
 
-  // ----------------------------------------------------------------------------
   // Output Pipeline Register Stage (OUT_REG)
-  // ----------------------------------------------------------------------------
   always_ff @(posedge rd_clk_i) begin
     if (!rd_rst_n_i) begin
       ram_data_reg <= '0;
@@ -104,9 +97,7 @@ module adn_common_dual_port_ram #(
   // Continuous assignment output multiplexer
   assign rd_data_o = (OUT_REG) ? ram_data_reg : ram_data_out;
 
-  // ----------------------------------------------------------------------------
   // Initialize Memory Array for Simulation (Prevents 'x on unwritten reads)
-  // ----------------------------------------------------------------------------
 `ifdef SIMULATION
   initial begin
     for (int i = 0; i < DEPTH; i++) begin
@@ -114,11 +105,6 @@ module adn_common_dual_port_ram #(
     end
   end
 `endif
-
-
-  //////////////////////////////////////////////////////////////////////////////////////////////////
-  // ASSERTIONS
-  //////////////////////////////////////////////////////////////////////////////////////////////////
 
 `ifdef SIMULATION
   initial begin
