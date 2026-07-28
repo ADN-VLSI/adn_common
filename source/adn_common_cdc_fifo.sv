@@ -212,7 +212,7 @@ module adn_common_cdc_fifo #(
   // SEQUENTIALS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  always_ff @(posedge wr_clk or negedge wr_rst_n_int) begin
+  always_ff @(posedge wr_clk_i or negedge wr_rst_n_int) begin
     if (!wr_rst_n_int) begin
       wr_ptr_bin  <= '0;
       wr_ptr_gray <= '0;
@@ -222,7 +222,7 @@ module adn_common_cdc_fifo #(
     end
   end
 
-  always_ff @(posedge rd_clk or negedge rd_rst_n_int) begin
+  always_ff @(posedge rd_clk_i or negedge rd_rst_n_int) begin
     if (!rd_rst_n_int) begin
       rd_ptr_bin  <= '0;
       rd_ptr_gray <= '0;
@@ -232,14 +232,14 @@ module adn_common_cdc_fifo #(
     end
   end
 
-  always_ff @(posedge rd_clk or negedge rd_rst_n_int) begin
-    if (!rd_rst_n_int) empty <= 1'b1;
-    else empty <= empty_next;
+  always_ff @(posedge rd_clk_i or negedge rd_rst_n_int) begin
+    if (!rd_rst_n_int) empty_o <= 1'b1;
+    else empty_o <= empty_next;
   end
 
-  always_ff @(posedge wr_clk or negedge wr_rst_n_int) begin
+  always_ff @(posedge wr_clk_i or negedge wr_rst_n_int) begin
     if (!wr_rst_n_int) full <= 1'b0;
-    else full <= full_next;
+    else full_o <= full_next;
   end
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -248,11 +248,23 @@ module adn_common_cdc_fifo #(
 
 `ifdef SIMULATION
 
+  // Validate parameter constraints at elaboration time.
   initial begin
-    if (DATA_WIDTH > 2) begin
-      $display("\033[1;33m%m DATA_WIDTH\033[0m");
+    if (SYNC_STAGES < 2) begin
+      $error("%m: SYNC_STAGES must be >= 2 for reliable CDC metastability protection.");
+    end
+    if (ALMOST_FULL_THRESH >= (1 << ADDR_WIDTH)) begin
+      $error("%m: ALMOST_FULL_THRESH (%0d) must be less than FIFO depth (%0d).",
+             ALMOST_FULL_THRESH, (1 << ADDR_WIDTH));
+    end
+    if (ALMOST_EMPTY_THRESH < 0) begin
+      $error("%m: ALMOST_EMPTY_THRESH must be non-negative.");
+    end
+    if (DATA_WIDTH <= 0) begin
+      $error("%m: DATA_WIDTH must be > 0.");
     end
   end
+
 `endif  // SIMULATION
 
 endmodule
