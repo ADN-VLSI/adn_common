@@ -1,30 +1,32 @@
 /*
- 
-@foez---bhai, write the purpose of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
- 
-@foez---bhai, describe the usage of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
- 
+
+@foez-bhai, write the purpose of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+
+@foez-bhai, describe the usage of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+
 | REVISION | DATE       | AUTHOR              | DESCRIPTION                                            |
 |----------|------------|---------------------|--------------------------------------------------------|
 | 0.1      | 2026-07-27 | Ahasan Ullah Khalid | Initial version                                        |
 | 1.0      | YYYY-MM-DD | Ahasan Ullah Khalid | Stable release                                         |
- 
+
 Author : Ahasan Ullah Khalid (aukhalid02@gmail.com)
 This file is part of ADN-VLSI/adn_common
 Copyright (c) 2026 ADN Semiconductors
 Licensed under the MIT License
 See LICENSE file in the project root for full license information
- 
+
 */
 
 // @foez---bhai, add comments to the parameters, ports
 module adn_common_cdc_fifo #(
+
     //PARAMETERS
     parameter int DATA_WIDTH = 32,
     parameter int ADDR_WIDTH = 8,
     parameter int SYNC_STAGES = 2,
     parameter int ALMOST_FULL_THRESH = (1 << ADDR_WIDTH) - 2,
     parameter int ALMOST_EMPTY_THRESH = 2
+
 ) (
     // PORTS
 
@@ -47,7 +49,7 @@ module adn_common_cdc_fifo #(
     output logic [  ADDR_WIDTH:0] rd_count
 );
 
-  // @foez---bhai, add comments to the functional blocks, signals, and submodules
+  // @foez-bhai, add comments to the functional blocks, signals, and submodules
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // LOCALPARAMS GENERATED
