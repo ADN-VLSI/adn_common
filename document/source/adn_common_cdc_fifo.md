@@ -46,7 +46,7 @@
 | REVISION | DATE       | AUTHOR              | DESCRIPTION                                            |
 |----------|------------|---------------------|--------------------------------------------------------|
 | 0.1      | 2026-07-27 | Ahasan Ullah Khalid | Initial version                                        |
-| 1.0      | 2026-07-28 | Ahasan Ullah Khalid | Stable release                                         |
+| 1.0      | 2026-07-29 | Ahasan Ullah Khalid | Stable release                                         |
 
 This file is part of ADN-VLSI/adn_common
 <br>**Copyright (c) 2026 ADN Semiconductors**
