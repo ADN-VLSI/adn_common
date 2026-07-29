@@ -4,8 +4,8 @@
 
 @foez---bhai, describe the usage of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
 
-| REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
-|----------|------------|-----------------|--------------------------------------------------------|
+| REVISION | DATE       | AUTHOR                 | DESCRIPTION                                            |
+|----------|------------|------------------------|--------------------------------------------------------|
 | 0.1      | 2026-07-27 | Md. Sakib Hasan Shawon | Initial version                                        |
 | 1.0      | 2026-07-28 | Md. Sakib Hasan Shawon | Stable release                                         |
 
@@ -26,11 +26,11 @@ module adn_common_edge_detect #(
     parameter int EDGE_TYPE = 0
 ) (
     // System clock.
-    input logic clk,
+    input  logic clk,
     // Active-low synchronous reset.
-    input logic rst_n,
+    input  logic rst_n,
     // Input signal to monitor for edge transitions.
-    input logic signal_in,
+    input  logic signal_in,
     // One-clock-cycle pulse asserted when the configured edge is detected.
     output logic edge_pulse
 );
