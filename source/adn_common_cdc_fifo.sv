@@ -145,7 +145,7 @@ module adn_common_cdc_fifo #(
   );
 
   // Binary-to-Gray Code Converter: Write Pointer (Prevents multi-bit transition glitches)
-  adn_endec_bin_to_gray #(
+  adn_common_bin_to_gray #(
       .WIDTH(PtrWidth)
   ) u_wr_ptr_bin2gray (
       .bin_i (wr_ptr_bin_next),
@@ -153,7 +153,7 @@ module adn_common_cdc_fifo #(
   );
 
   // Binary-to-Gray Code Converter: Read Pointer
-  adn_endec_bin_to_gray #(
+  adn_common_bin_to_gray #(
       .WIDTH(PtrWidth)
   ) u_rd_ptr_bin2gray (
       .bin_i (rd_ptr_bin_next),
@@ -204,14 +204,14 @@ module adn_common_cdc_fifo #(
   );
 
   // Gray-to-Binary Converters (Used for occupancy/fill count metrics)
-  adn_endec_gray_to_bin #(
+  adn_common_gray_to_bin #(
       .WIDTH(PtrWidth)
   ) u_rdptr_gray2bin_wrclk (
       .gray_i(rd_ptr_gray_wrclk),
       .bin_o (rd_ptr_bin_wrclk)
   );
 
-  adn_endec_gray_to_bin #(
+  adn_common_gray_to_bin #(
       .WIDTH(PtrWidth)
   ) u_wrptr_gray2bin_rdclk (
       .gray_i(wr_ptr_gray_rdclk),
