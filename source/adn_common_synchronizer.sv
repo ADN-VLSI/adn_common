@@ -3,8 +3,6 @@
 ### Purpose
 The `adn_common_synchronizer` module is a generic multi-stage flip-flop synchronizer designed to safely transfer asynchronous signals between different clock domains. It mitigates metastability issues by passing the input data through a configurable number of sequential stages before outputting the synchronized signal.
 
-@foez-bhai, describe the usage of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
-
 | REVISION | DATE       | AUTHOR              | DESCRIPTION                                            |
 |----------|------------|---------------------|--------------------------------------------------------|
 | 0.1      | 2026-07-28 | Ahasan Ullah Khalid | Initial version                                        |
