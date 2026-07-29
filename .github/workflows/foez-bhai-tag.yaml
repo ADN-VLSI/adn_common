@@ -4,6 +4,7 @@ on:
   push:
     branches-ignore:
       - "foez-bhai-automation/**"
+      - "main"
 
 permissions:
   contents: write
