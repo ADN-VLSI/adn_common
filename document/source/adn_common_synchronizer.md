@@ -8,20 +8,22 @@
 ## Parameters
 |Name|Type|Dimension|Default Value|Description|
 |-|-|-|-|-|
-|WIDTH|int||1| PARAMETERS|
-|STAGES|int||2||
-|RESET_VALUE|logic [WIDTH-1:0]||'0||
+|WIDTH|int||1|Bit width of the data bus|
+|STAGES|int||2|Number of synchronization stages (min 2 recommended)|
+|RESET_VALUE|logic [WIDTH-1:0]||'0|Value to load during reset|
 
 ## Ports
 |Name|Direction|Type|Dimension|Description|
 |-|-|-|-|-|
-|clk_i|input|logic|| PORTS|
-|rst_n_i|input|logic|||
-|data_i|input|logic [WIDTH-1:0]|||
-|data_o|input|logic [WIDTH-1:0]|||
+|clk_i|input|logic||Destination clock domain|
+|rst_n_i|input|logic||Active-low asynchronous reset|
+|data_i|input|logic [WIDTH-1:0]||Asynchronous input data|
+|data_o|output|logic [WIDTH-1:0]||Synchronized output data|
 ## Description
 
-The `adn_common_synchronizer` module is designed to safely transfer multi-bit or single-bit signals across different clock domains. It utilizes a configurable number of flip-flop stages to minimize the probability of metastability, ensuring reliable data sampling in the destination clock domain.
+
+### Purpose
+The `adn_common_synchronizer` module is a generic multi-stage flip-flop synchronizer designed to safely transfer asynchronous signals between different clock domains. It mitigates metastability issues by passing the input data through a configurable number of sequential stages before outputting the synchronized signal.
 
 @foez---bhai, describe the usage of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
 
@@ -34,3 +36,4 @@ This file is part of ADN-VLSI/adn_common
 <br>**Copyright (c) 2026 ADN Semiconductors**
 <br>**Licensed under the MIT License**
 <br>**See LICENSE file in the project root for full license information**
+
