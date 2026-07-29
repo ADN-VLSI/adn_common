@@ -3,7 +3,20 @@
 ### Purpose
 The `adn_common_synchronizer` module is a generic multi-stage flip-flop synchronizer designed to safely transfer asynchronous signals between different clock domains. It mitigates metastability issues by passing the input data through a configurable number of sequential stages before outputting the synchronized signal.
 
-@foez-bhai, describe the usage of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+### Usage
+To use this module, instantiate it in your design by specifying the `WIDTH` of the signal and the number of `STAGES` required for synchronization.
+
+```systemverilog
+adn_common_synchronizer #(
+    .WIDTH(8),
+    .STAGES(3)
+) u_sync (
+    .clk_i(dest_clk),
+    .rst_n_i(dest_rst_n),
+    .data_i(async_data),
+    .data_o(sync_data)
+);
+```
 
 | REVISION | DATE       | AUTHOR              | DESCRIPTION                                            |
 |----------|------------|---------------------|--------------------------------------------------------|
