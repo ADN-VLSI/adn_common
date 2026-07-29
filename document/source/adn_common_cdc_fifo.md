@@ -33,10 +33,10 @@
 |rd_count_o|output|logic [ ADDR_WIDTH:0]|||
 ## Description
 
+The `adn_common_cdc_fifo` module is a high-performance, asynchronous First-In-First-Out (FIFO) buffer designed to safely transfer data between two independent clock domains. It utilizes Gray-coded pointers and multi-stage synchronization to ensure data integrity and prevent metastability issues during cross-clock domain communication.
 
-@foez-bhai, write the purpose of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
-
-@foez-bhai, describe the usage of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+## Usage
+To use this module, instantiate it in your design by mapping the write-side signals to your source clock domain and the read-side signals to your destination clock domain. Ensure that `wr_rst_n_i` and `rd_rst_n_i` are asserted appropriately for their respective domains. Monitor `full_o` and `empty_o` to prevent overflow and underflow conditions. The `almost_full_o` and `almost_empty_o` flags can be used to implement flow control or buffer management logic based on the thresholds defined by the parameters.
 
 | REVISION | DATE       | AUTHOR              | DESCRIPTION                                            |
 |----------|------------|---------------------|--------------------------------------------------------|
@@ -47,4 +47,3 @@ This file is part of ADN-VLSI/adn_common
 <br>**Copyright (c) 2026 ADN Semiconductors**
 <br>**Licensed under the MIT License**
 <br>**See LICENSE file in the project root for full license information**
-
