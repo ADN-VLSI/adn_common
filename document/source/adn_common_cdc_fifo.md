@@ -33,10 +33,30 @@
 |rd_count_o|output|logic [ ADDR_WIDTH:0]|||
 ## Description
 
-This module implements a Clock Domain Crossing (CDC) FIFO, designed to safely transfer data between two independent clock domains. It utilizes Gray-coded pointers and multi-stage synchronizers to ensure reliable data transfer and prevent metastability issues, providing status flags such as full, empty, and programmable almost-full/almost-empty thresholds for flow control.
 
-## Usage
-To use this module, instantiate it in your RTL by connecting the write-side signals to your source clock domain and the read-side signals to your destination clock domain. Ensure that `wr_rst_n_i` and `rd_rst_n_i` are asserted appropriately for their respective domains. Monitor `full_o` before writing data and `empty_o` before reading data to prevent overflow or underflow conditions. The `almost_full_o` and `almost_empty_o` flags can be used to trigger flow control mechanisms based on the configured thresholds.
+### Purpose
+The `adn_common_cdc_fifo` is a high-performance, asynchronous First-In-First-Out (FIFO) buffer designed for reliable data transfer between two independent clock domains. It utilizes Gray-coded pointers and multi-stage synchronizers to safely cross clock boundaries, preventing metastability issues while providing status flags such as full, empty, almost full, and almost empty to manage flow control.
+
+### Usage
+To use this module, instantiate it in your RTL by connecting the write-side signals to your producer clock domain and the read-side signals to your consumer clock domain. Ensure that `wr_rst_n_i` and `rd_rst_n_i` are properly synchronized to their respective clocks.
+
+```systemverilog
+adn_common_cdc_fifo #(
+    .DATA_WIDTH(32),
+    .ADDR_WIDTH(4)
+) u_fifo (
+    .wr_clk_i(clk_a),
+    .wr_rst_n_i(rst_n_a),
+    .wr_en_i(valid_a),
+    .wr_data_i(data_a),
+    .full_o(full_a),
+    .rd_clk_i(clk_b),
+    .rd_rst_n_i(rst_n_b),
+    .rd_en_i(ready_b),
+    .rd_data_o(data_b),
+    .empty_o(empty_b)
+);
+```
 
 | REVISION | DATE       | AUTHOR              | DESCRIPTION                                            |
 |----------|------------|---------------------|--------------------------------------------------------|
@@ -47,3 +67,4 @@ This file is part of ADN-VLSI/adn_common
 <br>**Copyright (c) 2026 ADN Semiconductors**
 <br>**Licensed under the MIT License**
 <br>**See LICENSE file in the project root for full license information**
+
