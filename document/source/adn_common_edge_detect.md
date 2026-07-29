@@ -10,24 +10,31 @@
 ## Parameters
 |Name|Type|Dimension|Default Value|Description|
 |-|-|-|-|-|
-|EDGE_TYPE|int||0| Edge detection mode: 0 : Rising edge 1 : Falling edge 2 : Both edges|
+|EDGE_TYPE|int||0| Edge detection mode: 0=Rising, 1=Falling, 2=Dual|
 
 ## Ports
 |Name|Direction|Type|Dimension|Description|
 |-|-|-|-|-|
-|clk|input|logic|| System clock.|
-|rst_n|input|logic|| Active-low synchronous reset.|
-|signal_in|input|logic|| Input signal to monitor for edge transitions.|
-|edge_pulse|output|logic|| One-clock-cycle pulse asserted when the configured edge is detected.|
+|clk|input|logic|| System clock input|
+|rst_n|input|logic|| Active-low asynchronous reset|
+|signal_in|input|logic|| Input signal to be monitored for edges|
+|edge_pulse|output|logic|| Output pulse indicating edge detection|
 ## Description
 
 
-@foez---bhai, write the purpose of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+### Purpose
+This module provides a configurable edge detection mechanism for a single-bit input signal. It supports rising edge, falling edge, and dual-edge detection, generating a single-clock-cycle pulse whenever the specified transition occurs on the input signal relative to the system clock.
 
-@foez---bhai, describe the usage of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+### Usage
+To use this module, instantiate it in your design and set the `EDGE_TYPE` parameter to the desired detection mode:
+- `0`: Rising edge detection.
+- `1`: Falling edge detection.
+- `2`: Dual-edge (both rising and falling) detection.
 
-| REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
-|----------|------------|-----------------|--------------------------------------------------------|
+Connect the system clock (`clk`), active-low reset (`rst_n`), and the target signal (`signal_in`). The `edge_pulse` output will assert high for exactly one clock cycle when the specified transition is detected.
+
+| REVISION | DATE       | AUTHOR                 | DESCRIPTION                                            |
+|----------|------------|------------------------|--------------------------------------------------------|
 | 0.1      | 2026-07-27 | Md. Sakib Hasan Shawon | Initial version                                        |
 | 1.0      | 2026-07-28 | Md. Sakib Hasan Shawon | Stable release                                         |
 
