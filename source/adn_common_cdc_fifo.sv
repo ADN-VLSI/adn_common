@@ -1,8 +1,14 @@
 /*
 
-@foez-bhai, write the purpose of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+This module implements a high-performance asynchronous FIFO (First-In-First-Out) buffer designed for reliable data transfer between two independent clock domains. It utilizes Gray-coded pointers and multi-stage synchronizers to safely handle clock domain crossing (CDC) while providing status flags such as full, empty, almost full, and almost empty to manage data flow control.
 
-@foez-bhai, describe the usage of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+### Usage
+
+To use this module, instantiate it in your design by providing the desired `DATA_WIDTH` and `ADDR_WIDTH`. Connect the write-side signals (`wr_clk_i`, `wr_en_i`, `wr_data_i`) to the producer domain and the read-side signals (`rd_clk_i`, `rd_en_i`, `rd_data_o`) to the consumer domain. Ensure that reset signals are synchronized appropriately.
+
+- **`DATA_WIDTH`**: Sets the bit-width of the data bus.
+- **`ADDR_WIDTH`**: Sets the depth of the FIFO as $2^{ADDR\_WIDTH}$.
+- **`SYNC_STAGES`**: Configures the number of flip-flop stages in the synchronizers to mitigate metastability.
 
 | REVISION | DATE       | AUTHOR              | DESCRIPTION                                            |
 |----------|------------|---------------------|--------------------------------------------------------|
@@ -20,72 +26,70 @@ See LICENSE file in the project root for full license information
 // @foez---bhai, add comments to the parameters, ports
 module adn_common_cdc_fifo #(
 
-    //PARAMETERS
-    parameter int DATA_WIDTH = 32,
-    parameter int ADDR_WIDTH = 8,
-    parameter int SYNC_STAGES = 2,
-    parameter int ALMOST_FULL_THRESH = (1 << ADDR_WIDTH) - 2,
-    parameter int ALMOST_EMPTY_THRESH = 2
+    // PARAMETERS
+    parameter int DATA_WIDTH = 32,                      // Width of data bus
+    parameter int ADDR_WIDTH = 8,                       // Address width (depth = 2^ADDR_WIDTH)
+    parameter int SYNC_STAGES = 2,                      // Number of synchronizer stages
+    parameter int ALMOST_FULL_THRESH = (1 << ADDR_WIDTH) - 2, // Threshold for almost full flag
+    parameter int ALMOST_EMPTY_THRESH = 2               // Threshold for almost empty flag
 
 ) (
     // PORTS
 
-    //Write Clock Domain
-    input  logic                  wr_clk_i,
-    input  logic                  wr_rst_n_i,
-    input  logic                  wr_en_i,
-    input  logic [DATA_WIDTH-1:0] wr_data_i,
-    output logic                  full_o,
-    output logic                  almost_full_o,
-    output logic [  ADDR_WIDTH:0] wr_count_o,
+    // Write Clock Domain
+    input  logic                  wr_clk_i,             // Write domain clock
+    input  logic                  wr_rst_n_i,           // Write domain active-low reset
+    input  logic                  wr_en_i,              // Write enable
+    input  logic [DATA_WIDTH-1:0] wr_data_i,            // Write data input
+    output logic                  full_o,               // FIFO full status
+    output logic                  almost_full_o,        // FIFO almost full status
+    output logic [  ADDR_WIDTH:0] wr_count_o,           // Write domain data count
 
-    //Read Clock Domain
-    input  logic                  rd_clk_i,
-    input  logic                  rd_rst_n_i,
-    input  logic                  rd_en_i,
-    output logic [DATA_WIDTH-1:0] rd_data_o,
-    output logic                  empty_o,
-    output logic                  almost_empty_o,
-    output logic [  ADDR_WIDTH:0] rd_count_o
+    // Read Clock Domain
+    input  logic                  rd_clk_i,             // Read domain clock
+    input  logic                  rd_rst_n_i,           // Read domain active-low reset
+    input  logic                  rd_en_i,              // Read enable
+    output logic [DATA_WIDTH-1:0] rd_data_o,            // Read data output
+    output logic                  empty_o,              // FIFO empty status
+    output logic                  almost_empty_o,       // FIFO almost empty status
+    output logic [  ADDR_WIDTH:0] rd_count_o            // Read domain data count
 );
-
-  // @foez-bhai, add comments to the functional blocks, signals, and submodules
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // LOCALPARAMS GENERATED
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  localparam int PtrWidth = ADDR_WIDTH + 1;
+  localparam int PtrWidth = ADDR_WIDTH + 1;             // Pointer width (includes wrap-around bit)
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // SIGNALS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  //Local Reset Syncronizers
-  logic                wr_rst_n_int;
-  logic                rd_rst_n_int;
+  // Local Reset Synchronizers
+  logic                wr_rst_n_int;                    // Synchronized write reset
+  logic                rd_rst_n_int;                    // Synchronized read reset
 
-  //Write Domain Pointers
-  logic [PtrWidth-1:0] wr_ptr_bin;
-  logic [PtrWidth-1:0] wr_ptr_bin_next;
-  logic [PtrWidth-1:0] wr_ptr_gray;
-  logic [PtrWidth-1:0] wr_ptr_gray_next;
-  logic [PtrWidth-1:0] wr_ptr_gray_rdclk;
-  logic [PtrWidth-1:0] wr_ptr_bin_rdclk;
-  logic                wr_en_qualified;
+  // Write Domain Pointers
+  logic [PtrWidth-1:0] wr_ptr_bin;                      // Write pointer (binary)
+  logic [PtrWidth-1:0] wr_ptr_bin_next;                 // Next write pointer (binary)
+  logic [PtrWidth-1:0] wr_ptr_gray;                     // Write pointer (Gray code)
+  logic [PtrWidth-1:0] wr_ptr_gray_next;                // Next write pointer (Gray code)
+  logic [PtrWidth-1:0] wr_ptr_gray_rdclk;               // Write pointer synchronized to read domain
+  logic [PtrWidth-1:0] wr_ptr_bin_rdclk;                // Write pointer converted to binary in read domain
+  logic                wr_en_qualified;                 // Write enable gated by full flag
 
-  //Read Domain Pointers
-  logic [PtrWidth-1:0] rd_ptr_bin;
-  logic [PtrWidth-1:0] rd_ptr_bin_next;
-  logic [PtrWidth-1:0] rd_ptr_gray;
-  logic [PtrWidth-1:0] rd_ptr_gray_next;
-  logic [PtrWidth-1:0] rd_ptr_gray_wrclk;
-  logic [PtrWidth-1:0] rd_ptr_bin_wrclk;
-  logic                rd_en_qualified;
+  // Read Domain Pointers
+  logic [PtrWidth-1:0] rd_ptr_bin;                      // Read pointer (binary)
+  logic [PtrWidth-1:0] rd_ptr_bin_next;                 // Next read pointer (binary)
+  logic [PtrWidth-1:0] rd_ptr_gray;                     // Read pointer (Gray code)
+  logic [PtrWidth-1:0] rd_ptr_gray_next;                // Next read pointer (Gray code)
+  logic [PtrWidth-1:0] rd_ptr_gray_wrclk;               // Read pointer synchronized to write domain
+  logic [PtrWidth-1:0] rd_ptr_bin_wrclk;                // Read pointer converted to binary in write domain
+  logic                rd_en_qualified;                 // Read enable gated by empty flag
 
-  //Enpty/Full Signals
-  logic                empty_next;
-  logic                full_next;
+  // Empty/Full Signals
+  logic                empty_next;                      // Combinational empty status
+  logic                full_next;                       // Combinational full status
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // ASSIGNMENTS
@@ -95,7 +99,7 @@ module adn_common_cdc_fifo #(
   // SUBMODULES
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  //Write Reset Syncronizers
+  // Write Reset Synchronizer: Ensures write domain reset is stable
   adn_common_synchronizer #(
       .WIDTH      (1),
       .STAGES     (SYNC_STAGES),
@@ -107,7 +111,7 @@ module adn_common_cdc_fifo #(
       .data_o (wr_rst_n_int)
   );
 
-  //Read Reset Syncronizers
+  // Read Reset Synchronizer: Ensures read domain reset is stable
   adn_common_synchronizer #(
       .WIDTH      (1),
       .STAGES     (SYNC_STAGES),
@@ -150,4 +154,3 @@ module adn_common_cdc_fifo #(
 `endif  // SIMULATION
 
 endmodule
-
