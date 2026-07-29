@@ -21,8 +21,7 @@
 |data_o|input|logic [WIDTH-1:0]|||
 ## Description
 
-
-@foez-bhai, write the purpose of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+The `adn_common_synchronizer` module is designed to safely transfer multi-bit or single-bit signals between different clock domains or to stabilize asynchronous inputs. It utilizes a configurable number of flip-flop stages to minimize the probability of metastability, ensuring reliable data sampling in synchronous digital systems.
 
 @foez---bhai, describe the usage of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
 
@@ -35,4 +34,3 @@ This file is part of ADN-VLSI/adn_common
 <br>**Copyright (c) 2026 ADN Semiconductors**
 <br>**Licensed under the MIT License**
 <br>**See LICENSE file in the project root for full license information**
-
