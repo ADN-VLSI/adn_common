@@ -76,6 +76,8 @@ endif
 	@find $(REPO_ROOT)/interface -maxdepth 1 -name "*.sv" >> $(REPO_ROOT)/reuse.f
 	@find $(REPO_ROOT)/source -maxdepth 1 -name "*.sv" >> $(REPO_ROOT)/reuse.f
 	@sed -i 's|$(REPO_ROOT)|$$\{$(REPO_NAME_EXP)\}|g' $(REPO_ROOT)/reuse.f
+	@sort -u $(REPO_ROOT)/reuse.f > $(REPO_ROOT)/reuse2.f
+	@mv $(REPO_ROOT)/reuse2.f $(REPO_ROOT)/reuse.f
 
 .PHONY: $(REPO_ROOT)/local.f
 $(REPO_ROOT)/local.f:

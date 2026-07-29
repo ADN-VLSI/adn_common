@@ -1,11 +1,18 @@
 initial $display("\033[7;38m################ TEST STARTED ################\033[0m");
-final $display("\033[7;38m################# TEST ENDED #################\033[0m");
+
+longint passed_cases;
+longint failed_cases;
 
 string top_name;
 string test_name;
 int test_count;
 int vcd;
 int debug;
+
+function automatic void note_case(bit pass);
+  if (pass) passed_cases++;
+  else failed_cases++;
+endfunction
 
 initial begin
 
@@ -37,4 +44,12 @@ initial begin
 
 end
 
-
+final begin
+  $display("\033[7;38m################# TEST ENDED #################\033[0m");
+  $display("PASSED CASES: %0d, FAILED CASES: %0d", passed_cases, failed_cases);
+  if (failed_cases == 0 && passed_cases != 0) begin
+    $display("\033[1;32mTEST PASSED\033[0m");
+  end else begin
+    $display("\033[1;31mTEST FAILED\033[0m");
+  end
+end
