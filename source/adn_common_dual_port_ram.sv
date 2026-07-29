@@ -6,27 +6,8 @@ This module implements a synchronous dual-port RAM with independent read and wri
 ### Usage
 To instantiate this module, define the `DATA_WIDTH` and `ADDR_WIDTH` parameters to match your memory requirements. Set `OUT_REG` to `1` if you require an additional pipeline stage to improve timing at the cost of one extra clock cycle of latency.
 
-```systemverilog
-adn_common_dual_port_ram #(
-    .DATA_WIDTH(32),
-    .ADDR_WIDTH(10),
-    .OUT_REG(1)
-) u_ram (
-    .wr_clk_i(clk_a),
-    .wr_rst_n_i(rst_n_a),
-    .wr_en_i(we),
-    .wr_addr_i(waddr),
-    .wr_data_i(wdata),
-    .rd_clk_i(clk_b),
-    .rd_rst_n_i(rst_n_b),
-    .rd_en_i(re),
-    .rd_addr_i(raddr),
-    .rd_data_o(rdata)
-);
-```
-
-| REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
-|----------|------------|-----------------|--------------------------------------------------------|
+| REVISION | DATE       | AUTHOR              | DESCRIPTION                                        |
+|----------|------------|---------------------|----------------------------------------------------|
 | 0.1      | 2026-07-28 | Ahasan Ullah Khalid | Initial version                                    |
 | 1.0      | 2026-07-28 | Ahasan Ullah Khalid | Stable release                                     |
 

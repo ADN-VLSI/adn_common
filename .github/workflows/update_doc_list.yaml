@@ -46,7 +46,7 @@ jobs:
       - name: Update Documentations & Lists
         shell: bash
         run: |
-          git submodule update --init --recursive --depth 1
+          git submodule update --init --depth 1 submodule/documenter
           make update_doc_list
 
       - name: Commit and push changes

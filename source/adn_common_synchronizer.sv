@@ -3,7 +3,7 @@
 ### Purpose
 The `adn_common_synchronizer` module is a generic multi-stage flip-flop synchronizer designed to safely transfer asynchronous signals between different clock domains. It mitigates metastability issues by passing the input data through a configurable number of sequential stages before outputting the synchronized signal.
 
-@foez---bhai, describe the usage of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+@foez-bhai, describe the usage of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
 
 | REVISION | DATE       | AUTHOR              | DESCRIPTION                                            |
 |----------|------------|---------------------|--------------------------------------------------------|
@@ -18,17 +18,20 @@ See LICENSE file in the project root for full license information
 
 */
 
+(* no_ungroup *)
+(* no_boundary_optimization *)
 module adn_common_synchronizer #(
     // PARAMETERS
-    parameter int               WIDTH       = 1,   // Bit width of the data bus
-    parameter int               STAGES      = 2,   // Number of synchronization stages (min 2 recommended)
-    parameter logic [WIDTH-1:0] RESET_VALUE = '0   // Value to load during reset
+    parameter int WIDTH = 1,  // Bit width of the data bus
+    parameter int STAGES = 2,  // Number of synchronization stages (min 2 recommended)
+    parameter logic [WIDTH-1:0] RESET_VALUE = '0  // Value to load during reset
 ) (
     // PORTS
     input logic             clk_i,    // Destination clock domain
     input logic             rst_n_i,  // Active-low asynchronous reset
     input logic [WIDTH-1:0] data_i,   // Asynchronous input data
-    output logic [WIDTH-1:0] data_o   // Synchronized output data
+
+    output logic [WIDTH-1:0] data_o  // Synchronized output data
 );
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -37,7 +40,6 @@ module adn_common_synchronizer #(
 
   // Array of registers representing the multi-stage synchronization chain
   logic [WIDTH-1:0] sync_ff[STAGES];
-
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // SEQUENTIALS
@@ -62,7 +64,7 @@ module adn_common_synchronizer #(
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
   // Output the final stage of the synchronization chain
-  assign data_o = sync_ff[STAGES-1];
+  always_comb data_o = sync_ff[STAGES-1];
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // ASSERTIONS
@@ -70,8 +72,8 @@ module adn_common_synchronizer #(
 
 `ifdef SIMULATION
   initial begin
-    if (DATA_WIDTH > 2) begin
-      $display("\033[1;33m%m DATA_WIDTH\033[0m");
+    if (STAGES > 3) begin
+      $display("\033[1;33m%m Is %0d stages actually necessary?\033[0m", STAGES);
     end
   end
 `endif  // SIMULATION
