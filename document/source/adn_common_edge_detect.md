@@ -21,10 +21,15 @@
 |edge_pulse|output|logic|| One-clock-cycle pulse asserted when the configured edge is detected.|
 ## Description
 
+The `adn_common_edge_detect` module is designed to detect specific signal transitions (rising, falling, or both) on an input signal and generate a single-cycle pulse upon detection. It provides a robust and configurable solution for synchronizing and capturing edge events within a synchronous digital system.
 
-@foez-bhai, write the purpose of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+## Usage
+To use this module, instantiate it in your RTL code and set the `EDGE_TYPE` parameter according to your requirements:
+- Set `EDGE_TYPE = 0` to detect rising edges.
+- Set `EDGE_TYPE = 1` to detect falling edges.
+- Set `EDGE_TYPE = 2` to detect both rising and falling edges.
 
-@foez-bhai, describe the usage of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+The `edge_pulse` output will remain high for exactly one clock cycle whenever the specified transition occurs on `signal_in`. Ensure that `clk` and `rst_n` are connected to your system's global clock and reset signals respectively.
 
 | REVISION | DATE       | AUTHOR                 | DESCRIPTION                                            |
 |----------|------------|------------------------|--------------------------------------------------------|
@@ -35,4 +40,3 @@ This file is part of ADN-VLSI/adn_common
 <br>**Copyright (c) 2026 ADN Semiconductors**
 <br>**Licensed under the MIT License**
 <br>**See LICENSE file in the project root for full license information**
-
