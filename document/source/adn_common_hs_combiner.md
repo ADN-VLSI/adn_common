@@ -1,9 +1,9 @@
-# hs_combiner (module)
+# adn_common_hs_combiner (module)
 
 ### Author : Foez Ahmed (foez.official@gmail.com)
 
 ## TOP IO
-<img src="./hs_combiner_top.svg">
+<img src="./adn_common_hs_combiner_top.svg">
 
 ## Parameters
 |Name|Type|Dimension|Default Value|Description|

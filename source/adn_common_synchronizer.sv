@@ -16,8 +16,8 @@ See LICENSE file in the project root for full license information
 
 */
 
-(* no_ungroup *)
-(* no_boundary_optimization *)
+`include "adn_common_synth_directives.svh"
+
 module adn_common_synchronizer #(
     // PARAMETERS
     parameter int WIDTH = 1,  // Bit width of the data bus

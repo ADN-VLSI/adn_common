@@ -10,7 +10,7 @@
 ## Parameters
 |Name|Type|Dimension|Default Value|Description|
 |-|-|-|-|-|
-|EDGE_TYPE|int||0| Edge detection mode: 0=Rising, 1=Falling, 2=Dual|
+|EDGE_TYPE|int||0| Edge detection mode: 0=Falling, 1=Rising, 2=Dual|
 
 ## Ports
 |Name|Direction|Type|Dimension|Description|
