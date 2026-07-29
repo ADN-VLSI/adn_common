@@ -26,10 +26,10 @@
 |rd_data_o|output|logic [DATA_WIDTH-1:0]|||
 ## Description
 
+This module implements a dual-port RAM with independent clock domains for the write and read interfaces. It allows for asynchronous data transfer between different clock domains, providing a robust solution for buffering or data exchange where the write and read operations occur at different frequencies or phases.
 
-@foez-bhai, write the purpose of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
-
-@foez-bhai, describe the usage of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+## Usage
+To use this module, instantiate it in your design by specifying the `DATA_WIDTH` and `ADDR_WIDTH` parameters. Connect the write interface signals (`wr_clk_i`, `wr_en_i`, `wr_addr_i`, `wr_data_i`) to your producer logic and the read interface signals (`rd_clk_i`, `rd_en_i`, `rd_addr_i`, `rd_data_o`) to your consumer logic. Ensure that the reset signals (`wr_rst_n_i`, `rd_rst_n_i`) are asserted appropriately during power-on or system reset.
 
 | REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
 |----------|------------|-----------------|--------------------------------------------------------|
@@ -40,4 +40,3 @@ This file is part of ADN-VLSI/adn_common
 <br>**Copyright (c) 2026 ADN Semiconductors**
 <br>**Licensed under the MIT License**
 <br>**See LICENSE file in the project root for full license information**
-
