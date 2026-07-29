@@ -106,13 +106,5 @@ module adn_common_dual_port_ram #(
   end
 `endif
 
-`ifdef SIMULATION
-  initial begin
-    if (DATA_WIDTH > 2) begin
-      $display("\033[1;33m%m DATA_WIDTH\033[0m");
-    end
-  end
-`endif  // SIMULATION
-
 endmodule
 
