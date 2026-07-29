@@ -1,8 +1,15 @@
 /*
 
-@foez-bhai, write the purpose of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+### Purpose
+This module provides a configurable edge detection mechanism for a single-bit input signal. It supports rising edge, falling edge, and dual-edge detection, generating a single-clock-cycle pulse whenever the specified transition occurs on the input signal relative to the system clock.
 
-@foez-bhai, describe the usage of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+### Usage
+To use this module, instantiate it in your design and set the `EDGE_TYPE` parameter to the desired detection mode:
+- `0`: Rising edge detection.
+- `1`: Falling edge detection.
+- `2`: Dual-edge (both rising and falling) detection.
+
+Connect the system clock (`clk`), active-low reset (`rst_n`), and the target signal (`signal_in`). The `edge_pulse` output will assert high for exactly one clock cycle when the specified transition is detected.
 
 | REVISION | DATE       | AUTHOR                 | DESCRIPTION                                            |
 |----------|------------|------------------------|--------------------------------------------------------|
@@ -17,45 +24,39 @@ See LICENSE file in the project root for full license information
 
 */
 
-// @foez-bhai, add comments to the parameters, ports
 module adn_common_edge_detect #(
-    // Edge detection mode:
-    // 0 : Rising edge
-    // 1 : Falling edge
-    // 2 : Both edges
+    // Edge detection mode: 0=Rising, 1=Falling, 2=Dual
     parameter int EDGE_TYPE = 0
 ) (
-    // System clock.
+    // System clock input
     input  logic clk,
-    // Active-low synchronous reset.
+    // Active-low asynchronous reset
     input  logic rst_n,
-    // Input signal to monitor for edge transitions.
+    // Input signal to be monitored for edges
     input  logic signal_in,
-    // One-clock-cycle pulse asserted when the configured edge is detected.
+    // Output pulse indicating edge detection
     output logic edge_pulse
 );
-
-  // @foez-bhai, add comments to the functional blocks, signals, and submodules
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // SIGNALS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  // Previous sampled value of the input signal.
+  // Previous sampled value of the input signal used for edge comparison.
   logic signal_prev;
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // SEQUENTIALS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
+  // Main sequential block: Synchronous logic to detect transitions and update state.
   always_ff @(posedge clk) begin
     if (!rst_n) begin
-      // Initialize previous signal state.
+      // Reset state: Clear history and output pulse.
       signal_prev <= 1'b0;
-      // Disable edge pulse during reset.
       edge_pulse  <= 1'b0;
     end else begin
-      // Generate a single-cycle pulse based on the selected edge detection mode.
+      // Edge detection logic: Compare current input with previous state based on mode.
       case (EDGE_TYPE)
         // Rising edge detection:
         // Current signal is high and previous signal was low.
@@ -78,6 +79,7 @@ module adn_common_edge_detect #(
 
 
 `ifdef SIMULATION
+  // Simulation-only block: Validate parameter configuration.
   initial begin
     assert (EDGE_TYPE >= 0 && EDGE_TYPE <= 2)
     else $error("%m: EDGE_TYPE must be 0 (rising), 1 (falling), or 2 (both).");
@@ -85,4 +87,3 @@ module adn_common_edge_detect #(
 `endif
 
 endmodule
-
