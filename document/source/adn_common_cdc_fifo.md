@@ -8,35 +8,42 @@
 ## Parameters
 |Name|Type|Dimension|Default Value|Description|
 |-|-|-|-|-|
-|DATA_WIDTH|int||32| PARAMETERS|
-|ADDR_WIDTH|int||8||
-|SYNC_STAGES|int||2||
-|ALMOST_FULL_THRESH|int||(1 << ADDR_WIDTH) - 2||
-|ALMOST_EMPTY_THRESH|int||2||
+|DATA_WIDTH|int||32|Width of the data bus|
+|ADDR_WIDTH|int||8|Address width (FIFO depth = 2^ADDR_WIDTH)|
+|SYNC_STAGES|int||2|Number of synchronization stages for CDC|
+|ALMOST_FULL_THRESH|int||(1 << ADDR_WIDTH) - 2|Threshold for almost_full_o signal|
+|ALMOST_EMPTY_THRESH|int||2|Threshold for almost_empty_o signal|
 
 ## Ports
 |Name|Direction|Type|Dimension|Description|
 |-|-|-|-|-|
-|wr_clk_i|input|logic|| Write Clock Domain|
-|wr_rst_n_i|input|logic|||
-|wr_en_i|input|logic|||
-|wr_data_i|input|logic [DATA_WIDTH-1:0]|||
-|full_o|output|logic|||
-|almost_full_o|output|logic|||
-|wr_count_o|output|logic [ ADDR_WIDTH:0]|||
-|rd_clk_i|input|logic|| Read Clock Domain|
-|rd_rst_n_i|input|logic|||
-|rd_en_i|input|logic|||
-|rd_data_o|output|logic [DATA_WIDTH-1:0]|||
-|empty_o|output|logic|||
-|almost_empty_o|output|logic|||
-|rd_count_o|output|logic [ ADDR_WIDTH:0]|||
+|wr_clk_i|input|logic||Write domain clock|
+|wr_rst_n_i|input|logic||Active-low asynchronous reset (write domain)|
+|wr_en_i|input|logic||Write enable|
+|wr_data_i|input|logic [DATA_WIDTH-1:0]||Data input|
+|full_o|output|logic||FIFO full flag|
+|almost_full_o|output|logic||FIFO almost full flag|
+|wr_count_o|output|logic [ ADDR_WIDTH:0]||Write domain data count|
+|rd_clk_i|input|logic||Read domain clock|
+|rd_rst_n_i|input|logic||Active-low asynchronous reset (read domain)|
+|rd_en_i|input|logic||Read enable|
+|rd_data_o|output|logic [DATA_WIDTH-1:0]||Data output|
+|empty_o|output|logic||FIFO empty flag|
+|almost_empty_o|output|logic||FIFO almost empty flag|
+|rd_count_o|output|logic [ ADDR_WIDTH:0]||Read domain data count|
 ## Description
 
-This module implements a Clock Domain Crossing (CDC) FIFO, designed to safely transfer data between two independent clock domains. It utilizes Gray-coded pointers and multi-stage synchronizers to ensure reliable data transfer and prevent metastability issues. The module provides status flags such as full, empty, almost full, and almost empty, along with word count outputs for both the write and read domains, making it suitable for high-performance asynchronous data buffering.
 
-## Usage
-To use this module, instantiate it in your RTL design by mapping the write and read clock domains to their respective ports. Ensure that the `wr_clk_i` and `rd_clk_i` are stable and that the reset signals `wr_rst_n_i` and `rd_rst_n_i` are asserted appropriately. Data is pushed into the FIFO by asserting `wr_en_i` when `full_o` is low, and data is retrieved by asserting `rd_en_i` when `empty_o` is low. The `almost_full_o` and `almost_empty_o` flags can be used to implement flow control or backpressure mechanisms to prevent overflow or underflow conditions.
+This module implements a high-performance asynchronous FIFO (First-In-First-Out) buffer designed for reliable data transfer between two independent clock domains. It utilizes Gray-coded pointers and multi-stage synchronizers to safely cross clock boundaries, preventing metastability issues while maintaining high throughput.
+
+### Usage
+
+The `adn_common_cdc_fifo` module is used to buffer data between two clock domains.
+
+1. **Instantiation**: Connect `wr_clk_i`/`wr_rst_n_i` to the producer domain and `rd_clk_i`/`rd_rst_n_i` to the consumer domain.
+2. **Writing**: Assert `wr_en_i` when `full_o` is low to push data into the FIFO.
+3. **Reading**: Assert `rd_en_i` when `empty_o` is low to pop data from the FIFO.
+4. **Status**: Monitor `almost_full_o` and `almost_empty_o` for flow control, and use `wr_count_o`/`rd_count_o` for depth tracking.
 
 | REVISION | DATE       | AUTHOR              | DESCRIPTION                                            |
 |----------|------------|---------------------|--------------------------------------------------------|
@@ -47,3 +54,4 @@ This file is part of ADN-VLSI/adn_common
 <br>**Copyright (c) 2026 ADN Semiconductors**
 <br>**Licensed under the MIT License**
 <br>**See LICENSE file in the project root for full license information**
+
