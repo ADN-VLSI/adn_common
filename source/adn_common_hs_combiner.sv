@@ -18,7 +18,7 @@ See LICENSE file in the project root for full license information
 
 */
 
-module hs_combiner #(
+module adn_common_hs_combiner #(
     parameter int NUM_TX = 2, // Number of input handshake channels
     parameter int NUM_RX = 2  // Number of output handshake channels
 ) (

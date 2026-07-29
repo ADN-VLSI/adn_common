@@ -25,7 +25,7 @@ See LICENSE file in the project root for full license information
 */
 
 module adn_common_edge_detect #(
-    // Edge detection mode: 0=Rising, 1=Falling, 2=Dual
+    // Edge detection mode: 0=Falling, 1=Rising, 2=Dual
     parameter int EDGE_TYPE = 0
 ) (
     // System clock input
@@ -58,12 +58,12 @@ module adn_common_edge_detect #(
     end else begin
       // Edge detection logic: Compare current input with previous state based on mode.
       case (EDGE_TYPE)
-        // Rising edge detection:
-        // Current signal is high and previous signal was low.
-        0: edge_pulse <= ~signal_prev & signal_in;
         // Falling edge detection:
         // Current signal is low and previous signal was high.
-        1: edge_pulse <= signal_prev & ~signal_in;
+        0: edge_pulse <= signal_prev & ~signal_in;
+        // Rising edge detection:
+        // Current signal is high and previous signal was low.
+        1: edge_pulse <= ~signal_prev & signal_in;
         // Both edge detection:
         // Current signal differs from previous sampled value.
         2: edge_pulse <= signal_prev ^ signal_in;
@@ -82,7 +82,7 @@ module adn_common_edge_detect #(
   // Simulation-only block: Validate parameter configuration.
   initial begin
     assert (EDGE_TYPE >= 0 && EDGE_TYPE <= 2)
-    else $error("%m: EDGE_TYPE must be 0 (rising), 1 (falling), or 2 (both).");
+    else $fatal(1, "%m: EDGE_TYPE must be 0 (falling), 1 (rising), or 2 (both).");
   end
 `endif
 
