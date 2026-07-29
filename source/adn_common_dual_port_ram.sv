@@ -1,27 +1,27 @@
 /*
 
 ### Purpose
-The `adn_common_dual_port_ram` module implements a synchronous dual-port RAM with independent clock domains for read and write operations. It supports configurable data width, address depth, and an optional output pipeline register to balance between latency and timing performance.
+This module implements a synchronous dual-port RAM with independent read and write clock domains. It supports configurable data width, address depth, and an optional output pipeline register to balance between latency and timing performance.
 
 ### Usage
-To instantiate this module, connect the write interface to your write clock domain and the read interface to your read clock domain.
+To instantiate this module, define the `DATA_WIDTH` and `ADDR_WIDTH` parameters to match your memory requirements. Set `OUT_REG` to `1` if you require an additional pipeline stage to improve timing at the cost of one extra clock cycle of latency.
 
 ```systemverilog
 adn_common_dual_port_ram #(
     .DATA_WIDTH(32),
     .ADDR_WIDTH(10),
-    .OUT_REG(1'b1)
+    .OUT_REG(1)
 ) u_ram (
     .wr_clk_i(clk_a),
     .wr_rst_n_i(rst_n_a),
     .wr_en_i(we),
-    .wr_addr_i(addr_a),
-    .wr_data_i(data_in),
+    .wr_addr_i(waddr),
+    .wr_data_i(wdata),
     .rd_clk_i(clk_b),
     .rd_rst_n_i(rst_n_b),
     .rd_en_i(re),
-    .rd_addr_i(addr_b),
-    .rd_data_o(data_out)
+    .rd_addr_i(raddr),
+    .rd_data_o(rdata)
 );
 ```
 
@@ -40,25 +40,25 @@ See LICENSE file in the project root for full license information
 
 module adn_common_dual_port_ram #(
     // PARAMETERS
-    parameter int DATA_WIDTH = 32, // Width of the data bus in bits
-    parameter int ADDR_WIDTH = 8,  // Width of the address bus in bits
-    bit OUT_REG = 1'b0             // 0 = Unregistered (1 cycle latency), 1 = Registered (2 cycle latency)
+    parameter int DATA_WIDTH = 32,      // Width of the data bus in bits
+    parameter int ADDR_WIDTH = 8,       // Width of the address bus (determines depth)
+    bit OUT_REG = 1'b0                  // 0 = Unregistered (1 cycle latency), 1 = Registered (2 cycle latency)
 ) (
     // PORTS
 
     // Write Port Interface (Write Clock Domain)
-    input logic                  wr_clk_i,   // Write clock
-    input logic                  wr_rst_n_i, // Active-low asynchronous reset for write domain
-    input logic                  wr_en_i,    // Write enable signal
-    input logic [ADDR_WIDTH-1:0] wr_addr_i,  // Write address
-    input logic [DATA_WIDTH-1:0] wr_data_i,  // Data to be written
+    input logic                  wr_clk_i,    // Write clock
+    input logic                  wr_rst_n_i,  // Active-low asynchronous reset for write domain
+    input logic                  wr_en_i,     // Write enable signal
+    input logic [ADDR_WIDTH-1:0] wr_addr_i,   // Write address
+    input logic [DATA_WIDTH-1:0] wr_data_i,   // Data to be written
 
     // Read Port Interface (Read Clock Domain)
-    input  logic                  rd_clk_i,   // Read clock
-    input  logic                  rd_rst_n_i, // Active-low asynchronous reset for read domain
-    input  logic                  rd_en_i,    // Read enable signal
-    input  logic [ADDR_WIDTH-1:0] rd_addr_i,  // Read address
-    output logic [DATA_WIDTH-1:0] rd_data_o   // Data read from memory
+    input  logic                  rd_clk_i,    // Read clock
+    input  logic                  rd_rst_n_i,  // Active-low asynchronous reset for read domain
+    input  logic                  rd_en_i,     // Read enable signal
+    input  logic [ADDR_WIDTH-1:0] rd_addr_i,   // Read address
+    output logic [DATA_WIDTH-1:0] rd_data_o    // Data read from memory
 );
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -75,8 +75,8 @@ module adn_common_dual_port_ram #(
   logic [DATA_WIDTH-1:0] mem_core[DEPTH];
 
   // Read pipeline registers: Intermediate storage for read data
-  logic [DATA_WIDTH-1:0] ram_data_out; // Combinational/Registered output from memory core
-  logic [DATA_WIDTH-1:0] ram_data_reg; // Optional output register stage
+  logic [DATA_WIDTH-1:0] ram_data_out; // Raw output from memory core
+  logic [DATA_WIDTH-1:0] ram_data_reg; // Registered output for timing improvement
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // SEQUENTIALS
@@ -100,7 +100,7 @@ module adn_common_dual_port_ram #(
     end
   end
 
-  // Output Pipeline Register Stage (OUT_REG): Optional stage to improve timing closure
+  // Output Pipeline Register Stage (OUT_REG): Optional stage to improve timing path
   always_ff @(posedge rd_clk_i) begin
     if (!rd_rst_n_i) begin
       ram_data_reg <= '0;
@@ -113,7 +113,7 @@ module adn_common_dual_port_ram #(
   // ASSIGNMENTS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  // Continuous assignment output multiplexer: Selects between raw read data and registered output
+  // Continuous assignment output multiplexer: Selects between registered and unregistered output
   assign rd_data_o = (OUT_REG) ? ram_data_reg : ram_data_out;
 
   // Initialize Memory Array for Simulation (Prevents 'x on unwritten reads)

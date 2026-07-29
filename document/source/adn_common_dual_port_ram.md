@@ -9,7 +9,7 @@
 |Name|Type|Dimension|Default Value|Description|
 |-|-|-|-|-|
 |DATA_WIDTH|int||32|Width of the data bus in bits|
-|ADDR_WIDTH|int||8|Width of the address bus in bits|
+|ADDR_WIDTH|int||8|Width of the address bus (determines depth)|
 
 ## Ports
 |Name|Direction|Type|Dimension|Description|
@@ -28,27 +28,27 @@
 
 
 ### Purpose
-The `adn_common_dual_port_ram` module implements a synchronous dual-port RAM with independent clock domains for read and write operations. It supports configurable data width, address depth, and an optional output pipeline register to balance between latency and timing performance.
+This module implements a synchronous dual-port RAM with independent read and write clock domains. It supports configurable data width, address depth, and an optional output pipeline register to balance between latency and timing performance.
 
 ### Usage
-To instantiate this module, connect the write interface to your write clock domain and the read interface to your read clock domain.
+To instantiate this module, define the `DATA_WIDTH` and `ADDR_WIDTH` parameters to match your memory requirements. Set `OUT_REG` to `1` if you require an additional pipeline stage to improve timing at the cost of one extra clock cycle of latency.
 
 ```systemverilog
 adn_common_dual_port_ram #(
     .DATA_WIDTH(32),
     .ADDR_WIDTH(10),
-    .OUT_REG(1'b1)
+    .OUT_REG(1)
 ) u_ram (
     .wr_clk_i(clk_a),
     .wr_rst_n_i(rst_n_a),
     .wr_en_i(we),
-    .wr_addr_i(addr_a),
-    .wr_data_i(data_in),
+    .wr_addr_i(waddr),
+    .wr_data_i(wdata),
     .rd_clk_i(clk_b),
     .rd_rst_n_i(rst_n_b),
     .rd_en_i(re),
-    .rd_addr_i(addr_b),
-    .rd_data_o(data_out)
+    .rd_addr_i(raddr),
+    .rd_data_o(rdata)
 );
 ```
 

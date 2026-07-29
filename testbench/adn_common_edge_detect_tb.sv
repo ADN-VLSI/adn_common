@@ -7,8 +7,8 @@
 
 | REVISION | DATE       | AUTHOR              | DESCRIPTION                                            |
 |----------|------------|---------------------|--------------------------------------------------------|
-| 0.1      | YYYY-MM-DD | Ahasan Ullah Khalid | Initial version                                        |
-| 1.0      | YYYY-MM-DD | Ahasan Ullah Khalid | Stable release                                         |
+| 0.1      | 2026-07-29 | Ahasan Ullah Khalid | Initial version                                        |
+| 1.0      | 2026-07-29 | Ahasan Ullah Khalid | Stable release                                         |
 
 Author : Ahasan Ullah Khalid (aukhalid02@gmail.com)
 This file is part of ADN-VLSI/adn_common

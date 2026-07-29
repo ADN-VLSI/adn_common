@@ -20,15 +20,15 @@
 |Name|Direction|Type|Dimension|Description|
 |-|-|-|-|-|
 |wr_clk_i|input|logic||Write domain clock|
-|wr_rst_n_i|input|logic||Active-low asynchronous reset|
-|wr_en_i|input|logic||Write enable|
+|wr_rst_n_i|input|logic||Active-low asynchronous reset for write domain|
+|wr_en_i|input|logic||Write enable signal|
 |wr_data_i|input|logic [DATA_WIDTH-1:0]||Data input bus|
 |full_o|output|logic||FIFO full flag|
 |almost_full_o|output|logic||FIFO almost full flag|
 |wr_count_o|output|logic [ ADDR_WIDTH:0]||Write domain occupancy count|
 |rd_clk_i|input|logic||Read domain clock|
-|rd_rst_n_i|input|logic||Active-low asynchronous reset|
-|rd_en_i|input|logic||Read enable|
+|rd_rst_n_i|input|logic||Active-low asynchronous reset for read domain|
+|rd_en_i|input|logic||Read enable signal|
 |rd_data_o|output|logic [DATA_WIDTH-1:0]||Data output bus|
 |empty_o|output|logic||FIFO empty flag|
 |almost_empty_o|output|logic||FIFO almost empty flag|
@@ -37,10 +37,10 @@
 
 
 ### Purpose
-The `adn_common_cdc_fifo` module provides a robust, asynchronous First-In-First-Out (FIFO) buffer designed for safe data transfer between two independent clock domains. It utilizes Gray-coded pointers and multi-stage synchronizers to prevent metastability issues, ensuring reliable data crossing while providing status flags (full, empty, almost full, almost empty) and occupancy counts for flow control.
+The `adn_common_cdc_fifo` module implements a high-performance, asynchronous First-In-First-Out (FIFO) buffer designed for reliable data transfer between two independent clock domains. It utilizes Gray-coded pointers and multi-stage synchronizers to mitigate metastability issues, ensuring robust data integrity during Clock Domain Crossing (CDC). The module provides full, empty, and programmable almost-full/almost-empty status flags, along with occupancy counters to facilitate flow control in complex digital systems.
 
 ### Usage
-To use this module, instantiate it in your design by specifying the `DATA_WIDTH` and `ADDR_WIDTH` (which determines the FIFO depth as $2^{ADDR\_WIDTH}$). Connect the write-side signals to your producer clock domain and the read-side signals to your consumer clock domain. Ensure that the reset signals are asserted appropriately for each domain. The module automatically handles pointer synchronization and provides status flags to prevent overflow and underflow conditions.
+To use the `adn_common_cdc_fifo` in your design, instantiate it by specifying the `DATA_WIDTH` and `ADDR_WIDTH` (which determines the depth as $2^{ADDR\_WIDTH}$). Connect the write-side signals (`wr_clk_i`, `wr_en_i`, `wr_data_i`) to the producer domain and the read-side signals (`rd_clk_i`, `rd_en_i`, `rd_data_o`) to the consumer domain. Ensure that `wr_rst_n_i` and `rd_rst_n_i` are asserted during power-on. The module handles CDC internally; simply monitor `full_o` and `empty_o` to prevent overflow and underflow conditions, respectively.
 
 | REVISION | DATE       | AUTHOR              | DESCRIPTION                                            |
 |----------|------------|---------------------|--------------------------------------------------------|

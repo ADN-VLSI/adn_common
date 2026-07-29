@@ -9,8 +9,8 @@
 |Name|Type|Dimension|Default Value|Description|
 |-|-|-|-|-|
 |WIDTH|int||1|Bit width of the data bus|
-|STAGES|int||2|Number of synchronization stages (flip-flops)|
-|RESET_VALUE|logic [WIDTH-1:0]||'0|Value of registers during reset|
+|STAGES|int||2|Number of synchronization stages (min 2 recommended)|
+|RESET_VALUE|logic [WIDTH-1:0]||'0|Value to load during reset|
 
 ## Ports
 |Name|Direction|Type|Dimension|Description|
@@ -23,7 +23,7 @@
 
 
 ### Purpose
-The `adn_common_synchronizer` module is a parameterized multi-stage flip-flop synchronizer designed to safely transfer asynchronous signals between different clock domains. It mitigates metastability issues by passing the input data through a chain of registers, ensuring the signal settles to a stable state before being sampled by the destination clock domain.
+The `adn_common_synchronizer` module is a generic multi-stage flip-flop synchronizer designed to safely transfer asynchronous signals between different clock domains. It mitigates metastability issues by passing the input data through a configurable number of sequential stages before outputting the synchronized signal.
 
 @foez---bhai, describe the usage of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
 
