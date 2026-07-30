@@ -1,6 +1,8 @@
 # Some Text
 
 ## RTL
+[`adn_common_address_decoder`](document/source/adn_common_address_decoder.md)
+[`adn_common_address_range_compare`](document/source/adn_common_address_range_compare.md)
 [`adn_common_bin_to_gray`](document/source/adn_common_bin_to_gray.md)
 [`adn_common_b_rounder`](document/source/adn_common_b_rounder.md)
 [`adn_common_cdc_fifo`](document/source/adn_common_cdc_fifo.md)
@@ -16,6 +18,7 @@
 [`adn_common_jk_ff`](document/source/adn_common_jk_ff.md)
 [`adn_common_pipeline`](document/source/adn_common_pipeline.md)
 [`adn_common_priority_encoder`](document/source/adn_common_priority_encoder.md)
+[`adn_common_priority_selector`](document/source/adn_common_priority_selector.md)
 [`adn_common_ring_counter`](document/source/adn_common_ring_counter.md)
 [`adn_common_round_robin_arbiter`](document/source/adn_common_round_robin_arbiter.md)
 [`adn_common_synchronizer`](document/source/adn_common_synchronizer.md)

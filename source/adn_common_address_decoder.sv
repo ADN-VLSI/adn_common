@@ -1,0 +1,79 @@
+/*
+
+### Purpose
+The `adn_common_address_decoder` module is designed to perform address decoding by comparing an input address against a set of programmable address ranges. It identifies the corresponding slave device associated with the matched range and provides a priority-based selection mechanism to resolve overlapping address regions.
+
+### Usage
+To use this module, instantiate it by specifying the `ADDR_WIDTH`, `SLAVE_ID_WIDTH`, and `NUM_RULES`. Provide the input address via `addr_i` and define the address space mapping using the `min_addr_i`, `max_addr_i`, and `slave_id_i` arrays. The module will output the identified `slave_index_o` and a valid flag `addr_found_o` indicating if the address falls within any of the defined ranges.
+
+| REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
+|----------|------------|-----------------|--------------------------------------------------------|
+| 1.0      | 2026-07-30 | Adnan Sami Anirban | Stable release                                         |
+
+Author : Adnan Sami Anirban (adnananirban259@gmail.com)
+This file is part of ADN-VLSI/adn_common
+Copyright (c) 2026 ADN Semiconductors
+Licensed under the MIT License
+See LICENSE file in the project root for full license information
+
+*/
+
+module adn_common_address_decoder #(
+
+    parameter int ADDR_WIDTH     = 32, // Width of the address bus
+    parameter int SLAVE_ID_WIDTH = 4,  // Width of the slave identifier
+    parameter int NUM_RULES      = 4   // Number of address ranges to decode
+
+)(
+
+    input logic [ADDR_WIDTH-1:0]      addr_i,                     // Input address to be decoded
+    input logic [ADDR_WIDTH-1:0]      min_addr_i [0:NUM_RULES-1], // Array of minimum address boundaries
+    input logic [ADDR_WIDTH-1:0]      max_addr_i [0:NUM_RULES-1], // Array of maximum address boundaries
+    input logic [SLAVE_ID_WIDTH-1:0]  slave_id_i [0:NUM_RULES-1], // Array of slave IDs corresponding to ranges
+
+    output logic [SLAVE_ID_WIDTH-1:0] slave_index_o,              // Identified slave ID
+    output logic                      addr_found_o                // Valid flag if address matches a range
+
+);
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+  // SIGNALS
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+    // One-hot encoded vector indicating which address range the input address matches
+    logic [NUM_RULES-1:0] match;
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+  // SUBMODULES
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+
+  // Generate block to instantiate multiple range comparators for each defined rule
+  generate
+    for(genvar i = 0; i < NUM_RULES; i++)
+    begin : GEN_ADDRESS_COMPARE
+        // Comparator submodule to check if addr_i is within [min_addr_i, max_addr_i]
+        adn_common_address_range_compare #(
+            .ADDR_WIDTH    (ADDR_WIDTH)
+        )
+        u_address_range_compare
+        (
+            .min_addr_i    (min_addr_i[i]),
+            .max_addr_i    (max_addr_i[i]),
+            .addr_i        (addr_i),
+            .match_o       (match[i])
+        );
+    end
+  endgenerate
+
+  // Priority selector to resolve multiple matches and output the highest priority slave ID
+  adn_common_priority_selector #(
+      .NUM_RULES         (NUM_RULES),
+      .SLAVE_ID_WIDTH    (SLAVE_ID_WIDTH)
+  )
+  u_priority_selector
+  (
+      .match_i           (match),
+      .slave_id_i        (slave_id_i),
+      .slave_index_o     (slave_index_o),
+      .addr_found_o      (addr_found_o)
+  );
+endmodule
