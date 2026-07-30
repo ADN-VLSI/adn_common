@@ -1,8 +1,10 @@
 /*
 
-@foez-bhai, write the purpose of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+### Purpose
+The `adn_common_hs_counter` module is designed to track the number of outstanding transactions in a handshake-based data path. It monitors input and output handshake signals to maintain a count of items currently in flight, providing flow control by asserting ready/valid signals based on the counter's state.
 
-@foez-bhai, describe the usage of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+### Usage
+To use this module, instantiate it in your design by specifying the `DEPTH` parameter, which defines the maximum number of transactions the counter can track. Connect the `data_in` handshake signals to the source interface and the `data_out` handshake signals to the destination interface. The module will automatically manage the `data_in_ready_o` and `data_out_valid_o` signals to prevent buffer overflow and ensure data availability. The `count_o` port provides the current number of items in the pipeline, and `overflow_o` can be monitored for error detection.
 
 | REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
 |----------|------------|-----------------|--------------------------------------------------------|
@@ -96,4 +98,3 @@ module adn_common_hs_counter #(
   end
 
 endmodule
-
