@@ -11,8 +11,8 @@
 |Name|Type|Dimension|Default Value|Description|
 |-|-|-|-|-|
 |DATA_WIDTH|int||32|Width of the data bus|
-|ADDR_WIDTH|int||8|Address width (FIFO depth = 2^ADDR_WIDTH)|
-|SYNC_STAGES|int||2|Number of synchronization stages for CDC|
+|ADDR_WIDTH|int||8|Address width|
+|SYNC_STAGES|int||2|Number of synchronization stages|
 |ALMOST_FULL_THRESH|int||(1 << ADDR_WIDTH) - 2|Threshold for almost_full_o flag|
 |ALMOST_EMPTY_THRESH|int||2|Threshold for almost_empty_o flag|
 
