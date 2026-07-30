@@ -7,11 +7,13 @@
 [`adn_common_edge_detect`](document/source/adn_common_edge_detect.md)
 [`adn_common_encoder`](document/source/adn_common_encoder.md)
 [`adn_common_fifo`](document/source/adn_common_fifo.md)
+[`adn_common_fixed_priority_arbiter`](document/source/adn_common_fixed_priority_arbiter.md)
 [`adn_common_gray_to_bin`](document/source/adn_common_gray_to_bin.md)
 [`adn_common_hs_combiner`](document/source/adn_common_hs_combiner.md)
 [`adn_common_hs_counter`](document/source/adn_common_hs_counter.md)
 [`adn_common_jk_ff`](document/source/adn_common_jk_ff.md)
 [`adn_common_pipeline`](document/source/adn_common_pipeline.md)
+[`adn_common_priority_encoder`](document/source/adn_common_priority_encoder.md)
 [`adn_common_ring_counter`](document/source/adn_common_ring_counter.md)
 [`adn_common_synchronizer`](document/source/adn_common_synchronizer.md)
 
