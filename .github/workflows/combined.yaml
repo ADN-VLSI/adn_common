@@ -64,10 +64,8 @@ jobs:
     name: Process foez-bhai tagged files
     runs-on: [review]
     needs: [check-tags]
-    if: ${{ !cancelled() && !failed() && needs.check-tags.outputs.changed != 'true' && needs.check-tags.outputs.found == 'true' }}
-    permissions:
-      contents: write
-      pull-requests: write
+    # if: ${{ needs.check-tags.outputs.changed != 'true' && needs.check-tags.outputs.found == 'true' }}
+
     outputs:
       changed: ${{ steps.commit.outputs.changed }}
 
@@ -172,68 +170,67 @@ jobs:
             echo "Skipping reviewer assignment because the PR author and actor are the same user."
           fi
 
-#  # Job 3: Update doc list - not skippable unless a prior job pushed a commit
-#  update_doc_list:
-#    name: Update Documentations & Lists
-#    runs-on: [adn]
-#    needs: [check-tags, process-tags]
-#    if: ${{ !cancelled() && !failed() && needs.check-tags.outputs.changed != 'true' && needs.process-tags.outputs.changed != 'true' }}
-#    permissions:
-#      contents: write
-#    outputs:
-#      changed: ${{ steps.commit.outputs.changed }}
-#
-#    steps:
-#      - name: Check out repository
-#        uses: actions/checkout@v4
-#        with:
-#          fetch-depth: 0
-#          token: ${{ secrets.ADN_SECRET_FOEZ_PAT }}
-#
-#      - name: Update Documentations & Lists
-#        shell: bash
-#        run: |
-#          git submodule update --init --depth 1 submodule/documenter
-#          make update_doc_list
-#
-#      - name: Commit and push changes
-#        id: commit
-#        shell: bash
-#        run: |
-#          set -euo pipefail
-#
-#          git config user.name "Foez Ahmed"
-#          git config user.email "foez.official@gmail.com"
-#
-#          rm -f tagged-files.txt
-#
-#          if [ -z "$(git status --porcelain)" ]; then
-#            echo "changed=false" >> "$GITHUB_OUTPUT"
-#            exit 0
-#          fi
-#
-#          git add -A
-#          git commit -m "Updated Doc list" || true
-#          git push origin HEAD
-#          echo "changed=true" >> "$GITHUB_OUTPUT"
-#
-#  # Job 4: Regression - not skippable unless a prior job pushed a commit
-#  regression:
-#    name: Vivado Regression
-#    runs-on: [adn]
-#    needs: [check-tags, process-tags, update_doc_list]
-#    if: ${{ !cancelled() && !failed() && needs.check-tags.outputs.changed != 'true' && needs.process-tags.outputs.changed != 'true' && needs.update_doc_list.outputs.changed != 'true' }}
-#
-#    steps:
-#      - uses: actions/checkout@v4
-#
-#      - name: Vivado Regression
-#        shell: bash
-#        run: |
-#          ./regression.sh
-#
-#      - name: Fail if ci issues
-#        shell: bash
-#        run: |
-#          [[ -s ./log/ci_issues.log ]] && exit 1 || exit 0
-#
+  # Job 3: Update doc list - not skippable unless a prior job pushed a commit
+  update_doc_list:
+    name: Update Documentations & Lists
+    runs-on: [adn]
+    needs: [check-tags, process-tags]
+    if: ${{ needs.check-tags.outputs.changed != 'true' && needs.process-tags.outputs.changed != 'true' }}
+    permissions:
+      contents: write
+    outputs:
+      changed: ${{ steps.commit.outputs.changed }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.ADN_SECRET_FOEZ_PAT }}
+
+      - name: Update Documentations & Lists
+        shell: bash
+        run: |
+          git submodule update --init --depth 1 submodule/documenter
+          make update_doc_list
+
+      - name: Commit and push changes
+        id: commit
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          git config user.name "Foez Ahmed"
+          git config user.email "foez.official@gmail.com"
+
+          rm -f tagged-files.txt
+
+          if [ -z "$(git status --porcelain)" ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          git add -A
+          git commit -m "Updated Doc list" || true
+          git push origin HEAD
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+  # Job 4: Regression - not skippable unless a prior job pushed a commit
+  regression:
+    name: Vivado Regression
+    runs-on: [adn]
+    needs: [check-tags, process-tags, update_doc_list]
+    if: ${{ needs.check-tags.outputs.changed != 'true' && needs.process-tags.outputs.changed != 'true' && needs.update_doc_list.outputs.changed != 'true' }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Vivado Regression
+        shell: bash
+        run: |
+          ./regression.sh
+
+      - name: Fail if ci issues
+        shell: bash
+        run: |
+          [[ -s ./log/ci_issues.log ]] && exit 1 || exit 0
