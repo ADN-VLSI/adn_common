@@ -1,20 +1,20 @@
 /*
- 
+
 @foez-bhai, write the purpose of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
- 
+
 @foez-bhai, describe the usage of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
- 
+
 | REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
 |----------|------------|-----------------|--------------------------------------------------------|
 | 0.1      | 2026-07-27 | Annim | Initial version                                        |
 | 1.0      | 2026-07-29 | Annim | Stable release                                         |
- 
+
 Author : Annim Jannat (jannatannim@gmail.com)
 This file is part of ADN-VLSI/adn_common
 Copyright (c) 2026 ADN Semiconductors
 Licensed under the MIT License
 See LICENSE file in the project root for full license information
- 
+
 */
 
 module adn_common_hs_counter #(
@@ -85,9 +85,7 @@ module adn_common_hs_counter #(
 
       if (data_out_ready_i && count_o == '0) begin
         data_out_valid_o <= 1'b0;
-      end 
-
-      else begin
+      end else begin
         overflow_o <= 1'b0;
         case ({
           in_hs, out_hs
@@ -110,3 +108,4 @@ module adn_common_hs_counter #(
   end
 
 endmodule
+
