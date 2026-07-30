@@ -44,6 +44,7 @@ echo -e "\033[1G\033[1;32mDone!\033[0m ($time_diff seconds)   \033[21G - \033[1;
 
 start_time=$(date +%s)
 echo -n -e " $(date +%x\ %H:%M:%S) - \033[1;33mSETTING UP SUBMODULES\033[0m"
+git submodule deinit -f . &> /dev/null
 git submodule update --init --depth 1 &> /dev/null
 end_time=$(date +%s)
 time_diff=$((end_time - start_time))
