@@ -1,8 +1,10 @@
 /*
 
-@foez-bhai, write the purpose of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+### Purpose
+The `adn_common_address_decoder` module is designed to perform address decoding by comparing an input address against a set of programmable address ranges. It identifies the corresponding slave device associated with the matched range and provides a priority-based selection mechanism to resolve overlapping address regions.
 
-@foez-bhai, describe the usage of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+### Usage
+To use this module, instantiate it by specifying the `ADDR_WIDTH`, `SLAVE_ID_WIDTH`, and `NUM_RULES`. Provide the input address via `addr_i` and define the address space mapping using the `min_addr_i`, `max_addr_i`, and `slave_id_i` arrays. The module will output the identified `slave_index_o` and a valid flag `addr_found_o` indicating if the address falls within any of the defined ranges.
 
 | REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
 |----------|------------|-----------------|--------------------------------------------------------|
@@ -16,39 +18,39 @@ See LICENSE file in the project root for full license information
 
 */
 
-// @foez-bhai, add comments to the parameters, ports
 module adn_common_address_decoder #(
 
-    parameter int ADDR_WIDTH     = 32,
-    parameter int SLAVE_ID_WIDTH = 4,
-    parameter int NUM_RULES      = 4
+    parameter int ADDR_WIDTH     = 32, // Width of the address bus
+    parameter int SLAVE_ID_WIDTH = 4,  // Width of the slave identifier
+    parameter int NUM_RULES      = 4   // Number of address ranges to decode
 
 )(
 
-    input logic [ADDR_WIDTH-1:0]      addr_i,
-    input logic [ADDR_WIDTH-1:0]      min_addr_i [0:NUM_RULES-1],
-    input logic [ADDR_WIDTH-1:0]      max_addr_i [0:NUM_RULES-1],
-    input logic [SLAVE_ID_WIDTH-1:0]  slave_id_i [0:NUM_RULES-1],
+    input logic [ADDR_WIDTH-1:0]      addr_i,                     // Input address to be decoded
+    input logic [ADDR_WIDTH-1:0]      min_addr_i [0:NUM_RULES-1], // Array of minimum address boundaries
+    input logic [ADDR_WIDTH-1:0]      max_addr_i [0:NUM_RULES-1], // Array of maximum address boundaries
+    input logic [SLAVE_ID_WIDTH-1:0]  slave_id_i [0:NUM_RULES-1], // Array of slave IDs corresponding to ranges
 
-    output logic [SLAVE_ID_WIDTH-1:0] slave_index_o,
-    output logic                      addr_found_o
+    output logic [SLAVE_ID_WIDTH-1:0] slave_index_o,              // Identified slave ID
+    output logic                      addr_found_o                // Valid flag if address matches a range
 
 );
-
-  // @foez-bhai, add comments to the functional blocks, signals, and submodules
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // SIGNALS
   //////////////////////////////////////////////////////////////////////////////////////////////////
+    // One-hot encoded vector indicating which address range the input address matches
     logic [NUM_RULES-1:0] match;
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // SUBMODULES
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
+  // Generate block to instantiate multiple range comparators for each defined rule
   generate
     for(genvar i = 0; i < NUM_RULES; i++)
     begin : GEN_ADDRESS_COMPARE
+        // Comparator submodule to check if addr_i is within [min_addr_i, max_addr_i]
         adn_common_address_range_compare #(
             .ADDR_WIDTH    (ADDR_WIDTH)
         )
@@ -62,6 +64,7 @@ module adn_common_address_decoder #(
     end
   endgenerate
 
+  // Priority selector to resolve multiple matches and output the highest priority slave ID
   adn_common_priority_selector #(
       .NUM_RULES         (NUM_RULES),
       .SLAVE_ID_WIDTH    (SLAVE_ID_WIDTH)
