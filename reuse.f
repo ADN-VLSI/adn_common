@@ -6,6 +6,7 @@ ${ADN_COMMON}/source/adn_common_edge_detect.sv
 ${ADN_COMMON}/source/adn_common_fifo.sv
 ${ADN_COMMON}/source/adn_common_gray_to_bin.sv
 ${ADN_COMMON}/source/adn_common_hs_combiner.sv
+${ADN_COMMON}/source/adn_common_hs_counter.sv
 ${ADN_COMMON}/source/adn_common_jk_ff.sv
 ${ADN_COMMON}/source/adn_common_pipeline.sv
 ${ADN_COMMON}/source/adn_common_ring_counter.sv
