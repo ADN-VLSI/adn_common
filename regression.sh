@@ -50,11 +50,10 @@ time_diff=$((end_time - start_time))
 echo -e "\033[1G\033[1;32mDone!\033[0m ($time_diff seconds)   \033[21G - \033[1;33mSETTING UP SUBMODULES\033[0m"
 
 ################################################################################
-# SIMULATE SC-SOC
+# SIMULATE
 ################################################################################
 
-# ci_simulate tb tn tc 
-ci_simulate hello default 1
+source regression_list
 
 ################################################################################
 # COLLECT & PRINT
