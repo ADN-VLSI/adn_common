@@ -19,40 +19,36 @@ See LICENSE file in the project root for full license information
 
 module adn_common_hs_counter #(
 
-    //////////////////////////////////////////////////////////////////////////////////////////////////
-    // PARAMETERS
-    //////////////////////////////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+  // PARAMETERS
+  //////////////////////////////////////////////////////////////////////////////////////////////////
 
-    parameter int DEPTH = 8  // width of the counter
-
-) (
-
-    //////////////////////////////////////////////////////////////////////////////////////////////////
-    // PORTS
-    //////////////////////////////////////////////////////////////////////////////////////////////////
-
-    input logic clk_i,  // clock input
-    input logic rst_ni, // active-low async reset
-
-    // input handshake interface
-    input  logic data_in_valid_i,  // sender says data is valid (input side)
-    output logic data_in_ready_o,  // receiver says it can accept (input side)
-
-    // output handshake interface
-    output logic data_out_valid_o,  // sender says data is valid (output side)
-    input  logic data_out_ready_i,  // receiver says it can accept (output side)
-
-    output logic [WIDTH-1:0] count_o,    // number of outstanding handshakes
-    output logic             overflow_o  // pulses if counter wraps around
-);
-
+  parameter int DEPTH = 8,  // width of the counter
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // LOCALPARAMS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  localparam int WIDTH = $clog2(DEPTH);
+  localparam int WIDTH = $clog2(DEPTH)
 
+) (
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+  // PORTS
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+  input logic clk_i,  // clock input
+  input logic rst_ni, // active-low async reset
+
+  // input handshake interface
+  input  logic data_in_valid_i,  // sender says data is valid (input side)
+  output logic data_in_ready_o,  // receiver says it can accept (input side)
+
+  // output handshake interface
+  output logic data_out_valid_o,  // sender says data is valid (output side)
+  input  logic data_out_ready_i,  // receiver says it can accept (output side)
+  output logic [WIDTH-1:0] count_o,    // number of outstanding handshakes
+  output logic             overflow_o  // pulses if counter wraps around
+);
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // SIGNALS
   //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -76,17 +72,10 @@ module adn_common_hs_counter #(
     if (!rst_ni) begin
       count_o    <= '0;
       overflow_o <= 1'b0;
-    end else begin
+    end
+    else begin
       overflow_o <= 1'b0;
 
-      if (data_in_valid_i && count_o == '1) begin
-        data_in_ready_o <= 1'b0;
-      end
-
-      if (data_out_ready_i && count_o == '0) begin
-        data_out_valid_o <= 1'b0;
-      end else begin
-        overflow_o <= 1'b0;
         case ({
           in_hs, out_hs
         })
@@ -96,7 +85,6 @@ module adn_common_hs_counter #(
         endcase
       end
     end
-  end
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // INITIAL CHECKS
