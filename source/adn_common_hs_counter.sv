@@ -19,11 +19,17 @@ See LICENSE file in the project root for full license information
 
 module adn_common_hs_counter #(
 
+    //////////////////////////////////////////////////////////////////////////////////////////////////
     // PARAMETERS
+    //////////////////////////////////////////////////////////////////////////////////////////////////
 
-    parameter int WIDTH = 8  // width of the counter
+    parameter int DEPTH = 8  // width of the counter
+
 ) (
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
     // PORTS
+    //////////////////////////////////////////////////////////////////////////////////////////////////
 
     input logic clk_i,  // clock input
     input logic rst_ni, // active-low async reset
@@ -40,6 +46,13 @@ module adn_common_hs_counter #(
     output logic             overflow_o  // pulses if counter wraps around
 );
 
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+  // LOCALPARAMS
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+
+  localparam int WIDTH = $clog2(DEPTH);
+
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // SIGNALS
   //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -52,8 +65,8 @@ module adn_common_hs_counter #(
 
   assign in_hs            = data_in_valid_i && data_in_ready_o;
   assign out_hs           = data_out_valid_o && data_out_ready_i;
-  assign data_in_ready_o  = (count_o < {WIDTH{1'b1}});  // ready if not full
-  assign data_out_valid_o = (count_o > '0);  // valid if not empty
+  assign data_in_ready_o  = (count_o != {WIDTH{'1}});  // ready unless count is full
+  assign data_out_valid_o = (count_o != '0);  // valid if not empty
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // SEQUENTIALS
@@ -66,13 +79,19 @@ module adn_common_hs_counter #(
     end else begin
       overflow_o <= 1'b0;
 
-      if (data_in_valid_i && count_o= '1) begin data_in_ready_o <= 1'b0; end
+      if (data_in_valid_i && count_o == '1) begin
+        data_in_ready_o <= 1'b0;
+      end
 
-      if (data_out_ready_i && count_o= '0) begin data_out_valid_o <= 1'b0; end
+      if (data_out_ready_i && count_o == '0) begin
+        data_out_valid_o <= 1'b0;
+      end 
 
       else begin
         overflow_o <= 1'b0;
-        case ({in_hs, out_hs})
+        case ({
+          in_hs, out_hs
+        })
           2'b10:   {overflow_o, count_o} <= count_o + 1'b1;  // in only: increment
           2'b01:   count_o <= (count_o == '0) ? count_o : count_o - 1'b1;  // out only: decrement
           default: count_o <= count_o;
@@ -86,8 +105,8 @@ module adn_common_hs_counter #(
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
   initial begin
-    assert (WIDTH > 0)
-    else $fatal(1, "adn_common_hs_counter: WIDTH must be greater than 0");
+    assert (DEPTH > 0)
+    else $fatal(1, "adn_common_hs_counter: DEPTH must be greater than 0");
   end
 
 endmodule
