@@ -1,0 +1,52 @@
+name: CICD
+
+on: [push]
+
+jobs:
+  CICD:
+
+    runs-on: [adn]
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+        with:
+          token: ${{ secrets.ADN_SECRET_FOEZ_PAT }}
+
+      - name: Process tagged files
+        id: tagged-files
+        shell: bash
+        run: |
+          directive_regex='^[[:space:]]*(//|#|--|/\*+|\*+)?[[:space:]]*@foez-bhai\b'
+          workflow_file="./.github/workflows/foez-bhai-tag.yml"
+          mapfile -d '' files < <(
+            grep -RIlZ --exclude-dir=.git --exclude-dir=.github --exclude-dir=document -E "$directive_regex" . |
+              while IFS= read -r -d '' file; do
+                if [ "$file" != "$workflow_file" ]; then
+                  printf '%s\0' "$file"
+                fi
+              done || true
+          )
+          printf '%s\0' "${files[@]}" > tagged-files.txt
+          while IFS= read -r -d '' file; do
+            python .github/gemini.py "$file" --api-key "${{ secrets.FOEZ_SECRET_API_KEY }}" -o output.foez
+            mv output.foez "$file"
+            echo "" >> "$file"
+            rm -rf __pycache__
+          done < tagged-files.txt
+          rm -rf tagged-files.txt
+
+      - name: Update Documentations & Lists
+        shell: bash
+        run: |
+          git submodule update --init --depth 1 submodule/documenter
+          make update_doc_list
+
+      - name: Commit and push changes
+        shell: bash
+        run: |
+          git config user.name "Foez Ahmed"
+          git config user.email "foez.official@gmail.com"
+          git add -A
+          git commit -m "auto-update" || make regression
+          git push origin HEAD
