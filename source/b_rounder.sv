@@ -1,10 +1,10 @@
-module f_rounder #(
+module b_rounder #(
     parameter int N = 8
     
 )(
     input  logic [N-1:0] req_i,
     input logic [$clog2(N)-1:0] offset,
-    output logic [N-1:0] req_o
+    output logic [N-1:0] grant_o
 );
 
 always_comb begin
@@ -13,11 +13,11 @@ always_comb begin
     int i= offset;
     int j= 0;
     
-    req_o = '0;
+    grant_o = '0;
 
     for (i= offset; i < N; i++) begin
         
-        req_o[j] = req_i[i];
+        grant_o[i] = req_i[j];
         j++;
     end
 
@@ -25,7 +25,7 @@ always_comb begin
 
     for (i=0; i<offset; i++) begin
         
-        req_o[j] = req_i[i];
+        grant_o[i] = req_i[j];
         j++;
     end
 
