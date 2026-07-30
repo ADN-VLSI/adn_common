@@ -8,30 +8,31 @@
 ## Parameters
 |Name|Type|Dimension|Default Value|Description|
 |-|-|-|-|-|
-|ADDR_WIDTH|int||adn_common_address_decoder_pkg::ADDR_DECODER_ADDR_WIDTH| PARAMETERS|
-|SLV_INDEX_WIDTH|int||adn_common_address_decoder_pkg::ADDR_DECODER_SLV_INDEX_WIDTH||
-|NUM_RULES|int||adn_common_address_decoder_pkg::ADDR_DECODER_NUM_RULES||
-|addr_map_t|type||adn_common_address_decoder_pkg::addr_decoder_addr_map_t||
-|ADDR_MAP|addr_map_t|[NUM_RULES]|adn_common_address_decoder_pkg::ADDR_MAP||
-|HIGH_INDEX_PRIORITY|bit||0||
+|ADDR_WIDTH|int||32|Width of the address bus|
+|SLAVE_ID_WIDTH|int||4|Width of the slave identifier|
+|NUM_RULES|int||4|Number of address ranges to decode|
 
 ## Ports
 |Name|Direction|Type|Dimension|Description|
 |-|-|-|-|-|
-|addr_i|input|logic [ADDR_WIDTH-1:0]|| PORTS|
-|slave_index_o|output|logic [SLV_INDEX_WIDTH-1:0]|||
-|addr_found_o|output|logic|||
+|addr_i|input|logic [ADDR_WIDTH-1:0]||Input address to be decoded|
+|min_addr_i|input|logic [ADDR_WIDTH-1:0]|[0:NUM_RULES-1]|Array of minimum address boundaries|
+|max_addr_i|input|logic [ADDR_WIDTH-1:0]|[0:NUM_RULES-1]|Array of maximum address boundaries|
+|slave_id_i|input|logic [SLAVE_ID_WIDTH-1:0]|[0:NUM_RULES-1]|Array of slave IDs corresponding to ranges|
+|slave_index_o|output|logic [SLAVE_ID_WIDTH-1:0]||Identified slave ID|
+|addr_found_o|output|logic||Valid flag if address matches a range|
 ## Description
 
 
-@foez---bhai, write the purpose of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+### Purpose
+The `adn_common_address_decoder` module is designed to perform address decoding by comparing an input address against a set of programmable address ranges. It identifies the corresponding slave device associated with the matched range and provides a priority-based selection mechanism to resolve overlapping address regions.
 
-@foez---bhai, describe the usage of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+### Usage
+To use this module, instantiate it by specifying the `ADDR_WIDTH`, `SLAVE_ID_WIDTH`, and `NUM_RULES`. Provide the input address via `addr_i` and define the address space mapping using the `min_addr_i`, `max_addr_i`, and `slave_id_i` arrays. The module will output the identified `slave_index_o` and a valid flag `addr_found_o` indicating if the address falls within any of the defined ranges.
 
 | REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
 |----------|------------|-----------------|--------------------------------------------------------|
-| 0.1      | YYYY-MM-DD | Adnan Sami Anirban | Initial version                                        |
-| 1.0      | YYYY-MM-DD | Adnan Sami Anirban | Stable release                                         |
+| 1.0      | 2026-07-30 | Adnan Sami Anirban | Stable release                                         |
 
 This file is part of ADN-VLSI/adn_common
 <br>**Copyright (c) 2026 ADN Semiconductors**
