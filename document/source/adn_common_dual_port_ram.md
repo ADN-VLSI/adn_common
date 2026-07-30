@@ -19,7 +19,6 @@
 |wr_en_i|input|logic||Write enable signal|
 |wr_addr_i|input|logic [ADDR_WIDTH-1:0]||Write address|
 |wr_data_i|input|logic [DATA_WIDTH-1:0]||Data to be written|
-|rd_en_i|input|logic||Read enable signal|
 |rd_addr_i|input|logic [ADDR_WIDTH-1:0]||Read address|
 |rd_data_o|output|logic [DATA_WIDTH-1:0]||Data read from memory|
 ## Description
