@@ -5,9 +5,9 @@
 <polygon points="10,95 10,85 30,85 40,95 60,95 40,95 30,105 10,105 10,95"/>
 <text x="65" y="85" dominant-baseline="hanging" text-anchor="start" font-size="20" style="fill:black;stroke:black;stroke-width:0">clk_i</text>
 <polygon points="10,145 10,135 30,135 40,145 60,145 40,145 30,155 10,155 10,145"/>
-<text x="65" y="135" dominant-baseline="hanging" text-anchor="start" font-size="20" style="fill:black;stroke:black;stroke-width:0">arst_ni</text>
+<text x="65" y="135" dominant-baseline="hanging" text-anchor="start" font-size="20" style="fill:black;stroke:black;stroke-width:0">rst_n_i</text>
 <polygon points="10,195 10,185 30,185 40,195 60,195 40,195 30,205 10,205 10,195"/>
-<text x="65" y="185" dominant-baseline="hanging" text-anchor="start" font-size="20" style="fill:black;stroke:black;stroke-width:0">signal_i</text>
+<text x="65" y="185" dominant-baseline="hanging" text-anchor="start" font-size="20" style="fill:black;stroke:black;stroke-width:0">signal_in_i</text>
 <polygon points="10,245 20,235 40,235 40,245 60,245 40,245 40,255 20,255 10,245"/>
 <text x="65" y="235" dominant-baseline="hanging" text-anchor="start" font-size="20" style="fill:black;stroke:black;stroke-width:0">edge_pulse_o</text>
 <text x="170" y="300" dominant-baseline="hanging" text-anchor="middle" font-size="30" style="fill:black;stroke:black;stroke-width:0">adn_common_edge_detect</text>
