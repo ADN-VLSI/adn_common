@@ -1,8 +1,26 @@
 /*
 
-@foez-bhai, write the purpose of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+This module implements a synchronous one-hot ring counter. It rotates a single high bit through a register of a specified width on each clock cycle when enabled, providing a simple circular shift register functionality.
 
-@foez-bhai, describe the usage of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+### Usage
+
+To use this module, instantiate it in your design and specify the `DATA_WIDTH` parameter to define the number of states in the ring.
+
+```systemverilog
+adn_common_ring_counter #(
+    .DATA_WIDTH(8)
+) u_ring_counter (
+    .clk    (clk),
+    .rst_n  (rst_n),
+    .enable (enable),
+    .data   (ring_data)
+);
+```
+
+- **`clk`**: Connect to the system clock.
+- **`rst_n`**: Connect to an active-low reset signal. Upon reset, the counter initializes to `100...0`.
+- **`enable`**: When high, the counter shifts the high bit to the next position on the rising edge of the clock.
+- **`data`**: The one-hot encoded output vector.
 
 | REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
 |----------|------------|-----------------|--------------------------------------------------------|
@@ -17,7 +35,6 @@ See LICENSE file in the project root for full license information
 
 */
 
-// @foez-bhai, add comments to the parameters, ports
 module adn_common_ring_counter #(
     // Number of flip-flops and number of counter states
     parameter int DATA_WIDTH = 4
@@ -34,8 +51,6 @@ module adn_common_ring_counter #(
     // One-hot ring counter output
     output logic [DATA_WIDTH-1:0] data
 );
-
-  // @foez-bhai, add comments to the functional blocks, signals, and submodules
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // LOCALPARAMS GENERATED
@@ -64,8 +79,10 @@ module adn_common_ring_counter #(
   // SEQUENTIALS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
+  // Sequential block to handle reset and rotation logic
   always_ff @(posedge clk) begin
 
+    // Asynchronous/Synchronous reset logic
     if (~rst_n) begin
 
       // Initialize one-hot state
@@ -73,9 +90,10 @@ module adn_common_ring_counter #(
 
     end
 
+    // Rotation logic triggered by enable signal
     else if (enable) begin
 
-      // Rotate bit position around the ring
+      // Rotate bit position around the ring using concatenation
       ring_counter <= {
           ring_counter[DATA_WIDTH-2:0],
           ring_counter[DATA_WIDTH-1]
@@ -91,6 +109,7 @@ module adn_common_ring_counter #(
 
   `ifdef SIMULATION
 
+  // Simulation-only block to validate parameter constraints
   initial begin
 
     if (DATA_WIDTH < 2) begin
@@ -107,7 +126,7 @@ module adn_common_ring_counter #(
 
 `ifdef SIMULATION
 
-  // Check that exactly one bit is high
+  // Formal/Simulation assertion to ensure one-hot property is maintained
   assert property (
     @(posedge clk)
     $onehot(data)
@@ -118,4 +137,3 @@ module adn_common_ring_counter #(
 `endif
 
 endmodule
-
