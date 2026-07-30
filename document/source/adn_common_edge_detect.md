@@ -1,0 +1,45 @@
+# adn_common_edge_detect (module)
+
+### Author : Md. Sakib Hasan Shawon (mdsakibhasanshawon20@gmail.com)
+
+## TOP IO
+<img src="./adn_common_edge_detect_top.svg">
+
+<img src="./adn_common_edge_detect_des.svg">
+
+## Parameters
+|Name|Type|Dimension|Default Value|Description|
+|-|-|-|-|-|
+|EDGE_TYPE|int||0| Edge detection mode: 0=Falling, 1=Rising, 2=Dual|
+
+## Ports
+|Name|Direction|Type|Dimension|Description|
+|-|-|-|-|-|
+|clk|input|logic|| System clock input|
+|rst_n|input|logic|| Active-low asynchronous reset|
+|signal_in|input|logic|| Input signal to be monitored for edges|
+|edge_pulse|output|logic|| Output pulse indicating edge detection|
+## Description
+
+
+### Purpose
+This module provides a configurable edge detection mechanism for a single-bit input signal. It supports rising edge, falling edge, and dual-edge detection, generating a single-clock-cycle pulse whenever the specified transition occurs on the input signal relative to the system clock.
+
+### Usage
+To use this module, instantiate it in your design and set the `EDGE_TYPE` parameter to the desired detection mode:
+- `0`: Rising edge detection.
+- `1`: Falling edge detection.
+- `2`: Dual-edge (both rising and falling) detection.
+
+Connect the system clock (`clk`), active-low reset (`rst_n`), and the target signal (`signal_in`). The `edge_pulse` output will assert high for exactly one clock cycle when the specified transition is detected.
+
+| REVISION | DATE       | AUTHOR                 | DESCRIPTION                                            |
+|----------|------------|------------------------|--------------------------------------------------------|
+| 0.1      | 2026-07-27 | Md. Sakib Hasan Shawon | Initial version                                        |
+| 1.0      | 2026-07-28 | Md. Sakib Hasan Shawon | Stable release                                         |
+
+This file is part of ADN-VLSI/adn_common
+<br>**Copyright (c) 2026 ADN Semiconductors**
+<br>**Licensed under the MIT License**
+<br>**See LICENSE file in the project root for full license information**
+

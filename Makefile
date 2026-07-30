@@ -76,11 +76,14 @@ endif
 	@find $(REPO_ROOT)/interface -maxdepth 1 -name "*.sv" >> $(REPO_ROOT)/reuse.f
 	@find $(REPO_ROOT)/source -maxdepth 1 -name "*.sv" >> $(REPO_ROOT)/reuse.f
 	@sed -i 's|$(REPO_ROOT)|$$\{$(REPO_NAME_EXP)\}|g' $(REPO_ROOT)/reuse.f
+	@sort -u $(REPO_ROOT)/reuse.f > $(REPO_ROOT)/reuse2.f
+	@mv $(REPO_ROOT)/reuse2.f $(REPO_ROOT)/reuse.f
 
 .PHONY: $(REPO_ROOT)/local.f
 $(REPO_ROOT)/local.f:
 	@echo -e "\033[1;33m#\033[0m Generating Testbench Filelist"
-	@find $(REPO_ROOT)/testbench -maxdepth 1 -name "*.sv" > $(REPO_ROOT)/local.f
+	@echo "-i $(REPO_ROOT)/testbench" > $(REPO_ROOT)/local.f
+	@find $(REPO_ROOT)/testbench -maxdepth 1 -name "*.sv" >> $(REPO_ROOT)/local.f
 	@sed -i 's|$(REPO_ROOT)|$$\{$(REPO_NAME_EXP)\}|g' $(REPO_ROOT)/local.f
 
 .PHONY: $(BUILD_DIR)/XSIM_ARGS
@@ -174,6 +177,7 @@ compile_submodule:
 
 .PHONY: update_doc_list
 update_doc_list:
+	@make -s $(REPO_ROOT)/reuse.f
 	@make -s create_all_docs
 	@cat readme_base.md > readme.md
 	@echo "" >> readme.md
