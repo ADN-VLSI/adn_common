@@ -1,19 +1,38 @@
-name: Foez Bhai is automating the tagged files
+name: Combined CI Pipeline
 
 on:
   push:
-    branches-ignore:
-      - "foez-bhai-automation/**"
-      - "main"
+    branches: [main]
+  pull_request:
+    branches: [main]
 
 permissions:
   contents: write
   pull-requests: write
 
 jobs:
+  # Gate job - runs first, provides baseline state (never pushes)
+  gate:
+    name: Gate (baseline state)
+    runs-on: [adn]
+    outputs:
+      changed: ${{ steps.set.outputs.changed }}
+    steps:
+      - id: set
+        run: echo "changed=false" >> "$GITHUB_OUTPUT"
+
+  # Job 1: Process tags - only depends on gate
+  # Condition: skip if gate changed (never happens, but pattern for consistency)
   process-tags:
-    name: Search tags and create PR
+    name: Process foez-bhai tagged files
     runs-on: [review]
+    needs: gate
+    if: ${{ needs.gate.outputs.changed != 'true' }}
+    permissions:
+      contents: write
+      pull-requests: write
+    outputs:
+      changed: ${{ steps.commit.outputs.changed }}
 
     steps:
       - name: Check out repository
@@ -137,3 +156,70 @@ jobs:
           else
             echo "Skipping reviewer assignment because the PR author and actor are the same user."
           fi
+
+  # Job 2: Update doc list - depends on gate and process-tags
+  # Condition: skip if ANY previous job (gate or process-tags) made changes
+  update_doc_list:
+    name: Update Documentations & Lists
+    runs-on: [adn]
+    needs: [gate, process-tags]
+    if: ${{ needs.gate.outputs.changed != 'true' && needs.process-tags.outputs.changed != 'true' }}
+    permissions:
+      contents: write
+    outputs:
+      changed: ${{ steps.commit.outputs.changed }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.ADN_SECRET_FOEZ_PAT }}
+
+      - name: Update Documentations & Lists
+        shell: bash
+        run: |
+          git submodule update --init --depth 1 submodule/documenter
+          make update_doc_list
+
+      - name: Commit and push changes
+        id: commit
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          git config user.name "Foez Ahmed"
+          git config user.email "foez.official@gmail.com"
+
+          rm -f tagged-files.txt
+
+          if [ -z "$(git status --porcelain)" ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          git add -A
+          git commit -m "Updated Doc list" || true
+          git push origin HEAD
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+  # Job 3: Regression - depends on all previous jobs
+  # Condition: skip if ANY previous job (gate, process-tags, or update_doc_list) made changes
+  regression:
+    name: Vivado Regression
+    runs-on: [adn]
+    needs: [gate, process-tags, update_doc_list]
+    if: ${{ needs.gate.outputs.changed != 'true' && needs.process-tags.outputs.changed != 'true' && needs.update_doc_list.outputs.changed != 'true' }}
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Vivado Regression
+        shell: bash
+        run: |
+          ./regression.sh
+
+      - name: Fail if ci issues
+        shell: bash
+        run: |
+          [[ -s ./log/ci_issues.log ]] && exit 1 || exit 0
