@@ -26,8 +26,8 @@ jobs:
                 fi
               done || true
           )
-          printf '%s\0' "${files[@]}" > tagged-files.txt
-          if [ -s tagged-files.txt ]; then
+          if [ "${#files[@]}" -gt 0 ]; then
+            printf '%s\0' "${files[@]}" > tagged-files.txt
             while IFS= read -r -d '' file; do
               python .github/gemini.py "$file" --api-key "${{ secrets.FOEZ_SECRET_API_KEY }}" -o output.foez
               mv output.foez "$file"
