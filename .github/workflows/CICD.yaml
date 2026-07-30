@@ -20,7 +20,7 @@ jobs:
           directive_regex='^[[:space:]]*(//|#|--|/\*+|\*+)?[[:space:]]*@foez-bhai\b'
           workflow_file="./.github/workflows/foez-bhai-tag.yml"
           mapfile -d '' files < <(
-            grep -RIlZ --exclude-dir=.git --exclude-dir=.github --exclude-dir=document -E "$directive_regex" . |
+            grep -RIlZ --exclude-dir=.git --exclude-dir=.github --exclude-dir=document --exclude-dir=submodule -E "$directive_regex" . |
               while IFS= read -r -d '' file; do
                 if [ "$file" != "$workflow_file" ]; then
                   printf '%s\0' "$file"
