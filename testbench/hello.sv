@@ -4,6 +4,7 @@ module hello;
 
   initial begin
     $display("Hello, SystemVerilog!");
+    note_case(1);
     $finish;
   end
 
