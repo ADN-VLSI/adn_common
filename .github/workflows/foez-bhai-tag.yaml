@@ -1,26 +1,21 @@
-name: CI
-on: [push]
+name: Foez Bhai is automating the tagged files
 
+on:
+  push:
+    branches-ignore:
+      - "foez-bhai-automation/**"
+      - "main"
 
 permissions:
   contents: write
   pull-requests: write
 
 jobs:
-  # Job 1: Check for @foez-bhai tags - runs on adn (not skippable)
-  check-tags:
-    name: Check for foez-bhai tags
-    runs-on: [adn]
-    outputs:
-      found: ${{ steps.tagged-files.outputs.found }}
-      count: ${{ steps.tagged-files.outputs.count }}
-      tagged-files: ${{ steps.tagged-files.outputs.tagged-files }}
-      changed: ${{ steps.set-changed.outputs.changed }}
+  process-tags:
+    name: Search tags and create PR
+    runs-on: [review]
 
     steps:
-      - id: set-changed
-        run: echo "changed=false" >> "$GITHUB_OUTPUT"
-
       - name: Check out repository
         uses: actions/checkout@v4
         with:
@@ -46,45 +41,17 @@ jobs:
 
           if [ "${#files[@]}" -eq 0 ]; then
             echo "found=false" >> "$GITHUB_OUTPUT"
-            echo "count=0" >> "$GITHUB_OUTPUT"
-            echo "tagged-files=" >> "$GITHUB_OUTPUT"
             echo "No matching tags found."
             exit 0
           fi
 
-          # Store null-delimited file list as base64 for passing between jobs
-          printf '%s\0' "${files[@]}" | base64 -w0 > tagged-files.b64
-          echo "tagged-files=$(cat tagged-files.b64)" >> "$GITHUB_OUTPUT"
+          printf '%s\0' "${files[@]}" > tagged-files.txt
           echo "found=true" >> "$GITHUB_OUTPUT"
           echo "count=${#files[@]}" >> "$GITHUB_OUTPUT"
           printf 'Found %s tagged file(s).\n' "${#files[@]}"
 
-  # Job 2: Process tags - skippable (only runs if check-tags found tags)
-  process-tags:
-    name: Process foez-bhai tagged files
-    runs-on: [review]
-    needs: [check-tags]
-    if: ${{ needs.check-tags.outputs.changed != 'true' && needs.check-tags.outputs.found == 'true' }}
-
-    outputs:
-      changed: ${{ steps.commit.outputs.changed }}
-
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          token: ${{ secrets.ADN_SECRET_FOEZ_PAT }}
-
-      - name: Restore tagged files list
-        id: restore-files
-        shell: bash
-        run: |
-          set -euo pipefail
-          echo "${{ needs.check-tags.outputs.tagged-files }}" | base64 -d > tagged-files.txt
-          echo "tagged-files=tagged-files.txt" >> "$GITHUB_OUTPUT"
-
       - name: Process tagged files
+        if: steps.tagged-files.outputs.found == 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -102,6 +69,7 @@ jobs:
           echo "BRANCH_NAME=$branch_name" >> "$GITHUB_ENV"
 
       - name: Commit and push changes
+        if: steps.tagged-files.outputs.found == 'true'
         id: commit
         shell: bash
         run: |
@@ -123,7 +91,7 @@ jobs:
           echo "changed=true" >> "$GITHUB_OUTPUT"
 
       - name: Create pull request
-        if: steps.commit.outputs.changed == 'true'
+        if: steps.tagged-files.outputs.found == 'true' && steps.commit.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ secrets.ADN_SECRET_FOEZ_PAT }}
         shell: bash
@@ -169,68 +137,3 @@ jobs:
           else
             echo "Skipping reviewer assignment because the PR author and actor are the same user."
           fi
-
-  # Job 3: Update doc list - not skippable unless a prior job pushed a commit
-  update_doc_list:
-    name: Update Documentations & Lists
-    runs-on: [adn]
-    needs: [check-tags, process-tags]
-    if: ${{ needs.check-tags.outputs.changed != 'true' && needs.process-tags.outputs.changed != 'true' }}
-    permissions:
-      contents: write
-    outputs:
-      changed: ${{ steps.commit.outputs.changed }}
-
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          token: ${{ secrets.ADN_SECRET_FOEZ_PAT }}
-
-      - name: Update Documentations & Lists
-        shell: bash
-        run: |
-          git submodule update --init --depth 1 submodule/documenter
-          make update_doc_list
-
-      - name: Commit and push changes
-        id: commit
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          git config user.name "Foez Ahmed"
-          git config user.email "foez.official@gmail.com"
-
-          rm -f tagged-files.txt
-
-          if [ -z "$(git status --porcelain)" ]; then
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          git add -A
-          git commit -m "Updated Doc list" || true
-          git push origin HEAD
-          echo "changed=true" >> "$GITHUB_OUTPUT"
-
-  # Job 4: Regression - not skippable unless a prior job pushed a commit
-  regression:
-    name: Vivado Regression
-    runs-on: [adn]
-    needs: [check-tags, process-tags, update_doc_list]
-    if: ${{ needs.check-tags.outputs.changed != 'true' && needs.process-tags.outputs.changed != 'true' && needs.update_doc_list.outputs.changed != 'true' }}
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Vivado Regression
-        shell: bash
-        run: |
-          ./regression.sh
-
-      - name: Fail if ci issues
-        shell: bash
-        run: |
-          [[ -s ./log/ci_issues.log ]] && exit 1 || exit 0
