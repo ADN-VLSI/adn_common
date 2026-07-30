@@ -1,8 +1,25 @@
 /*
 
-@foez-bhai, write the purpose of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+# Purpose
+The `adn_common_round_robin_arbiter` module implements a fair, round-robin arbitration scheme to select a single requester from multiple input requests. It ensures that every requester is granted access in a rotating order, preventing starvation and ensuring equitable bandwidth distribution among all input channels.
 
-@foez-bhai, describe the usage of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+## Usage
+To use this module, instantiate it by specifying the `NUM_REQ` parameter to match the number of input request channels. The module samples `req_i` and, when `allow_req_i` is high, grants access to one requester based on the round-robin pointer.
+
+### Example Instantiation
+```systemverilog
+adn_common_round_robin_arbiter #(
+    .NUM_REQ(4)
+) u_arbiter (
+    .clk_i            (clk),
+    .rst_ni           (rst_n),
+    .allow_req_i      (ready_to_accept),
+    .req_i            (request_bus),
+    .gnt_o            (grant_one_hot),
+    .gnt_addr_o       (grant_index),
+    .gnt_addr_valid_o (grant_valid)
+);
+```
 
 | REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
 |----------|------------|-----------------|--------------------------------------------------------|
@@ -17,25 +34,28 @@ See LICENSE file in the project root for full license information
 
 */
 
-// @foez-bhai, add comments to the parameters, ports
 module adn_common_round_robin_arbiter #(
-    // PARAMETERS
+    // Number of request channels to arbitrate
     parameter int NUM_REQ = 8
     
 ) (
-    // PORTS
+    // Clock input
     input  logic                       clk_i,
+    // Active-low asynchronous reset
     input  logic                       rst_ni,
  
+    // High when the arbiter is permitted to grant a new request
     input  logic                       allow_req_i,
+    // Input request bus, one bit per channel
     input  logic [    NUM_REQ-1:0]     req_i,
  
-    output logic [    NUM_REQ-1:0]     gnt_o,           // one-hot grant, original bit order
-    output logic [$clog2(NUM_REQ)-1:0] gnt_addr_o,      // encoded grant address, original order
+    // One-hot grant output, original bit order
+    output logic [    NUM_REQ-1:0]     gnt_o,
+    // Encoded grant address, original order
+    output logic [$clog2(NUM_REQ)-1:0] gnt_addr_o,
+    // High when gnt_addr_o contains a valid grant
     output logic                       gnt_addr_valid_o    
 );
-
-  // @foez-bhai, add comments to the functional blocks, signals, and submodules
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // INITIAL CHECKS
@@ -70,11 +90,14 @@ module adn_common_round_robin_arbiter #(
     // SIGNALS
     //////////////////////////////////////////////////////////////////////////////////////////////////
  
+    // Pointer to the current priority requester
     logic [OFFSET_W-1:0] offset_q, offset_d;
  
+    // Rotated request and grant buses
     logic [NUM_REQ-1:0]  req_rot;
     logic [NUM_REQ-1:0]  gnt_rot;
  
+    // Rotated grant address and validity
     logic [OFFSET_W-1:0] gnt_addr_rot;
     logic                gnt_valid_rot;
  
@@ -133,12 +156,12 @@ module adn_common_round_robin_arbiter #(
       end
     end
  
+    // Update pointer on clock edge
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if (!rst_ni) offset_q <= '0;
       else         offset_q <= offset_d;
     end
  
-
+ 
   end
 endmodule
-

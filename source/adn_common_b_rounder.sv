@@ -1,8 +1,10 @@
 /*
 
-@foez-bhai, write the purpose of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+### Purpose
+The `adn_common_b_rounder` module implements a circular barrel shifter or round-robin style bit-shifter. It takes an input vector and rotates its bits based on a provided offset, effectively performing a circular shift operation to reorder the input bits into the output grant vector.
 
-@foez-bhai, describe the usage of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+### Usage
+To use this module, instantiate it with the desired width `N`. Provide the input vector `req_i` and the rotation `offset`. The module will output the rotated vector `grant_o` such that the bit at `req_i[0]` is shifted to `grant_o[offset]`.
 
 | REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
 |----------|------------|-----------------|--------------------------------------------------------|
@@ -60,4 +62,3 @@ module adn_common_b_rounder #(
   
 
 endmodule
-
