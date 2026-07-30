@@ -51,3 +51,9 @@ jobs:
           git add -A
           git commit -m "auto-update" || make regression
           git push origin HEAD
+
+      - name: Fail if regression issues
+        shell: bash
+        run: |
+          touch ./log/ci_issues.log
+          [[ -s ./log/ci_issues.log ]] && exit 1 || exit 0
