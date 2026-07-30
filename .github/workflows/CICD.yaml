@@ -4,8 +4,7 @@ on: [push]
 
 jobs:
   CICD:
-
-    runs-on: [adn]
+    runs-on: [ubuntu-latest]
 
     steps:
       - name: Check out repository
@@ -28,12 +27,14 @@ jobs:
               done || true
           )
           printf '%s\0' "${files[@]}" > tagged-files.txt
-          while IFS= read -r -d '' file; do
-            python .github/gemini.py "$file" --api-key "${{ secrets.FOEZ_SECRET_API_KEY }}" -o output.foez
-            mv output.foez "$file"
-            echo "" >> "$file"
-            rm -rf __pycache__
-          done < tagged-files.txt
+          if [ -s tagged-files.txt ]; then
+            while IFS= read -r -d '' file; do
+              python .github/gemini.py "$file" --api-key "${{ secrets.FOEZ_SECRET_API_KEY }}" -o output.foez
+              mv output.foez "$file"
+              echo "" >> "$file"
+              rm -rf __pycache__
+            done < tagged-files.txt
+          fi
           rm -rf tagged-files.txt
 
       - name: Update Documentations & Lists
