@@ -171,6 +171,10 @@ compile_submodule:
 		echo -e "\033[1;33m#\033[0m Submodule $(SUB) commit has not changed, skipping compilation."; \
 	fi
 
+.PHONY: regression
+regression:
+	@./.github/regression.sh
+
 ####################################################################################################
 # UPDATE DOC LIST
 ####################################################################################################
