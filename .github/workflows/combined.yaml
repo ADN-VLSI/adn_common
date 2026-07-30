@@ -65,9 +65,7 @@ jobs:
     runs-on: [review]
     needs: [check-tags]
     if: ${{ !cancelled() && !failed() && needs.check-tags.outputs.changed != 'true' && needs.check-tags.outputs.found == 'true' }}
-    permissions:
-      contents: write
-      pull-requests: write
+
     outputs:
       changed: ${{ steps.commit.outputs.changed }}
 
@@ -78,14 +76,14 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.ADN_SECRET_FOEZ_PAT }}
 
-      - name: Restore tagged files list
-        id: restore-files
-        shell: bash
-        run: |
-          set -euo pipefail
-          echo "${{ needs.check-tags.outputs.tagged-files }}" | base64 -d > tagged-files.txt
-          echo "tagged-files=tagged-files.txt" >> "$GITHUB_OUTPUT"
-
+#      - name: Restore tagged files list
+#        id: restore-files
+#        shell: bash
+#        run: |
+#          set -euo pipefail
+#          echo "${{ needs.check-tags.outputs.tagged-files }}" | base64 -d > tagged-files.txt
+#          echo "tagged-files=tagged-files.txt" >> "$GITHUB_OUTPUT"
+#
 #      - name: Process tagged files
 #        shell: bash
 #        run: |
