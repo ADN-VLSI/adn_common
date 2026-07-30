@@ -171,7 +171,6 @@ module adn_common_cdc_fifo #(
       .wr_addr_i(wr_ptr_bin[ADDR_WIDTH-1:0]),
       .wr_data_i(wr_data_i),
 
-      .rd_en_i  (rd_en_qualified),
       .rd_addr_i(rd_ptr_bin[ADDR_WIDTH-1:0]),
       .rd_data_o(rd_data_o)
   );

@@ -36,7 +36,6 @@ module adn_common_dual_port_ram #(
     input logic [DATA_WIDTH-1:0] wr_data_i,  // Data to be written
 
     // Read Port Interface
-    input  logic                  rd_en_i,    // Read enable signal
     input  logic [ADDR_WIDTH-1:0] rd_addr_i,  // Read address
     output logic [DATA_WIDTH-1:0] rd_data_o   // Data read from memory
 );
@@ -71,13 +70,8 @@ module adn_common_dual_port_ram #(
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
   // Asynchronous Read Channel: Instantly reflects changes on rd_addr_i when rd_en_i is high
-  always_comb begin
-    if (rd_en_i) begin
-      rd_data_o = mem_core[rd_addr_i];
-    end else begin
-      rd_data_o = '0;
-    end
-  end
+  always_comb rd_data_o = mem_core[rd_addr_i];
+
 
   // Initialize Memory Array for Simulation (Prevents 'x on unwritten reads)
 `ifdef SIMULATION
