@@ -8,7 +8,7 @@
 ## Parameters
 |Name|Type|Dimension|Default Value|Description|
 |-|-|-|-|-|
-|WIDTH|int||8|width of the counter|
+|DEPTH|int||8|width of the counter|
 
 ## Ports
 |Name|Direction|Type|Dimension|Description|
