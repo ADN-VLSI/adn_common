@@ -56,8 +56,8 @@ jobs:
         run: |
           set -euo pipefail
 
-          branch_name="foez-bhai-automation/${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
-          git switch -c "$branch_name"
+          branch_name="foez-bhai-automation/${GITHUB_REF_NAME}"
+          git switch -c "$branch_name" || git switch -c "$branch_name"
 
           while IFS= read -r -d '' file; do
             python .github/gemini.py "$file" --api-key "${{ secrets.FOEZ_SECRET_API_KEY }}" -o output.foez
@@ -111,7 +111,7 @@ jobs:
             if pr_url=$(gh pr create \
               --base "${GITHUB_REF_NAME}" \
               --head "${head}" \
-              --title "Process foez-bhai tagged files" \
+              --title "Process foez-bhai tagged files for branch ${GITHUB_REF_NAME}" \
               --body "This PR was created automatically after finding matching tags in the repository for each tagged file." 2>gh-pr-create.err); then
               break
             fi
