@@ -12,7 +12,7 @@ always_comb begin
 
     int i= offset;
     int j= 0;
-    
+   
     grant_o = '0;
 
     for (i= offset; i < N; i++) begin
