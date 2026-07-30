@@ -53,10 +53,14 @@ module adn_common_edge_detect #(
   // Main sequential block: Synchronous logic to detect transitions and update state.
   always_ff @(posedge clk_i) begin
 <<<<<<< HEAD
+<<<<<<< HEAD
     if (!arst_ni) begin
 =======
     if (!rst_n_i) begin
 >>>>>>> d39dda9 (modified:   local.f)
+=======
+    if (!rst_n_i) begin
+>>>>>>> ffac562 (flat out)
       // Reset state: Clear history and output pulse.
       signal_prev  <= 1'b0;
       edge_pulse_o <= 1'b0;
@@ -65,6 +69,7 @@ module adn_common_edge_detect #(
       case (EDGE_TYPE)
         // Falling edge detection:
         // Current signal is low and previous signal was high.
+<<<<<<< HEAD
 <<<<<<< HEAD
         0: edge_pulse_o <= signal_prev & ~signal_i;
         // Rising edge detection:
@@ -82,6 +87,15 @@ module adn_common_edge_detect #(
         // Current signal differs from previous sampled value.
         2: edge_pulse_o <= signal_prev ^ signal_in_i;
 >>>>>>> d39dda9 (modified:   local.f)
+=======
+        0: edge_pulse_o <= signal_prev & ~signal_in_i;
+        // Rising edge detection:
+        // Current signal is high and previous signal was low.
+        1: edge_pulse_o <= ~signal_prev & signal_in_i;
+        // Both edge detection:
+        // Current signal differs from previous sampled value.
+        2: edge_pulse_o <= signal_prev ^ signal_in_i;
+>>>>>>> ffac562 (flat out)
         // Invalid configuration handling.
         // Keep output deasserted for unsupported values.
         default: edge_pulse_o <= 1'b0;
@@ -89,10 +103,14 @@ module adn_common_edge_detect #(
 
       // Update stored input history for the next clock cycle.
 <<<<<<< HEAD
+<<<<<<< HEAD
       signal_prev <= signal_i;
 =======
       signal_prev <= signal_in_i;
 >>>>>>> d39dda9 (modified:   local.f)
+=======
+      signal_prev <= signal_in_i;
+>>>>>>> ffac562 (flat out)
     end
   end
 
