@@ -48,7 +48,8 @@ jobs:
         run: |
           git config user.name "Foez Ahmed"
           git config user.email "foez.official@gmail.com"
-          git add -A
+          git add .
+          git restore --staged submodule
           git commit -m "auto-update" || make regression
           git push origin HEAD
 
