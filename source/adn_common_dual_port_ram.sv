@@ -21,30 +21,30 @@ See LICENSE file in the project root for full license information
 
 module adn_common_dual_port_ram #(
     // PARAMETERS
-    parameter int DATA_WIDTH = 32,      // Width of the data bus in bits
-    parameter int ADDR_WIDTH = 8,       // Width of the address bus (determines depth)
-    bit OUT_REG = 1'b0                  // 0 = Unregistered (1 cycle latency), 1 = Registered (2 cycle latency)
+    parameter int DATA_WIDTH = 32,  // Width of the data bus in bits
+    parameter int ADDR_WIDTH = 8    // Width of the address bus (determines depth)
 ) (
     // PORTS
 
-    // Write Port Interface (Write Clock Domain)
-    input logic                  wr_clk_i,    // Write clock
-    input logic                  wr_rst_n_i,  // Active-low asynchronous reset for write domain
-    input logic                  wr_en_i,     // Write enable signal
-    input logic [ADDR_WIDTH-1:0] wr_addr_i,   // Write address
-    input logic [DATA_WIDTH-1:0] wr_data_i,   // Data to be written
+    //Clock/Reset
+    input logic clk_i,   // Write clock
+    input logic rst_n_i, // Active-low asynchronous reset for write domain
 
-    // Read Port Interface (Read Clock Domain)
-    input  logic                  rd_clk_i,    // Read clock
-    input  logic                  rd_rst_n_i,  // Active-low asynchronous reset for read domain
-    input  logic                  rd_en_i,     // Read enable signal
-    input  logic [ADDR_WIDTH-1:0] rd_addr_i,   // Read address
-    output logic [DATA_WIDTH-1:0] rd_data_o    // Data read from memory
+    // Write Port Interface
+    input logic                  wr_en_i,    // Write enable signal
+    input logic [ADDR_WIDTH-1:0] wr_addr_i,  // Write address
+    input logic [DATA_WIDTH-1:0] wr_data_i,  // Data to be written
+
+    // Read Port Interface
+    input  logic                  rd_en_i,    // Read enable signal
+    input  logic [ADDR_WIDTH-1:0] rd_addr_i,  // Read address
+    output logic [DATA_WIDTH-1:0] rd_data_o   // Data read from memory
 );
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // LOCALPARAMS GENERATED
   //////////////////////////////////////////////////////////////////////////////////////////////////
+
   // Calculate total memory depth based on address width
   localparam int DEPTH = 1 << ADDR_WIDTH;
 
@@ -55,38 +55,14 @@ module adn_common_dual_port_ram #(
   // Dual-Port memory matrix array: The physical storage element
   logic [DATA_WIDTH-1:0] mem_core[DEPTH];
 
-  // Read pipeline registers: Intermediate storage for read data
-  logic [DATA_WIDTH-1:0] ram_data_out; // Raw output from memory core
-  logic [DATA_WIDTH-1:0] ram_data_reg; // Registered output for timing improvement
-
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // SEQUENTIALS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
   // Synchronous Write Channel (wr_clk_i Domain): Handles data storage into the memory array
-  always_ff @(posedge wr_clk_i) begin
-    if (wr_en_i) begin
+  always_ff @(posedge clk_i) begin
+    if (rst_n_i && wr_en_i) begin
       mem_core[wr_addr_i] <= wr_data_i;
-    end
-  end
-
-  // Synchronous Read Channel (rd_clk_i Domain): Fetches data from memory array
-  always_ff @(posedge rd_clk_i) begin
-    if (!rd_rst_n_i) begin
-      ram_data_out <= '0;
-    end else begin
-      if (rd_en_i) begin
-        ram_data_out <= mem_core[rd_addr_i];
-      end
-    end
-  end
-
-  // Output Pipeline Register Stage (OUT_REG): Optional stage to improve timing path
-  always_ff @(posedge rd_clk_i) begin
-    if (!rd_rst_n_i) begin
-      ram_data_reg <= '0;
-    end else begin
-      ram_data_reg <= ram_data_out;
     end
   end
 
@@ -94,8 +70,14 @@ module adn_common_dual_port_ram #(
   // ASSIGNMENTS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  // Continuous assignment output multiplexer: Selects between registered and unregistered output
-  assign rd_data_o = (OUT_REG) ? ram_data_reg : ram_data_out;
+  // Asynchronous Read Channel: Instantly reflects changes on rd_addr_i when rd_en_i is high
+  always_comb begin
+    if (rd_en_i) begin
+      rd_data_o = mem_core[rd_addr_i];
+    end else begin
+      rd_data_o = '0;
+    end
+  end
 
   // Initialize Memory Array for Simulation (Prevents 'x on unwritten reads)
 `ifdef SIMULATION
