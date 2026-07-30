@@ -1,86 +1,64 @@
 name: CI
 on: [push]
 
+
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
-  build:
+  # Job 1: Check for @foez-bhai tags - runs on adn (not skippable)
+  check-tags:
+    name: Check for foez-bhai tags
     runs-on: [adn]
+    outputs:
+      found: ${{ steps.tagged-files.outputs.found }}
+      count: ${{ steps.tagged-files.outputs.count }}
+      tagged-files: ${{ steps.tagged-files.outputs.tagged-files }}
+      changed: ${{ steps.set-changed.outputs.changed }}
 
     steps:
-      - uses: actions/checkout@v4
+      - id: set-changed
+        run: echo "changed=false" >> "$GITHUB_OUTPUT"
 
-      - name: Run a one-line script
-        run: echo Hello, world!
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.ADN_SECRET_FOEZ_PAT }}
 
-      - name: Run a multi-line script
+      - name: Find tagged files
+        id: tagged-files
+        shell: bash
         run: |
-          echo Add other actions to build,
-          echo test, and deploy your project.
+          set -euo pipefail
 
+          directive_regex='^[[:space:]]*(//|#|--|/\*+|\*+)?[[:space:]]*@foez-bhai\b'
+          workflow_file="./.github/workflows/foez-bhai-tag.yml"
+          mapfile -d '' files < <(
+            grep -RIlZ --exclude-dir=.git --exclude-dir=.github -E "$directive_regex" . |
+              while IFS= read -r -d '' file; do
+                if [ "$file" != "$workflow_file" ]; then
+                  printf '%s\0' "$file"
+                fi
+              done || true
+          )
 
+          if [ "${#files[@]}" -eq 0 ]; then
+            echo "found=false" >> "$GITHUB_OUTPUT"
+            echo "count=0" >> "$GITHUB_OUTPUT"
+            echo "tagged-files=" >> "$GITHUB_OUTPUT"
+            echo "No matching tags found."
+            exit 0
+          fi
 
-#name: Combined CI Pipeline
-#
-#on:
-#  push:
-#    branches: ["*"]
-#
-#permissions:
-#  contents: write
-#  pull-requests: write
-#
-#jobs:
-#  # Job 1: Check for @foez-bhai tags - runs on adn (not skippable)
-#  check-tags:
-#    name: Check for foez-bhai tags
-#    runs-on: [adn]
-#    outputs:
-#      found: ${{ steps.tagged-files.outputs.found }}
-#      count: ${{ steps.tagged-files.outputs.count }}
-#      tagged-files: ${{ steps.tagged-files.outputs.tagged-files }}
-#      changed: ${{ steps.set-changed.outputs.changed }}
-#
-#    steps:
-#      - id: set-changed
-#        run: echo "changed=false" >> "$GITHUB_OUTPUT"
-#
-#      - name: Check out repository
-#        uses: actions/checkout@v4
-#        with:
-#          fetch-depth: 0
-#          token: ${{ secrets.ADN_SECRET_FOEZ_PAT }}
-#
-#      - name: Find tagged files
-#        id: tagged-files
-#        shell: bash
-#        run: |
-#          set -euo pipefail
-#
-#          directive_regex='^[[:space:]]*(//|#|--|/\*+|\*+)?[[:space:]]*@foez-bhai\b'
-#          workflow_file="./.github/workflows/foez-bhai-tag.yml"
-#          mapfile -d '' files < <(
-#            grep -RIlZ --exclude-dir=.git --exclude-dir=.github -E "$directive_regex" . |
-#              while IFS= read -r -d '' file; do
-#                if [ "$file" != "$workflow_file" ]; then
-#                  printf '%s\0' "$file"
-#                fi
-#              done || true
-#          )
-#
-#          if [ "${#files[@]}" -eq 0 ]; then
-#            echo "found=false" >> "$GITHUB_OUTPUT"
-#            echo "count=0" >> "$GITHUB_OUTPUT"
-#            echo "tagged-files=" >> "$GITHUB_OUTPUT"
-#            echo "No matching tags found."
-#            exit 0
-#          fi
-#
-#          # Store null-delimited file list as base64 for passing between jobs
-#          printf '%s\0' "${files[@]}" | base64 -w0 > tagged-files.b64
-#          echo "tagged-files=$(cat tagged-files.b64)" >> "$GITHUB_OUTPUT"
-#          echo "found=true" >> "$GITHUB_OUTPUT"
-#          echo "count=${#files[@]}" >> "$GITHUB_OUTPUT"
-#          printf 'Found %s tagged file(s).\n' "${#files[@]}"
-#
+          # Store null-delimited file list as base64 for passing between jobs
+          printf '%s\0' "${files[@]}" | base64 -w0 > tagged-files.b64
+          echo "tagged-files=$(cat tagged-files.b64)" >> "$GITHUB_OUTPUT"
+          echo "found=true" >> "$GITHUB_OUTPUT"
+          echo "count=${#files[@]}" >> "$GITHUB_OUTPUT"
+          printf 'Found %s tagged file(s).\n' "${#files[@]}"
+
 #  # Job 2: Process tags - skippable (only runs if check-tags found tags)
 #  process-tags:
 #    name: Process foez-bhai tagged files
