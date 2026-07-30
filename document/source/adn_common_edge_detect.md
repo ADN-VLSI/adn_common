@@ -15,10 +15,10 @@
 ## Ports
 |Name|Direction|Type|Dimension|Description|
 |-|-|-|-|-|
-|clk|input|logic|| System clock input|
-|rst_n|input|logic|| Active-low asynchronous reset|
-|signal_in|input|logic|| Input signal to be monitored for edges|
-|edge_pulse|output|logic|| Output pulse indicating edge detection|
+|clk_i|input|logic||Active-low asynchronous reset|
+|rst_n_i|input|logic||Input signal to be monitored for edges|
+|signal_in_i|input|logic||Output pulse indicating edge detection|
+|edge_pulse_o|output|logic|| System clock input Active-low asynchronous reset Input signal to be monitored for edges Output pulse indicating edge detection|
 ## Description
 
 
@@ -31,7 +31,7 @@ To use this module, instantiate it in your design and set the `EDGE_TYPE` parame
 - `1`: Falling edge detection.
 - `2`: Dual-edge (both rising and falling) detection.
 
-Connect the system clock (`clk`), active-low reset (`rst_n`), and the target signal (`signal_in`). The `edge_pulse` output will assert high for exactly one clock cycle when the specified transition is detected.
+Connect the system clock (`clk_i`), active-low reset (`rst_n_i`), and the target signal (`signal_in_i`). The `edge_pulse_o` output will assert high for exactly one clock cycle when the specified transition is detected.
 
 | REVISION | DATE       | AUTHOR                 | DESCRIPTION                                            |
 |----------|------------|------------------------|--------------------------------------------------------|
