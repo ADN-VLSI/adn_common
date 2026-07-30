@@ -6,8 +6,8 @@
  
 | REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
 |----------|------------|-----------------|--------------------------------------------------------|
-| 0.1      | YYYY-MM-DD | Annim | Initial version                                        |
-| 1.0      | YYYY-MM-DD | Annim | Stable release                                         |
+| 0.1      | 2026-07-28 | Annim | Initial version                                        |
+| 1.0      | 2026-07-30 | Annim | Stable release                                         |
  
 Author : Annim (jannatannim@gmail.com)
 This file is part of ADN-VLSI/adn_common
