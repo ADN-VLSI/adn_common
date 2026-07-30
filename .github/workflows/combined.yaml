@@ -64,7 +64,7 @@ jobs:
     name: Process foez-bhai tagged files
     runs-on: [review]
     needs: [check-tags]
-    # if: ${{ needs.check-tags.outputs.changed != 'true' && needs.check-tags.outputs.found == 'true' }}
+    if: ${{ needs.check-tags.outputs.changed != 'true' && needs.check-tags.outputs.found == 'true' }}
 
     outputs:
       changed: ${{ steps.commit.outputs.changed }}
