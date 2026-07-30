@@ -40,14 +40,14 @@ module adn_common_hs_combiner #(
     logic ok_v; // Aggregated valid status
     logic ok_r; // Aggregated ready status
     logic ok;   // Global handshake synchronization signal
-
+    
     // Check if all input valids are high
     ok_v = &valid_i;
     // Check if all output readies are high
     ok_r = &ready_i;
     // Transaction proceeds only if both conditions are met
     ok = ok_v & ok_r;
-
+    
     // Drive output valid and ready signals based on synchronization status
     valid_o = ok ? '1 : '0;
     ready_o = ok ? '1 : '0;
