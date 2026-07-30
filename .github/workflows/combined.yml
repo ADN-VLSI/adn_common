@@ -2,39 +2,26 @@ name: Combined CI Pipeline
 
 on:
   push:
-    branches: [main]
-  pull_request:
-    branches: [main]
 
 permissions:
   contents: write
   pull-requests: write
 
 jobs:
-  # Gate job - runs first, provides baseline state (never pushes)
-  gate:
-    name: Gate (baseline state)
+  # Job 1: Check for @foez-bhai tags - runs on adn (not skippable)
+  check-tags:
+    name: Check for foez-bhai tags
     runs-on: [adn]
     outputs:
-      changed: ${{ steps.set.outputs.changed }}
+      found: ${{ steps.tagged-files.outputs.found }}
+      count: ${{ steps.tagged-files.outputs.count }}
+      tagged-files: ${{ steps.tagged-files.outputs.tagged-files }}
+      changed: ${{ steps.set-changed.outputs.changed }}
+
     steps:
-      - id: set
+      - id: set-changed
         run: echo "changed=false" >> "$GITHUB_OUTPUT"
 
-  # Job 1: Process tags - only depends on gate
-  # Condition: skip if gate changed (never happens, but pattern for consistency)
-  process-tags:
-    name: Process foez-bhai tagged files
-    runs-on: [review]
-    needs: gate
-    if: ${{ needs.gate.outputs.changed != 'true' }}
-    permissions:
-      contents: write
-      pull-requests: write
-    outputs:
-      changed: ${{ steps.commit.outputs.changed }}
-
-    steps:
       - name: Check out repository
         uses: actions/checkout@v4
         with:
@@ -60,17 +47,47 @@ jobs:
 
           if [ "${#files[@]}" -eq 0 ]; then
             echo "found=false" >> "$GITHUB_OUTPUT"
+            echo "count=0" >> "$GITHUB_OUTPUT"
+            echo "tagged-files=" >> "$GITHUB_OUTPUT"
             echo "No matching tags found."
             exit 0
           fi
 
-          printf '%s\0' "${files[@]}" > tagged-files.txt
+          # Store null-delimited file list as base64 for passing between jobs
+          printf '%s\0' "${files[@]}" | base64 -w0 > tagged-files.b64
+          echo "tagged-files=$(cat tagged-files.b64)" >> "$GITHUB_OUTPUT"
           echo "found=true" >> "$GITHUB_OUTPUT"
           echo "count=${#files[@]}" >> "$GITHUB_OUTPUT"
           printf 'Found %s tagged file(s).\n' "${#files[@]}"
 
+  # Job 2: Process tags - skippable (only runs if check-tags found tags)
+  process-tags:
+    name: Process foez-bhai tagged files
+    runs-on: [review]
+    needs: [check-tags]
+    if: ${{ !cancelled() && !failed() && needs.check-tags.outputs.changed != 'true' && needs.check-tags.outputs.found == 'true' }}
+    permissions:
+      contents: write
+      pull-requests: write
+    outputs:
+      changed: ${{ steps.commit.outputs.changed }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.ADN_SECRET_FOEZ_PAT }}
+
+      - name: Restore tagged files list
+        id: restore-files
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "${{ needs.check-tags.outputs.tagged-files }}" | base64 -d > tagged-files.txt
+          echo "tagged-files=tagged-files.txt" >> "$GITHUB_OUTPUT"
+
       - name: Process tagged files
-        if: steps.tagged-files.outputs.found == 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -88,7 +105,6 @@ jobs:
           echo "BRANCH_NAME=$branch_name" >> "$GITHUB_ENV"
 
       - name: Commit and push changes
-        if: steps.tagged-files.outputs.found == 'true'
         id: commit
         shell: bash
         run: |
@@ -110,7 +126,7 @@ jobs:
           echo "changed=true" >> "$GITHUB_OUTPUT"
 
       - name: Create pull request
-        if: steps.tagged-files.outputs.found == 'true' && steps.commit.outputs.changed == 'true'
+        if: steps.commit.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ secrets.ADN_SECRET_FOEZ_PAT }}
         shell: bash
@@ -157,13 +173,12 @@ jobs:
             echo "Skipping reviewer assignment because the PR author and actor are the same user."
           fi
 
-  # Job 2: Update doc list - depends on gate and process-tags
-  # Condition: skip if ANY previous job (gate or process-tags) made changes
+  # Job 3: Update doc list - not skippable unless a prior job pushed a commit
   update_doc_list:
     name: Update Documentations & Lists
     runs-on: [adn]
-    needs: [gate, process-tags]
-    if: ${{ needs.gate.outputs.changed != 'true' && needs.process-tags.outputs.changed != 'true' }}
+    needs: [check-tags, process-tags]
+    if: ${{ !cancelled() && !failed() && needs.check-tags.outputs.changed != 'true' && needs.process-tags.outputs.changed != 'true' }}
     permissions:
       contents: write
     outputs:
@@ -203,13 +218,12 @@ jobs:
           git push origin HEAD
           echo "changed=true" >> "$GITHUB_OUTPUT"
 
-  # Job 3: Regression - depends on all previous jobs
-  # Condition: skip if ANY previous job (gate, process-tags, or update_doc_list) made changes
+  # Job 4: Regression - not skippable unless a prior job pushed a commit
   regression:
     name: Vivado Regression
     runs-on: [adn]
-    needs: [gate, process-tags, update_doc_list]
-    if: ${{ needs.gate.outputs.changed != 'true' && needs.process-tags.outputs.changed != 'true' && needs.update_doc_list.outputs.changed != 'true' }}
+    needs: [check-tags, process-tags, update_doc_list]
+    if: ${{ !cancelled() && !failed() && needs.check-tags.outputs.changed != 'true' && needs.process-tags.outputs.changed != 'true' && needs.update_doc_list.outputs.changed != 'true' }}
 
     steps:
       - uses: actions/checkout@v5
