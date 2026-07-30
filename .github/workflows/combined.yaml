@@ -86,92 +86,92 @@ jobs:
           echo "${{ needs.check-tags.outputs.tagged-files }}" | base64 -d > tagged-files.txt
           echo "tagged-files=tagged-files.txt" >> "$GITHUB_OUTPUT"
 
-      - name: Process tagged files
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          branch_name="foez-bhai-automation/${GITHUB_REF_NAME}"
-          git switch -c "$branch_name" || git switch -c "$branch_name"
-
-          while IFS= read -r -d '' file; do
-            python .github/gemini.py "$file" --api-key "${{ secrets.FOEZ_SECRET_API_KEY }}" -o output.foez
-            mv output.foez "$file"
-            echo "" >> "$file"
-            rm -rf __pycache__
-          done < tagged-files.txt
-
-          echo "BRANCH_NAME=$branch_name" >> "$GITHUB_ENV"
-
-      - name: Commit and push changes
-        id: commit
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          git config user.name "Foez Ahmed"
-          git config user.email "foez.official@gmail.com"
-
-          rm -f tagged-files.txt
-
-          if [ -z "$(git status --porcelain)" ]; then
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          git add -A
-          git commit -m "Process foez-bhai tagged files"
-          git push --set-upstream origin "$BRANCH_NAME"
-          echo "changed=true" >> "$GITHUB_OUTPUT"
-
-      - name: Create pull request
-        if: steps.commit.outputs.changed == 'true'
-        env:
-          GH_TOKEN: ${{ secrets.ADN_SECRET_FOEZ_PAT }}
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          repo_owner="${GITHUB_REPOSITORY%%/*}"
-          declare -a head_candidates=(
-            "${BRANCH_NAME}"
-            "${repo_owner}:${BRANCH_NAME}"
-            "${GITHUB_ACTOR}:${BRANCH_NAME}"
-          )
-
-          pr_url=""
-          for head in "${head_candidates[@]}"; do
-            echo "Trying to create PR with head=${head} base=${GITHUB_REF_NAME}"
-            if pr_url=$(gh pr create \
-              --base "${GITHUB_REF_NAME}" \
-              --head "${head}" \
-              --title "Process foez-bhai tagged files for branch ${GITHUB_REF_NAME}" \
-              --body "This PR was created automatically after finding matching tags in the repository for each tagged file." 2>gh-pr-create.err); then
-              break
-            fi
-
-            echo "gh pr create failed for head=${head}"
-            sed -n '1,20p' gh-pr-create.err
-          done
-
-          if [ -z "${pr_url}" ]; then
-            echo "Failed to create PR after trying all head candidates."
-            exit 1
-          fi
-
-          echo "Created PR: ${pr_url}"
-          rm -f gh-pr-create.err
-
-          if [ "${GITHUB_ACTOR}" != "foez.ahmed" ]; then
-            if gh pr edit "$pr_url" --add-reviewer "${GITHUB_ACTOR}"; then
-              echo "Requested review from ${GITHUB_ACTOR}."
-            else
-              echo "Could not request review from ${GITHUB_ACTOR}; continuing without reviewer assignment."
-            fi
-          else
-            echo "Skipping reviewer assignment because the PR author and actor are the same user."
-          fi
-
+#      - name: Process tagged files
+#        shell: bash
+#        run: |
+#          set -euo pipefail
+#
+#          branch_name="foez-bhai-automation/${GITHUB_REF_NAME}"
+#          git switch -c "$branch_name" || git switch -c "$branch_name"
+#
+#          while IFS= read -r -d '' file; do
+#            python .github/gemini.py "$file" --api-key "${{ secrets.FOEZ_SECRET_API_KEY }}" -o output.foez
+#            mv output.foez "$file"
+#            echo "" >> "$file"
+#            rm -rf __pycache__
+#          done < tagged-files.txt
+#
+#          echo "BRANCH_NAME=$branch_name" >> "$GITHUB_ENV"
+#
+#      - name: Commit and push changes
+#        id: commit
+#        shell: bash
+#        run: |
+#          set -euo pipefail
+#
+#          git config user.name "Foez Ahmed"
+#          git config user.email "foez.official@gmail.com"
+#
+#          rm -f tagged-files.txt
+#
+#          if [ -z "$(git status --porcelain)" ]; then
+#            echo "changed=false" >> "$GITHUB_OUTPUT"
+#            exit 0
+#          fi
+#
+#          git add -A
+#          git commit -m "Process foez-bhai tagged files"
+#          git push --set-upstream origin "$BRANCH_NAME"
+#          echo "changed=true" >> "$GITHUB_OUTPUT"
+#
+#      - name: Create pull request
+#        if: steps.commit.outputs.changed == 'true'
+#        env:
+#          GH_TOKEN: ${{ secrets.ADN_SECRET_FOEZ_PAT }}
+#        shell: bash
+#        run: |
+#          set -euo pipefail
+#
+#          repo_owner="${GITHUB_REPOSITORY%%/*}"
+#          declare -a head_candidates=(
+#            "${BRANCH_NAME}"
+#            "${repo_owner}:${BRANCH_NAME}"
+#            "${GITHUB_ACTOR}:${BRANCH_NAME}"
+#          )
+#
+#          pr_url=""
+#          for head in "${head_candidates[@]}"; do
+#            echo "Trying to create PR with head=${head} base=${GITHUB_REF_NAME}"
+#            if pr_url=$(gh pr create \
+#              --base "${GITHUB_REF_NAME}" \
+#              --head "${head}" \
+#              --title "Process foez-bhai tagged files for branch ${GITHUB_REF_NAME}" \
+#              --body "This PR was created automatically after finding matching tags in the repository for each tagged file." 2>gh-pr-create.err); then
+#              break
+#            fi
+#
+#            echo "gh pr create failed for head=${head}"
+#            sed -n '1,20p' gh-pr-create.err
+#          done
+#
+#          if [ -z "${pr_url}" ]; then
+#            echo "Failed to create PR after trying all head candidates."
+#            exit 1
+#          fi
+#
+#          echo "Created PR: ${pr_url}"
+#          rm -f gh-pr-create.err
+#
+#          if [ "${GITHUB_ACTOR}" != "foez.ahmed" ]; then
+#            if gh pr edit "$pr_url" --add-reviewer "${GITHUB_ACTOR}"; then
+#              echo "Requested review from ${GITHUB_ACTOR}."
+#            else
+#              echo "Could not request review from ${GITHUB_ACTOR}; continuing without reviewer assignment."
+#            fi
+#          else
+#            echo "Skipping reviewer assignment because the PR author and actor are the same user."
+#          fi
+#
 #  # Job 3: Update doc list - not skippable unless a prior job pushed a commit
 #  update_doc_list:
 #    name: Update Documentations & Lists
