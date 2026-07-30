@@ -1,6 +1,6 @@
 # adn_common_hs_counter (module)
 
-### Author : Annim (jannatannim@gmail.com)
+### Author : Annim Jannat (jannatannim@gmail.com)
 
 ## TOP IO
 <img src="./adn_common_hs_counter_top.svg">
@@ -24,14 +24,16 @@
 ## Description
 
 
-@foez---bhai, write the purpose of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+### Purpose
+The `adn_common_hs_counter` module is designed to track the number of outstanding transactions in a handshake-based data stream. It monitors input and output handshake signals to maintain a count of items currently "in-flight" between two interfaces, providing a mechanism to prevent buffer overflows and manage flow control.
 
-@foez---bhai, describe the usage of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+### Usage
+To use this module, instantiate it in your design by specifying the `DEPTH` parameter, which defines the maximum number of outstanding transactions the counter can track. Connect the `data_in_valid_i` and `data_in_ready_o` signals to the upstream producer, and the `data_out_valid_o` and `data_out_ready_i` signals to the downstream consumer. The module will automatically increment the `count_o` when a transaction is accepted at the input and decrement it when a transaction is accepted at the output. The `overflow_o` signal will pulse if an attempt is made to increment beyond the defined capacity.
 
 | REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
 |----------|------------|-----------------|--------------------------------------------------------|
-| 0.1      | 2026-07-28 | Annim | Initial version                                        |
-| 1.0      | 2026-07-30 | Annim | Stable release                                         |
+| 0.1      | 2026-07-27 | Annim | Initial version                                        |
+| 1.0      | 2026-07-29 | Annim | Stable release                                         |
 
 This file is part of ADN-VLSI/adn_common
 <br>**Copyright (c) 2026 ADN Semiconductors**
