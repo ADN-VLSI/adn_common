@@ -22,7 +22,7 @@ jobs:
         run: echo "changed=false" >> "$GITHUB_OUTPUT"
 
       - name: Check out repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           token: ${{ secrets.ADN_SECRET_FOEZ_PAT }}
@@ -73,7 +73,7 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           token: ${{ secrets.ADN_SECRET_FOEZ_PAT }}
@@ -185,7 +185,7 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           token: ${{ secrets.ADN_SECRET_FOEZ_PAT }}
@@ -225,7 +225,7 @@ jobs:
     if: ${{ !cancelled() && !failed() && needs.check-tags.outputs.changed != 'true' && needs.process-tags.outputs.changed != 'true' && needs.update_doc_list.outputs.changed != 'true' }}
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v4
 
       - name: Vivado Regression
         shell: bash
