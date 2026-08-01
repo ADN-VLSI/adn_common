@@ -22,15 +22,14 @@ See LICENSE file in the project root for full license information
 
 module adn_common_rotating_xbar #(
     // Width of each individual data port in bits
-    parameter DATA_WIDTH = 2,
+    parameter int DATA_WIDTH = 2,
     // Total number of input and output ports in the crossbar
-    parameter NUM_PORTS  = 2
+    parameter int NUM_PORTS  = 2
 ) (
-    // Array of input data buses
-    input logic [NUM_PORTS-1:0][DATA_WIDTH-1:0] in_i,
-
     // Control signal defining the cyclic shift offset
     input logic [$clog2(NUM_PORTS)-1:0] rotation_index_i,
+    // Array of input data buses
+    input logic [NUM_PORTS-1:0][DATA_WIDTH-1:0] in_i,
 
     // Array of output data buses after cyclic permutation
     output logic [NUM_PORTS-1:0][DATA_WIDTH-1:0] out_o

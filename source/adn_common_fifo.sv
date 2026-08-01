@@ -1,8 +1,8 @@
 /*
  
-@foez--bhai, write the purpose of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
- 
-@foez--bhai, describe the usage of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+@foez-bhai, write the purpose of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+
+@foez-bhai, describe the use case of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
  
 | REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
 |----------|------------|-----------------|--------------------------------------------------------|
@@ -50,7 +50,7 @@ module adn_common_fifo #(
   // SIGNALS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  logic [DATA_WIDTH-1:0] mem[0:DEPTH-1];
+  logic [DATA_WIDTH-1:0] mem[DEPTH];
 
   logic [ADDR_WIDTH:0] wr_ptr;
   logic [ADDR_WIDTH:0] rd_ptr;  // extra bit for msb that checks if the fifo is full or empty

@@ -3,13 +3,9 @@
 ### Purpose
 This module provides a configurable edge detection mechanism for a single-bit input signal. It supports rising edge, falling edge, and dual-edge detection, generating a single-clock-cycle pulse whenever the specified transition occurs on the input signal relative to the system clock.
 
-### Usage
-To use this module, instantiate it in your design and set the `EDGE_TYPE` parameter to the desired detection mode:
-- `0`: Rising edge detection.
-- `1`: Falling edge detection.
-- `2`: Dual-edge (both rising and falling) detection.
+@foez-bhai, describe the use case of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
 
-Connect the system clock (`clk`), active-low reset (`rst_n`), and the target signal (`signal_in`). The `edge_pulse` output will assert high for exactly one clock cycle when the specified transition is detected.
+Connect the system clock (`clk_i`), active-low reset (`arst_ni`), and the target signal (`signal_i`). The `edge_pulse_o` output will assert high for exactly one clock cycle when the specified transition is detected.
 
 | REVISION | DATE       | AUTHOR                 | DESCRIPTION                                            |
 |----------|------------|------------------------|--------------------------------------------------------|
@@ -30,13 +26,13 @@ module adn_common_edge_detect #(
     parameter int EDGE_TYPE = 0
 ) (
     // System clock input
-    input  logic clk,
+    input  logic clk_i,
     // Active-low asynchronous reset
-    input  logic rst_n,
+    input  logic arst_ni,
     // Input signal to be monitored for edges
-    input  logic signal_in,
+    input  logic signal_i,
     // Output pulse indicating edge detection
-    output logic edge_pulse
+    output logic edge_pulse_o
 );
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -51,30 +47,30 @@ module adn_common_edge_detect #(
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
   // Main sequential block: Synchronous logic to detect transitions and update state.
-  always_ff @(posedge clk) begin
-    if (!rst_n) begin
+  always_ff @(posedge clk_i) begin
+    if (!arst_ni) begin
       // Reset state: Clear history and output pulse.
-      signal_prev <= 1'b0;
-      edge_pulse  <= 1'b0;
+      signal_prev  <= 1'b0;
+      edge_pulse_o <= 1'b0;
     end else begin
       // Edge detection logic: Compare current input with previous state based on mode.
       case (EDGE_TYPE)
         // Falling edge detection:
         // Current signal is low and previous signal was high.
-        0: edge_pulse <= signal_prev & ~signal_in;
+        0: edge_pulse_o <= signal_prev & ~signal_i;
         // Rising edge detection:
         // Current signal is high and previous signal was low.
-        1: edge_pulse <= ~signal_prev & signal_in;
+        1: edge_pulse_o <= ~signal_prev & signal_i;
         // Both edge detection:
         // Current signal differs from previous sampled value.
-        2: edge_pulse <= signal_prev ^ signal_in;
+        2: edge_pulse_o <= signal_prev ^ signal_i;
         // Invalid configuration handling.
         // Keep output deasserted for unsupported values.
-        default: edge_pulse <= 1'b0;
+        default: edge_pulse_o <= 1'b0;
       endcase
 
       // Update stored input history for the next clock cycle.
-      signal_prev <= signal_in;
+      signal_prev <= signal_i;
     end
   end
 

@@ -2,30 +2,18 @@
 
 The `adn_common_ring_counter` module implements a synchronous one-hot ring counter. It rotates a single high bit through a register of a configurable width, providing a circular shift operation that is useful for state machine sequencing, token passing, or simple pulse generation.
 
-### Usage
+@foez-bhai, describe the use case of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
 
-To use this module, instantiate it in your design and specify the `DATA_WIDTH` parameter to define the number of states in the ring.
+- **`clk_i`**: Connect to the system clock.
+- **`arst_ni`**: Connect to an active-low asynchronous or synchronous reset. Upon reset, the counter initializes to `100...0`.
+- **`enable_i`**: When high, the counter shifts the high bit to the next position on the rising edge of the clock.
+- **`data_o`**: The one-hot encoded output vector.
 
-```systemverilog
-adn_common_ring_counter #(
-    .DATA_WIDTH(8)
-) u_ring_counter (
-    .clk    (clk),
-    .rst_n  (rst_n),
-    .enable (enable),
-    .data   (counter_out)
-);
-```
-
-- **`clk`**: Connect to the system clock.
-- **`rst_n`**: Connect to an active-low asynchronous or synchronous reset. Upon reset, the counter initializes to `100...0`.
-- **`enable`**: When high, the counter shifts the high bit to the next position on the rising edge of the clock.
-- **`data`**: The one-hot encoded output vector.
-
-| REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
-|----------|------------|-----------------|--------------------------------------------------------|
+| REVISION | DATE       | AUTHOR                 | DESCRIPTION                                     |
+|----------|------------|------------------------|-------------------------------------------------|
 | 0.1      | 2026-07-30 | Md. Sakib Hasan Shawon | Initial version                                 |
-| 1.0      | YYYY-MM-DD | Md. Sakib Hasan Shawon | Stable release                                  |
+| 1.0      | 2026-07-30 | Md. Sakib Hasan Shawon | Stable release                                  |
+| 1.1      | 2026-08-01 | Foez Ahmed             | Ratified                                        |
 
 Author : Md. Sakib Hasan Shawon (mdsakibhasanshawon20@gmail.com)
 This file is part of ADN-VLSI/adn_common
@@ -40,16 +28,16 @@ module adn_common_ring_counter #(
     parameter int DATA_WIDTH = 4
 ) (
     // Input: System clock signal
-    input  logic clk,
+    input logic clk_i,
 
     // Input: Active-low synchronous reset signal
-    input  logic rst_n,
+    input logic arst_ni,
 
     // Input: Enable signal to trigger the rotation of the bit
-    input  logic enable,
+    input logic enable_i,
 
     // Output: One-hot encoded vector representing the current state
-    output logic [DATA_WIDTH-1:0] data
+    output logic [DATA_WIDTH-1:0] data_o
 );
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -57,44 +45,38 @@ module adn_common_ring_counter #(
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
   // Localparam: RESET_VALUE defines the initial state (100...0) loaded during reset
-  localparam logic [DATA_WIDTH-1:0] RESET_VALUE =
-      {1'b1,{(DATA_WIDTH-1){1'b0}}};
+  localparam logic [DATA_WIDTH-1:0] RESET_VALUE = {1'b1, {(DATA_WIDTH - 1) {1'b0}}};
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // SIGNALS
   //////////////////////////////////////////////////////////////////////////////////////////////////
-  
+
   // Signal: ring_counter holds the internal state of the one-hot register
-  logic [DATA_WIDTH-1:0] ring_counter;      
+  logic [DATA_WIDTH-1:0] ring_counter;
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // ASSIGNMENTS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
   // Assignment: Connect the internal register to the module output port
-  assign data = ring_counter;
+  assign data_o = ring_counter;
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // SEQUENTIALS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
   // Block: Sequential logic to update the ring counter state on clock edges
-  always_ff @(posedge clk) begin
+  always_ff @(posedge clk_i) begin
 
-    if (~rst_n) begin
+    if (~arst_ni) begin
 
       // Reset logic: Initialize the counter to the defined RESET_VALUE
       ring_counter <= RESET_VALUE;
 
-    end
-
-    else if (enable) begin
+    end else if (enable_i) begin
 
       // Rotation logic: Perform a circular left shift of the one-hot bit
-      ring_counter <= {
-          ring_counter[DATA_WIDTH-2:0],
-          ring_counter[DATA_WIDTH-1]
-      };
+      ring_counter <= {ring_counter[DATA_WIDTH-2:0], ring_counter[DATA_WIDTH-1]};
 
     end
 
@@ -104,7 +86,7 @@ module adn_common_ring_counter #(
   // INITIAL CHECKS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  `ifdef SIMULATION
+`ifdef SIMULATION
 
   // Block: Simulation-only check to ensure valid parameter configuration
   initial begin
@@ -115,7 +97,7 @@ module adn_common_ring_counter #(
 
   end
 
-  `endif
+`endif
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // ASSERTIONS
@@ -124,12 +106,8 @@ module adn_common_ring_counter #(
 `ifdef SIMULATION
 
   // Assertion: Verify that the output remains one-hot at every clock cycle
-  assert property (
-    @(posedge clk)
-    $onehot(data)
-  )
-  else
-    $error("Ring counter entered invalid state");
+  assert property (@(posedge clk_i) $onehot(data_o))
+  else $error("Ring counter entered invalid state");
 
 `endif
 

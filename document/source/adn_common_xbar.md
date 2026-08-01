@@ -8,15 +8,15 @@
 ## Parameters
 |Name|Type|Dimension|Default Value|Description|
 |-|-|-|-|-|
-|DATA_WIDTH|||2| Width of the data bus in bits|
-|NUM_INPUTS|||2| Number of input ports|
-|NUM_OUTPUTS|||2| Number of output ports|
+|DATA_WIDTH|int||2| Width of the data bus in bits|
+|NUM_INPUTS|int||2| Number of input ports|
+|NUM_OUTPUTS|int||2| Number of output ports|
 
 ## Ports
 |Name|Direction|Type|Dimension|Description|
 |-|-|-|-|-|
-|in_i|input|logic [NUM_INPUTS-1:0][DATA_WIDTH-1:0]|| Input data ports array|
 |sel_i|input|logic [NUM_OUTPUTS-1:0][$clog2(NUM_INPUTS)-1:0]|| Selection signals for each output port (index of input to route)|
+|in_i|input|logic [NUM_INPUTS-1:0][DATA_WIDTH-1:0]|| Input data ports array|
 |out_o|output|logic [NUM_OUTPUTS-1:0][DATA_WIDTH-1:0]|| Output data ports array|
 ## Description
 

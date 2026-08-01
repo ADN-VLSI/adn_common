@@ -3,8 +3,7 @@
 # Purpose
 The `adn_common_round_robin_arbiter` module implements a fair, round-robin arbitration scheme to select a single requester from multiple input requests. It ensures that every requester is granted access in a rotating order, preventing starvation and ensuring equitable bandwidth distribution among all input channels.
 
-## Usage
-To use this module, instantiate it by specifying the `NUM_REQ` parameter to match the number of input request channels. The module samples `req_i` and, when `allow_req_i` is high, grants access to one requester based on the round-robin pointer.
+@foez-bhai, describe the use case of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
 
 | REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
 |----------|------------|-----------------|--------------------------------------------------------|
@@ -36,12 +35,12 @@ module adn_common_round_robin_arbiter #(
     // Input request bus, one bit per channel
     input logic [NUM_REQ-1:0] req_i,
 
-    // One-hot grant output, original bit order
-    output logic [        NUM_REQ-1:0] gnt_o,            // TODO
+    // High when gnt_addr_o contains a valid grant
+    output logic                       gnt_addr_valid_o,
     // Encoded grant address, original order
     output logic [$clog2(NUM_REQ)-1:0] gnt_addr_o,
-    // High when gnt_addr_o contains a valid grant
-    output logic                       gnt_addr_valid_o
+    // One-hot grant output, original bit order
+    output logic [        NUM_REQ-1:0] gnt_o
 );
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
