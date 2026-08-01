@@ -8,33 +8,26 @@
 ## Parameters
 |Name|Type|Dimension|Default Value|Description|
 |-|-|-|-|-|
-|NUM_REQ|int||4|Number of request inputs; must be at least two.|
+|NUM_REQ|int||4||
 
 ## Ports
 |Name|Direction|Type|Dimension|Description|
 |-|-|-|-|-|
-|allow_req_i|input|logic||Enables valid grant reporting.|
-|req_i|input|logic [ NUM_REQ-1:0]||Enables valid grant reporting.|
-|gnt_addr_o|output|logic [$clog2(NUM_REQ)-1:0]||Address of the selected requester.|
-|gnt_addr_valid_o|output|logic||Indicates a valid selected requester.|
+|req_i|input|logic [NUM_REQ-1:0]|||
+|allow_req_i|input|logic|||
+|gnt_i|output|logic [NUM_REQ-1:0]|||
 ## Description
 
 
-### Purpose
+@foez---bhai, write the purpose of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
 
-The `adn_common_fixed_priority_arbiter` arbitrates among `NUM_REQ` requesters using fixed low-index
-priority. When `allow_req_i` is asserted, the lowest asserted bit in `req_i` is reported through `gnt_addr_o` and marked valid by
-`gnt_addr_valid_o`.
-
-### Usage
-
-Set `NUM_REQ` to the number of requesters. Assert `allow_req_i` and drive `req_i`;
-`gnt_addr_o` identifies the selected requester when `gnt_addr_valid_o` is high.
+@foez---bhai, describe the usage of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
 
 | REVISION | DATE       | AUTHOR             | DESCRIPTION     |
 |----------|------------|--------------------|-----------------|
 | 0.1      | 2026-07-30 | Shykul Islam Siam  | Initial version |
 | 1.0      | 2026-07-30 | Shykul Islam Siam  | Stable release  |
+| 1.1      | 2026-08-01 | Foez Ahmed         | Port Fix        |
 
 This file is part of ADN-VLSI/adn_common
 <br>**Copyright (c) 2026 ADN Semiconductors**
