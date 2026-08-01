@@ -1,11 +1,9 @@
 ${ADN_COMMON}/interface/dummy_interface.sv
-${ADN_COMMON}/source/adn_common_b_rounder.sv
 ${ADN_COMMON}/source/adn_common_bin_to_gray.sv
 ${ADN_COMMON}/source/adn_common_cdc_fifo.sv
+${ADN_COMMON}/source/adn_common_decoder.sv
 ${ADN_COMMON}/source/adn_common_dual_port_ram.sv
 ${ADN_COMMON}/source/adn_common_edge_detect.sv
-${ADN_COMMON}/source/adn_common_encoder.sv
-${ADN_COMMON}/source/adn_common_f_rounder.sv
 ${ADN_COMMON}/source/adn_common_fifo.sv
 ${ADN_COMMON}/source/adn_common_fixed_priority_arbiter.sv
 ${ADN_COMMON}/source/adn_common_gray_to_bin.sv
@@ -15,6 +13,8 @@ ${ADN_COMMON}/source/adn_common_jk_ff.sv
 ${ADN_COMMON}/source/adn_common_pipeline.sv
 ${ADN_COMMON}/source/adn_common_priority_encoder.sv
 ${ADN_COMMON}/source/adn_common_ring_counter.sv
+${ADN_COMMON}/source/adn_common_rotating_xbar.sv
 ${ADN_COMMON}/source/adn_common_round_robin_arbiter.sv
 ${ADN_COMMON}/source/adn_common_synchronizer.sv
+${ADN_COMMON}/source/adn_common_xbar.sv
 -i ${ADN_COMMON}/include

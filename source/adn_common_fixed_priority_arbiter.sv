@@ -1,8 +1,10 @@
 /*
 
-@foez-bhai, write the purpose of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+### Purpose
+This module implements a fixed-priority arbiter that selects a single request from a multi-bit input vector based on a predefined priority scheme. It utilizes a priority encoder to determine the highest-priority active request and a decoder to generate a one-hot encoded grant signal, ensuring only one requester is granted access at any given time.
 
-@foez-bhai, describe the use-case of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+### Use-Case
+This module is typically employed in bus interconnects, memory controllers, or any multi-master system where multiple agents compete for a shared resource. By enforcing a fixed-priority policy, it ensures that critical agents (e.g., high-bandwidth DMA engines or real-time processors) are serviced before lower-priority tasks, preventing resource contention and ensuring deterministic access latency.
 
 | REVISION | DATE       | AUTHOR             | DESCRIPTION                      |
 |----------|------------|--------------------|----------------------------------|
@@ -28,12 +30,12 @@ module adn_common_fixed_priority_arbiter #(
     output logic [NUM_REQ-1:0] gnt_o  // One-hot encoded grant output
 );
 
-  // @foez-bhai, add comments to the functional blocks, signals, and submodules
-
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // LOCALPARAMS GENERATED
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
+  // addr: Encoded index of the highest priority request
+  // addr_valid: Flag indicating if at least one request is active
   logic [$clog2(NUM_REQ)-1:0] addr;
   logic                       addr_valid;
 
@@ -41,6 +43,7 @@ module adn_common_fixed_priority_arbiter #(
   // SUBMODULES
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
+  // Priority encoder to determine the index of the highest priority request
   adn_common_priority_encoder #(
       .NUM_WIRE           (NUM_REQ),
       .HIGH_INDEX_PRIORITY(HIGH_INDEX_PRIORITY)
@@ -50,6 +53,7 @@ module adn_common_fixed_priority_arbiter #(
       .addr_valid_o(addr_valid)
   );
 
+  // Decoder to convert the encoded index back to a one-hot grant signal
   adn_common_decoder #(
       .ADDR_WIDTH($clog2(NUM_REQ)),
       .DATA_WIDTH(NUM_REQ)

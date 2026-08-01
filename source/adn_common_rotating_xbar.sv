@@ -1,8 +1,10 @@
 /*
 
-@foez-bhai, write the purpose of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+### Purpose
+The `adn_common_rotating_xbar` module implements a circular crossbar (or barrel shifter) switch. It routes a set of input ports to a corresponding set of output ports based on a dynamic rotation index, effectively performing a cyclic shift of the input data bus array.
 
-@foez-bhai, describe the use case of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+### Use Case
+This module is primarily used in high-performance interconnects, packet switching fabrics, and round-robin arbitration logic where data streams need to be dynamically remapped to different processing elements or memory banks without the overhead of a full non-blocking crossbar. It is ideal for scenarios requiring low-latency cyclic permutations of data buses.
 
 | REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
 |----------|------------|-----------------|--------------------------------------------------------|
@@ -17,29 +19,32 @@ See LICENSE file in the project root for full license information
 
 */
 
-// @foez-bhai, add comments to the parameters, ports
 module adn_common_rotating_xbar #(
-    parameter DATA_WIDTH = 2,
-    parameter NUM_PORTS  = 2
+    // Width of each individual data port in bits
+    parameter DATA_WIDTH = 2, 
+    // Total number of input and output ports in the crossbar
+    parameter NUM_PORTS  = 2  
 ) (
+    // Array of input data buses
     input logic [DATA_WIDTH-1:0] in_i[NUM_PORTS],
 
+    // Control signal defining the cyclic shift offset
     input logic [$clog2(NUM_PORTS)-1:0] rotation_index_i,
 
+    // Array of output data buses after cyclic permutation
     output logic [DATA_WIDTH-1:0] out_o[NUM_PORTS]
 );
-
-  // @foez-bhai, add comments to the functional blocks, signals, and submodules
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // ASSIGNMENTS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
+  // Combinational block to perform the cyclic rotation of input ports to output ports
   always_comb begin : gen_xbar
     for (int i = 0; i < NUM_PORTS; i++) begin
+      // Map input index to output index using modulo arithmetic for circular shifting
       out_o[i] = in_i[(i+rotation_index_i)%NUM_PORTS];
     end
   end
 
 endmodule
-

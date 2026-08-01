@@ -1,8 +1,10 @@
 /*
 
-@foez-bhai, write the purpose of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+### Purpose
+The `adn_common_decoder` module functions as a parameterized N-to-2^N one-hot decoder. It translates an input binary address into a one-hot encoded output signal, provided the input validity signal is asserted.
 
-@foez-bhai, describe the use-case of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+### Use-Case
+This module is primarily used in memory-mapped systems, address decoding logic for peripheral selection, and state machine transitions where a binary-coded index needs to be converted into a specific enable signal for a target register or memory bank. It ensures that only one output line is active at a time, preventing bus contention and simplifying control signal routing.
 
 | REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
 |----------|------------|-----------------|--------------------------------------------------------|
@@ -17,25 +19,25 @@ See LICENSE file in the project root for full license information
 
 */
 
-// @foez-bhai, add comments to the parameters, ports
 module adn_common_decoder #(
-    parameter int ADDR_WIDTH = 2,
-    parameter int DATA_WIDTH = (2 ** ADDR_WIDTH)
+    parameter int ADDR_WIDTH = 2,               // Width of the input address bus
+    parameter int DATA_WIDTH = (2 ** ADDR_WIDTH) // Width of the decoded output bus
 ) (
-    input logic [ADDR_WIDTH-1:0] addr_i,
-    input logic                  addr_valid_i,
+    input logic [ADDR_WIDTH-1:0] addr_i,        // Binary address input
+    input logic                  addr_valid_i,  // Validity signal for the input address
 
-    output logic [ADDR_WIDTH-1:0] d_o
+    output logic [DATA_WIDTH-1:0] d_o           // One-hot decoded output
 );
-
-  // @foez-bhai, add comments to the functional blocks, signals, and submodules
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // ASSIGNMENTS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
+  // Combinational logic block to perform the N-to-2^N decoding
   always_comb begin
+    // Default output to zero to prevent latch inference and ensure inactive state
     d_o = '0;
+    // Assert the specific bit corresponding to the binary address only if valid signal is high
     d_o[addr_i] = addr_valid_i;
   end
 

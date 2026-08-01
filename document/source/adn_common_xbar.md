@@ -1,4 +1,25 @@
-/*
+# adn_common_xbar (module)
+
+### Author : Foez Ahmed (foez.official@gmail.com)
+
+## TOP IO
+<img src="./adn_common_xbar_top.svg">
+
+## Parameters
+|Name|Type|Dimension|Default Value|Description|
+|-|-|-|-|-|
+|DATA_WIDTH|||2| Width of the data bus in bits|
+|NUM_INPUTS|||2| Number of input ports|
+|NUM_OUTPUTS|||2| Number of output ports|
+
+## Ports
+|Name|Direction|Type|Dimension|Description|
+|-|-|-|-|-|
+|in_i|input|logic [DATA_WIDTH-1:0]|[NUM_INPUTS]| Input data ports array|
+|sel_i|input|logic [$clog2(NUM_INPUTS)-1:0]|[NUM_OUTPUTS]| Selection signals for each output port (index of input to route)|
+|out_o|output|logic [DATA_WIDTH-1:0]|[NUM_OUTPUTS]| Output data ports array|
+## Description
+
 
 ### Purpose
 This module implements a generic crossbar switch (xbar) that routes data from multiple input ports to multiple output ports based on provided selection signals. It supports configurable data widths and input/output counts, providing a flexible interconnect solution for data path routing.
@@ -15,42 +36,8 @@ The `adn_common_xbar` is designed for high-performance interconnect fabrics wher
 | 0.1      | 2026-08-01 | Foez Ahmed      | Initial version                                        |
 | 1.0      | 2026-08-01 | Foez Ahmed      | Stable release                                         |
 
-Author : Foez Ahmed (foez.official@gmail.com)
 This file is part of ADN-VLSI/adn_common
-Copyright (c) 2026 ADN Semiconductors
-Licensed under the MIT License
-See LICENSE file in the project root for full license information
+<br>**Copyright (c) 2026 ADN Semiconductors**
+<br>**Licensed under the MIT License**
+<br>**See LICENSE file in the project root for full license information**
 
-*/
-
-module adn_common_xbar #(
-    // Width of the data bus in bits
-    parameter DATA_WIDTH  = 2, 
-    // Number of input ports
-    parameter NUM_INPUTS  = 2, 
-    // Number of output ports
-    parameter NUM_OUTPUTS = 2  
-) (
-    // Input data ports array
-    input logic [DATA_WIDTH-1:0] in_i[NUM_INPUTS],
-
-    // Selection signals for each output port (index of input to route)
-    input logic [$clog2(NUM_INPUTS)-1:0] sel_i[NUM_OUTPUTS],
-
-    // Output data ports array
-    output logic [DATA_WIDTH-1:0] out_o[NUM_OUTPUTS]
-);
-
-  //////////////////////////////////////////////////////////////////////////////////////////////////
-  // ASSIGNMENTS
-  //////////////////////////////////////////////////////////////////////////////////////////////////
-
-  // Combinational logic block to route inputs to outputs based on selection signals
-  always_comb begin : gen_xbar
-    // Iterate through each output port and assign the selected input port data
-    for (int i = 0; i < NUM_OUTPUTS; i++) begin
-      out_o[i] = in_i[sel_i[i]];
-    end
-  end
-
-endmodule

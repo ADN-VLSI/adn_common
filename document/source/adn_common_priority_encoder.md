@@ -8,34 +8,29 @@
 ## Parameters
 |Name|Type|Dimension|Default Value|Description|
 |-|-|-|-|-|
-|NUM_WIRE|int||4|Number of input wires; must be at least two.|
-|HIGH_INDEX_PRIORITY|bit||0|When set, the highest asserted input has priority.|
+|NUM_WIRE|int||4| Number of input wires; must be at least two.|
+|HIGH_INDEX_PRIORITY|bit||0| When set, the highest asserted input has priority.|
 
 ## Ports
 |Name|Direction|Type|Dimension|Description|
 |-|-|-|-|-|
-|d_i|input|logic [ NUM_WIRE-1:0]||Input bits to encode.|
-|addr_o|output|logic [$clog2(NUM_WIRE)-1:0]||Address of the selected input bit.|
-|addr_valid_o|output|logic||Indicates that at least one input is asserted.|
+|d_i|input|logic [NUM_WIRE-1:0]|| Input vector to be encoded|
+|addr_o|output|logic [$clog2(NUM_WIRE)-1:0]|| Binary encoded address of the highest/lowest priority bit|
+|addr_valid_o|output|logic|| Validity flag: high if at least one bit in d_i is set|
 ## Description
 
 
 ### Purpose
+This module implements a parameterized priority encoder that identifies the index of the first asserted bit in an input vector. It supports both low-index and high-index priority schemes, providing the binary address of the selected bit and a validity flag indicating if any input is active.
 
-The `adn_common_priority_encoder` selects one asserted bit from `d_i` using fixed priority and
-converts that one-hot selection to an address. `HIGH_INDEX_PRIORITY` chooses whether the highest
-or lowest asserted input bit wins. The priority mask is built from explicit AND/De Morgan logic
-before being encoded.
+### Use-Case
+This module is primarily used in arbitration logic, interrupt controllers, and resource allocation units where multiple requests arrive simultaneously, and a deterministic selection based on priority is required. By parameterizing the priority direction, it can be seamlessly integrated into both round-robin schedulers and fixed-priority bus masters.
 
-### Usage
-
-Set `NUM_WIRE` to the number of input bits and `HIGH_INDEX_PRIORITY` to select which end of `d_i`
-wins ties. Drive `d_i`; `addr_o` reports the winning bit's index when `addr_valid_o` is high.
-
-| REVISION | DATE       | AUTHOR             | DESCRIPTION     |
-|----------|------------|--------------------|-----------------|
-| 0.1      | 2026-07-30 | Shykul Islam Siam  | Initial version |
-| 1.0      | 2026-07-30 | Shykul Islam Siam  | Stable release  |
+| REVISION | DATE       | AUTHOR             | DESCRIPTION      |
+|----------|------------|--------------------|------------------|
+| 0.1      | 2026-07-30 | Shykul Islam Siam  | Initial version  |
+| 1.0      | 2026-07-30 | Shykul Islam Siam  | Stable release   |
+| 1.1      | 2026-08-01 | Foez Ahmed         | Simplified logic |
 
 This file is part of ADN-VLSI/adn_common
 <br>**Copyright (c) 2026 ADN Semiconductors**
