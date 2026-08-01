@@ -1,21 +1,17 @@
 /*
 
 ### Purpose
+This module implements a parameterized priority encoder that identifies the index of the first asserted bit in an input vector. It supports both low-index and high-index priority schemes, providing the binary address of the selected bit and a validity flag indicating if any input is active.
 
-The `adn_common_priority_encoder` selects one asserted bit from `d_i` using fixed priority and
-converts that one-hot selection to an address. `HIGH_INDEX_PRIORITY` chooses whether the highest
-or lowest asserted input bit wins. The priority mask is built from explicit AND/De Morgan logic
-before being encoded.
+### Use-Case
+This module is primarily used in arbitration logic, interrupt controllers, and resource allocation units where multiple requests arrive simultaneously, and a deterministic selection based on priority is required. By parameterizing the priority direction, it can be seamlessly integrated into both round-robin schedulers and fixed-priority bus masters.
 
-### Usage
-
-Set `NUM_WIRE` to the number of input bits and `HIGH_INDEX_PRIORITY` to select which end of `d_i`
-wins ties. Drive `d_i`; `addr_o` reports the winning bit's index when `addr_valid_o` is high.
-
-| REVISION | DATE       | AUTHOR             | DESCRIPTION     |
-|----------|------------|--------------------|-----------------|
-| 0.1      | 2026-07-30 | Shykul Islam Siam  | Initial version |
-| 1.0      | 2026-07-30 | Shykul Islam Siam  | Stable release  |
+| REVISION | DATE       | AUTHOR             | DESCRIPTION                                         |
+|----------|------------|--------------------|-----------------------------------------------------|
+| 0.1      | 2026-07-30 | Shykul Islam Siam  | Initial version                                     |
+| 1.0      | 2026-07-30 | Shykul Islam Siam  | Stable release                                      |
+| 1.1      | 2026-08-01 | Foez Ahmed         | Simplified logic                                    |
+| 1.2      | 2026-08-01 | Foez Ahmed         | Ratified                                            |
 
 Author : Shykul Islam Siam (shykulislam32@gmail.com)
 This file is part of ADN-VLSI/adn_common
@@ -26,67 +22,52 @@ See LICENSE file in the project root for full license information
 */
 
 module adn_common_priority_encoder #(
-    parameter int NUM_WIRE            = 4,  // Number of input wires; must be at least two.
-    parameter bit HIGH_INDEX_PRIORITY = 0   // When set, the highest asserted input has priority.
+    // Number of input wires; must be at least two.
+    parameter int NUM_WIRE            = 4,  
+    // When set, the highest asserted input has priority.
+    parameter bit HIGH_INDEX_PRIORITY = 0   
 ) (
-    input  logic [    NUM_WIRE-1:0]     d_i,           // Input bits to encode.
-    output logic [$clog2(NUM_WIRE)-1:0] addr_o,        // Address of the selected input bit.
-    output logic                        addr_valid_o   // Indicates that at least one input is asserted.
-);
+    // Input vector to be encoded
+    input logic [NUM_WIRE-1:0] d_i,
 
-  //////////////////////////////////////////////////////////////////////////////////////////////////
-  // SIGNALS
-  //////////////////////////////////////////////////////////////////////////////////////////////////
-  logic [NUM_WIRE-1:0] select_already_found;  // Indicates a higher-priority request has been seen.
-  logic [NUM_WIRE-1:0] allowed_selects;       // One-hot request remaining after priority masking.
+    // Binary encoded address of the highest/lowest priority bit
+    output logic [$clog2(NUM_WIRE)-1:0] addr_o,
+    // Validity flag: high if at least one bit in d_i is set
+    output logic                        addr_valid_o
+);
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // ASSIGNMENTS
   //////////////////////////////////////////////////////////////////////////////////////////////////
-  genvar i;
-  generate
-    // Allow a request only when no higher-priority request is present.
-    for (i = 0; i < NUM_WIRE; i = i + 1) begin : g_allowed_selects
-      assign allowed_selects[i] = d_i[i] & ~select_already_found[i];
-    end
 
-    if (HIGH_INDEX_PRIORITY) begin : g_msb_p
-      // Propagate the presence of higher-index requests toward lower indices.
-      for (i = 0; i < (NUM_WIRE - 1); i = i + 1) begin : g_select_found
-        assign select_already_found[i] = ~(~select_already_found[i+1] & ~d_i[i+1]);
+  // Combinational logic to determine the priority index
+  always_comb begin
+    // Internal flag to track if a bit has been identified
+    logic found;
+    found = '0;
+    addr_o = '0;
+    addr_valid_o = '0;
+
+    // Priority selection logic based on parameter
+    if (HIGH_INDEX_PRIORITY) begin
+      // Search from MSB to LSB for high-index priority
+      for (int i = NUM_WIRE - 1; i >= 0; i--) begin
+        if (d_i[i] && !found) begin
+          addr_o = i;
+          found  = 1'b1;
+        end
       end
-      assign select_already_found[NUM_WIRE-1] = 1'b0;
-    end else begin : g_lsb_p
-      // Propagate the presence of lower-index requests toward higher indices.
-      assign select_already_found[0] = 1'b0;
-      for (i = 1; i < NUM_WIRE; i = i + 1) begin : g_select_found
-        assign select_already_found[i] = ~(~select_already_found[i-1] & ~d_i[i-1]);
+    end else begin
+      // Search from LSB to MSB for low-index priority
+      for (int i = 0; i < NUM_WIRE; i++) begin
+        if (d_i[i] && !found) begin
+          addr_o = i;
+          found  = 1'b1;
+        end
       end
     end
-  endgenerate
-
-  //////////////////////////////////////////////////////////////////////////////////////////////////
-  // SUBMODULES
-  //////////////////////////////////////////////////////////////////////////////////////////////////
-  // Converts the one-hot allowed selection into a binary address.
-  adn_common_encoder #(
-    .NUM_WIRE(NUM_WIRE)
-) u_encoder (
-    .enable_i(1'b1),
-    .d_i(allowed_selects),
-    .addr_o(addr_o),
-    .addr_valid_o(addr_valid_o)
-);
-
-  //////////////////////////////////////////////////////////////////////////////////////////////////
-  // INITIAL CHECKS
-  //////////////////////////////////////////////////////////////////////////////////////////////////
-`ifdef SIMULATION
-  initial begin
-    if (NUM_WIRE > 32) begin
-      $display("\033[7;31m %m NUM_WIRE=%0d \033[0m", NUM_WIRE);
-    end
+    // Assign validity based on whether any bit was found
+    addr_valid_o = found;
   end
-`endif  // SIMULATION
 
 endmodule
