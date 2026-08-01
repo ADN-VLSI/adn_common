@@ -1,8 +1,13 @@
 /*
 
-@foez-bhai, write the purpose of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+### Purpose
+This module implements a handshake-based counter designed to track the number of active data elements within a buffer or pipeline stage. It monitors input and output handshakes to increment or decrement the internal count, ensuring the counter remains within the bounds of the specified `DEPTH`.
 
-@foez-bhai, describe the use case of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+### Use Case
+This module is primarily used in streaming architectures to manage flow control and occupancy tracking. It is ideal for:
+- **FIFO Depth Monitoring:** Tracking how many slots are currently occupied in a buffer.
+- **Backpressure Management:** Generating `ready` signals based on current occupancy to prevent buffer overflows.
+- **Pipeline Monitoring:** Providing visibility into the number of valid data packets currently traversing a multi-stage pipeline.
 
 | REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
 |----------|------------|-----------------|--------------------------------------------------------|
@@ -18,24 +23,21 @@ See LICENSE file in the project root for full license information
 
 */
 
-// @foez-bhai, add comments to the parameters, ports
 module adn_common_hs_counter #(
-    parameter int DEPTH = 8
+    parameter int DEPTH = 8 // Maximum capacity of the buffer/pipeline
 ) (
-    input logic clk_i,
-    input logic arst_ni,
+    input logic clk_i,      // System clock
+    input logic arst_ni,    // Active-low asynchronous reset
 
-    input  logic data_in_valid_i,
-    output logic data_in_ready_o,
+    input  logic data_in_valid_i, // Input data valid signal
+    output logic data_in_ready_o, // Input data ready signal (backpressure)
 
 
-    output logic data_out_valid_o,
-    input  logic data_out_ready_i,
+    output logic data_out_valid_o, // Output data valid signal
+    input  logic data_out_ready_i, // Output data ready signal
 
-    output logic [$clog2(DEPTH+1)-1:0] count_o
+    output logic [$clog2(DEPTH+1)-1:0] count_o // Current occupancy count
 );
-
-  // @foez-bhai, add comments to the functional blocks, signals, and submodules
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // LOCALPARAMS GENERATED
@@ -49,6 +51,7 @@ module adn_common_hs_counter #(
   // SIGNALS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
+  // Handshake detection signals
   logic in_hs, out_hs;
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -69,9 +72,10 @@ module adn_common_hs_counter #(
   // SEQUENTIALS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
+  // Counter logic: updates occupancy based on input/output handshake events
   always_ff @(posedge clk_i or negedge arst_ni) begin
     if (~arst_ni) begin
-      count_o <= '0;
+      count_o <= '0; // Reset counter to zero
     end else begin
       case ({
         in_hs, out_hs
@@ -84,4 +88,3 @@ module adn_common_hs_counter #(
   end
 
 endmodule
-

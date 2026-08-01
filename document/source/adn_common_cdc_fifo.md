@@ -10,11 +10,11 @@
 ## Parameters
 |Name|Type|Dimension|Default Value|Description|
 |-|-|-|-|-|
-|DATA_WIDTH|int||32|Width of the data bus|
-|ADDR_WIDTH|int||8|Address width|
-|SYNC_STAGES|int||2|Number of synchronization stages|
-|ALMOST_FULL_THRESH|int||(1 << ADDR_WIDTH) - 2|Threshold for almost_full_o flag|
-|ALMOST_EMPTY_THRESH|int||2|Threshold for almost_empty_o flag|
+|DATA_WIDTH|int||32| Width of the data bus|
+|ADDR_WIDTH|int||8| Address width|
+|SYNC_STAGES|int||2| Number of synchronization stages|
+|ALMOST_FULL_THRESH|int||(1 << ADDR_WIDTH) - 2| Threshold for almost_full_o flag|
+|ALMOST_EMPTY_THRESH|int||2| Threshold for almost_empty_o flag|
 
 ## Ports
 |Name|Direction|Type|Dimension|Description|
@@ -42,10 +42,10 @@ The `adn_common_cdc_fifo` module implements a high-performance, asynchronous Fir
 ### Usage
 To use the `adn_common_cdc_fifo` in your design, instantiate it by specifying the `DATA_WIDTH` and `ADDR_WIDTH` (which determines the depth as $2^{ADDR\_WIDTH}$). Connect the write-side signals (`wr_clk_i`, `wr_en_i`, `wr_data_i`) to the producer domain and the read-side signals (`rd_clk_i`, `rd_en_i`, `rd_data_o`) to the consumer domain. Ensure that `wr_rst_n_i` and `rd_rst_n_i` are asserted during power-on. The module handles CDC internally; simply monitor `full_o` and `empty_o` to prevent overflow and underflow conditions, respectively.
 
-| REVISION | DATE       | AUTHOR              | DESCRIPTION                                            |
-|----------|------------|---------------------|--------------------------------------------------------|
-| 0.1      | 2026-07-27 | Ahasan Ullah Khalid | Initial version                                        |
-| 1.0      | 2026-07-29 | Ahasan Ullah Khalid | Stable release                                         |
+| REVISION | DATE       | AUTHOR              | DESCRIPTION                                        |
+|----------|------------|---------------------|----------------------------------------------------|
+| 0.1      | 2026-07-27 | Ahasan Ullah Khalid | Initial version                                    |
+| 1.0      | 2026-07-29 | Ahasan Ullah Khalid | Stable release                                     |
 
 This file is part of ADN-VLSI/adn_common
 <br>**Copyright (c) 2026 ADN Semiconductors**

@@ -26,12 +26,12 @@ This module implements a fixed-priority arbiter that selects a single request fr
 ### Use-Case
 This module is typically employed in bus interconnects, memory controllers, or any multi-master system where multiple agents compete for a shared resource. By enforcing a fixed-priority policy, it ensures that critical agents (e.g., high-bandwidth DMA engines or real-time processors) are serviced before lower-priority tasks, preventing resource contention and ensuring deterministic access latency.
 
-| REVISION | DATE       | AUTHOR             | DESCRIPTION                      |
-|----------|------------|--------------------|----------------------------------|
-| 0.1      | 2026-07-30 | Shykul Islam Siam  | Initial version                  |
-| 1.0      | 2026-07-30 | Shykul Islam Siam  | Stable release                   |
-| 1.1      | 2026-08-01 | Foez Ahmed         | Ports Fixed and simplified logic |
-| 1.2      | 2026-08-01 | Foez Ahmed         | Ratified                         |
+| REVISION | DATE       | AUTHOR             | DESCRIPTION                                         |
+|----------|------------|--------------------|-----------------------------------------------------|
+| 0.1      | 2026-07-30 | Shykul Islam Siam  | Initial version                                     |
+| 1.0      | 2026-07-30 | Shykul Islam Siam  | Stable release                                      |
+| 1.1      | 2026-08-01 | Foez Ahmed         | Ports Fixed and simplified logic                    |
+| 1.2      | 2026-08-01 | Foez Ahmed         | Ratified                                            |
 
 This file is part of ADN-VLSI/adn_common
 <br>**Copyright (c) 2026 ADN Semiconductors**

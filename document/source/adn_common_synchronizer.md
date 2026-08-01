@@ -25,10 +25,11 @@
 ### Purpose
 The `adn_common_synchronizer` module is a generic multi-stage flip-flop synchronizer designed to safely transfer asynchronous signals between different clock domains. It mitigates metastability issues by passing the input data through a configurable number of sequential stages before outputting the synchronized signal.
 
-| REVISION | DATE       | AUTHOR              | DESCRIPTION                                            |
-|----------|------------|---------------------|--------------------------------------------------------|
-| 0.1      | 2026-07-28 | Ahasan Ullah Khalid | Initial version                                        |
-| 1.0      | 2026-07-28 | Ahasan Ullah Khalid | Stable release                                         |
+| REVISION | DATE       | AUTHOR              | DESCRIPTION                                        |
+|----------|------------|---------------------|----------------------------------------------------|
+| 0.1      | 2026-07-28 | Ahasan Ullah Khalid | Initial version                                    |
+| 1.0      | 2026-07-28 | Ahasan Ullah Khalid | Stable release                                     |
+| 1.1      | 2026-08-01 | Foez Ahmed          | Ratified                                           |
 
 This file is part of ADN-VLSI/adn_common
 <br>**Copyright (c) 2026 ADN Semiconductors**

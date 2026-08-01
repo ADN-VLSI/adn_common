@@ -33,8 +33,8 @@
 
 | REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
 |----------|------------|-----------------|--------------------------------------------------------|
-| 0.1      | 2026-07-27 | Annim | Initial version                                        |
-| 1.0      | 2026-07-28 | Annim | Stable release                                         |
+| 0.1      | 2026-07-27 | Annim Jannat    | Initial version                                        |
+| 1.0      | 2026-07-28 | Annim Jannat    | Stable release                                         |
 
 This file is part of ADN-VLSI/adn_common
 <br>**Copyright (c) 2026 ADN Semiconductors**
