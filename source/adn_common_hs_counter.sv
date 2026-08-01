@@ -1,15 +1,19 @@
 /*
 
 ### Purpose
-The `adn_common_hs_counter` module is designed to track the number of outstanding transactions in a handshake-based data path. It monitors input and output handshake signals to maintain a count of items currently in flight, providing flow control by asserting ready/valid signals based on the counter's state.
+This module implements a handshake-based counter designed to track the number of active data elements within a buffer or pipeline stage. It monitors input and output handshakes to increment or decrement the internal count, ensuring the counter remains within the bounds of the specified `DEPTH`.
 
-### Usage
-To use this module, instantiate it in your design by specifying the `DEPTH` parameter, which defines the maximum number of transactions the counter can track. Connect the `data_in` handshake signals to the source interface and the `data_out` handshake signals to the destination interface. The module will automatically manage the `data_in_ready_o` and `data_out_valid_o` signals to prevent buffer overflow and ensure data availability. The `count_o` port provides the current number of items in the pipeline, and `overflow_o` can be monitored for error detection.
+### Use Case
+This module is primarily used in streaming architectures to manage flow control and occupancy tracking. It is ideal for:
+- **FIFO Depth Monitoring:** Tracking how many slots are currently occupied in a buffer.
+- **Backpressure Management:** Generating `ready` signals based on current occupancy to prevent buffer overflows.
+- **Pipeline Monitoring:** Providing visibility into the number of valid data packets currently traversing a multi-stage pipeline.
 
 | REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
 |----------|------------|-----------------|--------------------------------------------------------|
-| 0.1      | 2026-07-27 | Annim | Initial version                                        |
-| 1.0      | 2026-07-29 | Annim | Stable release                                         |
+| 0.1      | 2026-07-27 | Annim Jannat    | Initial version                                        |
+| 1.0      | 2026-07-29 | Annim Jannat    | Stable release                                         |
+| 1.1      | 2026-08-01 | Foez Ahmed      | Ratified                                               |
 
 Author : Annim Jannat (jannatannim@gmail.com)
 This file is part of ADN-VLSI/adn_common
@@ -20,81 +24,67 @@ See LICENSE file in the project root for full license information
 */
 
 module adn_common_hs_counter #(
-
-  //////////////////////////////////////////////////////////////////////////////////////////////////
-  // PARAMETERS
-  //////////////////////////////////////////////////////////////////////////////////////////////////
-
-  parameter int DEPTH = 8,  // width of the counter
-
-  //////////////////////////////////////////////////////////////////////////////////////////////////
-  // LOCALPARAMS
-  //////////////////////////////////////////////////////////////////////////////////////////////////
-
-  localparam int WIDTH = $clog2(DEPTH)
-
+    parameter int DEPTH = 8 // Maximum capacity of the buffer/pipeline
 ) (
+    input logic clk_i,      // System clock
+    input logic arst_ni,    // Active-low asynchronous reset
 
-  //////////////////////////////////////////////////////////////////////////////////////////////////
-  // PORTS
-  //////////////////////////////////////////////////////////////////////////////////////////////////
-  input logic clk_i,  // clock input
-  input logic rst_ni, // active-low async reset
+    input  logic data_in_valid_i, // Input data valid signal
+    output logic data_in_ready_o, // Input data ready signal (backpressure)
 
-  // input handshake interface
-  input  logic data_in_valid_i,  // sender says data is valid (input side)
-  output logic data_in_ready_o,  // receiver says it can accept (input side)
 
-  // output handshake interface
-  output logic data_out_valid_o,  // sender says data is valid (output side)
-  input  logic data_out_ready_i,  // receiver says it can accept (output side)
-  output logic [WIDTH-1:0] count_o,    // number of outstanding handshakes
-  output logic             overflow_o  // pulses if counter wraps around
+    output logic data_out_valid_o, // Output data valid signal
+    input  logic data_out_ready_i, // Output data ready signal
+
+    output logic [$clog2(DEPTH+1)-1:0] count_o // Current occupancy count
 );
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+  // LOCALPARAMS GENERATED
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+  // TYPEDEFS
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // SIGNALS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
+  // Handshake detection signals
   logic in_hs, out_hs;
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // ASSIGNMENTS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  assign in_hs            = data_in_valid_i && data_in_ready_o;
-  assign out_hs           = data_out_valid_o && data_out_ready_i;
-  assign data_in_ready_o  = (count_o != {WIDTH{'1}});  // ready unless count is full
-  assign data_out_valid_o = (count_o != '0);  // valid if not empty
+  // ready unless count is full
+  always_comb data_in_ready_o = (count_o != DEPTH) & arst_ni;
+  // valid if not empty
+  always_comb data_out_valid_o = (count_o != '0) & arst_ni;
+
+  // handshake occurs when both valid and ready are asserted
+  always_comb in_hs = data_in_valid_i && data_in_ready_o;
+  // handshake occurs when both valid and ready are asserted
+  always_comb out_hs = data_out_valid_o && data_out_ready_i;
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // SEQUENTIALS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      count_o    <= '0;
-      overflow_o <= 1'b0;
+  // Counter logic: updates occupancy based on input/output handshake events
+  always_ff @(posedge clk_i or negedge arst_ni) begin
+    if (~arst_ni) begin
+      count_o <= '0; // Reset counter to zero
+    end else begin
+      case ({
+        in_hs, out_hs
+      })
+        2'b10:   count_o <= (count_o == DEPTH) ? count_o : count_o + 1'b1;  // in only: increment
+        2'b01:   count_o <= (count_o == '0) ? count_o : count_o - 1'b1;  // out only: decrement
+        default: count_o <= count_o;  // no change or both in and out: no change
+      endcase
     end
-    else begin
-      overflow_o <= 1'b0;
-
-        case ({
-          in_hs, out_hs
-        })
-          2'b10:   {overflow_o, count_o} <= count_o + 1'b1;  // in only: increment
-          2'b01:   count_o <= (count_o == '0) ? count_o : count_o - 1'b1;  // out only: decrement
-          default: count_o <= count_o;
-        endcase
-      end
-    end
-
-  //////////////////////////////////////////////////////////////////////////////////////////////////
-  // INITIAL CHECKS
-  //////////////////////////////////////////////////////////////////////////////////////////////////
-
-  initial begin
-    assert (DEPTH > 0)
-    else $fatal(1, "adn_common_hs_counter: DEPTH must be greater than 0");
   end
 
 endmodule
