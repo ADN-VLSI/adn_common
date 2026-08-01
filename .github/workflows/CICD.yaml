@@ -16,7 +16,7 @@ jobs:
         id: select-key
         shell: bash
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.ADN_SECRET_FOEZ_PAT }}
           KEY_0: ${{ secrets.FOEZ_API_KEY_0 }}
           KEY_1: ${{ secrets.FOEZ_API_KEY_1 }}
           KEY_2: ${{ secrets.FOEZ_API_KEY_2 }}
