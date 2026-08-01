@@ -23,13 +23,15 @@ jobs:
           KEY_3: ${{ secrets.FOEZ_API_KEY_3 }}
           INDEX: ${{ vars.KEY_INDEX }}
         run: |
+          ORG_NAME="${GITHUB_REPOSITORY%%/*}"
+          INDEX_VALUE="$(gh variable get KEY_INDEX --org "$ORG_NAME" --json value --jq .value 2>/dev/null || echo "${INDEX:-0}")"
           KEYS=("$KEY_0" "$KEY_1" "$KEY_2" "$KEY_3")
-          CURRENT_INDEX=$(( INDEX % 4 ))
+          CURRENT_INDEX=$(( INDEX_VALUE % 4 ))
           SELECTED_KEY="${KEYS[$CURRENT_INDEX]}"
           echo "::add-mask::$SELECTED_KEY"
           echo "selected_key=$SELECTED_KEY" >> $GITHUB_OUTPUT
           NEXT_INDEX=$(( (CURRENT_INDEX + 1) % 4 ))
-          gh variable set KEY_INDEX --body "$NEXT_INDEX" --repo "${{ github.repository }}"
+          gh variable set KEY_INDEX --body "$NEXT_INDEX" --org "$ORG_NAME"
 
       - name: Process tagged files
         env:
