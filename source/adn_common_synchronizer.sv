@@ -3,10 +3,14 @@
 ### Purpose
 The `adn_common_synchronizer` module is a generic multi-stage flip-flop synchronizer designed to safely transfer asynchronous signals between different clock domains. It mitigates metastability issues by passing the input data through a configurable number of sequential stages before outputting the synchronized signal.
 
-| REVISION | DATE       | AUTHOR              | DESCRIPTION                                            |
-|----------|------------|---------------------|--------------------------------------------------------|
-| 0.1      | 2026-07-28 | Ahasan Ullah Khalid | Initial version                                        |
-| 1.0      | 2026-07-28 | Ahasan Ullah Khalid | Stable release                                         |
+### Use Case
+This module is primarily used when a signal originates in one clock domain and must be sampled by logic in a different clock domain. By utilizing a chain of flip-flops, it provides the necessary settling time for the signal to stabilize, effectively preventing metastability from propagating into the destination domain's logic. It is ideal for control signals, status flags, and single-bit handshaking protocols where data integrity across clock boundaries is critical.
+
+| REVISION | DATE       | AUTHOR              | DESCRIPTION                                        |
+|----------|------------|---------------------|----------------------------------------------------|
+| 0.1      | 2026-07-28 | Ahasan Ullah Khalid | Initial version                                    |
+| 1.0      | 2026-07-28 | Ahasan Ullah Khalid | Stable release                                     |
+| 1.1      | 2026-08-01 | Foez Ahmed          | Ratified                                           |
 
 Author : Ahasan Ullah Khalid (aukhalid02@gmail.com)
 This file is part of ADN-VLSI/adn_common
@@ -19,14 +23,12 @@ See LICENSE file in the project root for full license information
 `include "adn_common_synth_directives.svh"
 
 module adn_common_synchronizer #(
-    // PARAMETERS
     parameter int WIDTH = 1,  // Bit width of the data bus
     parameter int STAGES = 2,  // Number of synchronization stages (min 2 recommended)
     parameter logic [WIDTH-1:0] RESET_VALUE = '0  // Value to load during reset
 ) (
-    // PORTS
     input logic             clk_i,    // Destination clock domain
-    input logic             rst_n_i,  // Active-low asynchronous reset
+    input logic             arst_ni,  // Active-low asynchronous reset
     input logic [WIDTH-1:0] data_i,   // Asynchronous input data
 
     output logic [WIDTH-1:0] data_o  // Synchronized output data
@@ -44,9 +46,9 @@ module adn_common_synchronizer #(
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
   // Multi-stage flip-flop chain to resolve metastability
-  always_ff @(posedge clk_i or negedge rst_n_i) begin
+  always_ff @(posedge clk_i or negedge arst_ni) begin
 
-    if (!rst_n_i) begin
+    if (!arst_ni) begin
       // Reset all stages to the defined reset value
       for (int i = 0; i < STAGES; i++) sync_ff[i] <= RESET_VALUE;
     end else begin
