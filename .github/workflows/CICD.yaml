@@ -12,8 +12,8 @@ jobs:
         with:
           token: ${{ secrets.ADN_SECRET_FOEZ_PAT }}
 
-      - name: Fetch and Cycle Key
-        id: select-key
+      - name: Process tagged files
+        id: tagged-files
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.ADN_SECRET_FOEZ_PAT }}
@@ -23,24 +23,10 @@ jobs:
           KEY_3: ${{ secrets.FOEZ_API_KEY_3 }}
           INDEX: ${{ vars.KEY_INDEX }}
         run: |
-          ORG_NAME="${GITHUB_REPOSITORY%%/*}"
-          INDEX_VALUE="$(gh variable get KEY_INDEX --org "$ORG_NAME" --json value --jq .value 2>/dev/null || echo "${INDEX:-0}")"
-          KEYS=("$KEY_0" "$KEY_1" "$KEY_2" "$KEY_3")
-          CURRENT_INDEX=$(( INDEX_VALUE % 4 ))
-          SELECTED_KEY="${KEYS[$CURRENT_INDEX]}"
-          echo "::add-mask::$SELECTED_KEY"
-          echo "selected_key=$SELECTED_KEY" >> $GITHUB_OUTPUT
-          NEXT_INDEX=$(( (CURRENT_INDEX + 1) % 4 ))
-          gh variable set KEY_INDEX --body "$NEXT_INDEX" --org "$ORG_NAME"
-
-      - name: Process tagged files
-        env:
-          API_KEY: ${{ steps.select-key.outputs.selected_key }}
-        id: tagged-files
-        shell: bash
-        run: |
           directive_regex='^[[:space:]]*(//|#|--|/\*+|\*+)?[[:space:]]*@foez-bhai\b'
           workflow_file="./.github/workflows/foez-bhai-tag.yml"
+          KEYS=("$KEY_0" "$KEY_1" "$KEY_2" "$KEY_3")
+          CURRENT_INDEX=$(( ${INDEX:-0} % 4 ))
           mapfile -d '' files < <(
             grep -RIlZ --exclude-dir=.git --exclude-dir=.github --exclude-dir=document --exclude-dir=submodule -E "$directive_regex" . |
               while IFS= read -r -d '' file; do
@@ -52,10 +38,14 @@ jobs:
           if [ "${#files[@]}" -gt 0 ]; then
             printf '%s\0' "${files[@]}" > tagged-files.txt
             while IFS= read -r -d '' file; do
+              API_KEY="${KEYS[$CURRENT_INDEX]}"
+              echo "::add-mask::$API_KEY"
               python .github/gemini.py "$file" --api-key "$API_KEY" -o output.foez
               mv output.foez "$file"
               echo "" >> "$file"
               rm -rf __pycache__
+              CURRENT_INDEX=$(( (CURRENT_INDEX + 1) % 4 ))
+              gh variable set KEY_INDEX --body "$CURRENT_INDEX" --repo "${{ github.repository }}"
             done < tagged-files.txt
           fi
           rm -rf tagged-files.txt
