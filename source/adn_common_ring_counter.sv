@@ -2,7 +2,11 @@
 
 The `adn_common_ring_counter` module implements a synchronous one-hot ring counter. It rotates a single high bit through a register of a configurable width, providing a circular shift operation that is useful for state machine sequencing, token passing, or simple pulse generation.
 
-@foez-bhai, describe the use case of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+### Use Cases
+- **Round-Robin Arbitration**: Distributing access to a shared resource among multiple requesters.
+- **Time-Division Multiplexing (TDM)**: Generating control signals to enable different data paths in a sequential manner.
+- **Pulse Train Generation**: Creating periodic pulses for triggering events at specific clock cycles.
+- **State Machine Sequencing**: Implementing simple, low-overhead state machines where each state is represented by a single bit.
 
 - **`clk_i`**: Connect to the system clock.
 - **`arst_ni`**: Connect to an active-low asynchronous or synchronous reset. Upon reset, the counter initializes to `100...0`.

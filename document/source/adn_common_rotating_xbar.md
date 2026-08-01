@@ -8,14 +8,14 @@
 ## Parameters
 |Name|Type|Dimension|Default Value|Description|
 |-|-|-|-|-|
-|DATA_WIDTH|||2| Width of each individual data port in bits|
-|NUM_PORTS|||2| Total number of input and output ports in the crossbar|
+|DATA_WIDTH|int||2| Width of each individual data port in bits|
+|NUM_PORTS|int||2| Total number of input and output ports in the crossbar|
 
 ## Ports
 |Name|Direction|Type|Dimension|Description|
 |-|-|-|-|-|
-|in_i|input|logic [NUM_PORTS-1:0][DATA_WIDTH-1:0]|| Array of input data buses|
 |rotation_index_i|input|logic [$clog2(NUM_PORTS)-1:0]|| Control signal defining the cyclic shift offset|
+|in_i|input|logic [NUM_PORTS-1:0][DATA_WIDTH-1:0]|| Array of input data buses|
 |out_o|output|logic [NUM_PORTS-1:0][DATA_WIDTH-1:0]|| Array of output data buses after cyclic permutation|
 ## Description
 

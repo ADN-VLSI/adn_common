@@ -27,8 +27,11 @@
 ### Purpose
 The `adn_common_pipeline` module implements a single-stage pipeline register with a standard ready/valid handshake protocol. It acts as a buffer to decouple timing paths between upstream and downstream modules, allowing for improved clock frequency by inserting a register stage in the data path while maintaining flow control.
 
-### Usage
-To use this module, instantiate it between two modules communicating via a ready/valid interface. Connect the upstream module's `data`, `valid`, and `ready` signals to the `data_in_*` ports, and the downstream module's signals to the `data_out_*` ports. The module will automatically buffer one word of data, asserting `data_in_ready_o` when it is ready to accept new data and driving `data_out_valid_o` when it has data ready for the downstream consumer.
+### Use Case
+This module is primarily used in high-speed digital designs to break long combinational paths. By inserting this pipeline stage between two modules, you can effectively "cut" the critical path, allowing the design to meet tighter timing constraints. It is ideal for:
+- **Inter-module communication:** Buffering data between modules operating on different logic levels or physical distances.
+- **Backpressure handling:** Managing data flow when the downstream module is temporarily unable to accept new data (e.g., due to a full FIFO or busy state).
+- **Timing closure:** Improving the maximum operating frequency ($F_{max}$) of the design by adding a single cycle of latency in exchange for a shorter combinational path.
 
 | REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
 |----------|------------|-----------------|--------------------------------------------------------|

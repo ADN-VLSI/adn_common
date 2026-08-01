@@ -3,7 +3,12 @@
 ### Purpose
 This module implements a synchronous JK flip-flop with an active-low asynchronous reset. It provides the standard JK flip-flop functionality: holding the state, resetting to 0, setting to 1, or toggling the output based on the J and K inputs on the rising edge of the clock.
 
-@foez-bhai, describe the use case of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+### Use Case
+This module is primarily used in digital logic designs requiring state storage with flexible control logic. Common applications include:
+- **Frequency Dividers:** Utilizing the toggle mode (J=1, K=1) to divide the clock frequency.
+- **State Machines:** Serving as a fundamental building block for sequential controllers.
+- **Counters:** Implementing binary or non-binary counters where specific set/reset/toggle behaviors are required.
+- **Control Registers:** Managing status flags that need to be set, cleared, or toggled based on system events.
 
 | REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
 |----------|------------|-----------------|--------------------------------------------------------|

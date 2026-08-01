@@ -3,7 +3,8 @@
 
 This module serves as a synchronization and aggregation unit that combines multiple handshake interfaces. It ensures that data transmission only proceeds when all input valid signals and all output ready signals are simultaneously asserted, effectively acting as a multi-channel AND-gate for handshake protocols.
 
-@foez-bhai, describe the use case of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+## Use Case
+The `adn_common_hs_combiner` is primarily used in high-performance interconnects and data-path pipelines where multiple independent data streams must be synchronized before being processed by a downstream consumer. By aggregating multiple handshake channels, it simplifies control logic in complex SoC architectures, ensuring that data-flow integrity is maintained across multi-channel interfaces without requiring individual state machines for every signal pair.
 
 | REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
 |----------|------------|-----------------|--------------------------------------------------------|

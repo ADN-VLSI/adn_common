@@ -16,7 +16,7 @@
 |Name|Direction|Type|Dimension|Description|
 |-|-|-|-|-|
 |clk_i|input|logic||Destination clock domain|
-|rst_n_i|input|logic||Active-low asynchronous reset|
+|arst_ni|input|logic||Active-low asynchronous reset|
 |data_i|input|logic [WIDTH-1:0]||Asynchronous input data|
 |data_o|output|logic [WIDTH-1:0]||Synchronized output data|
 ## Description
@@ -24,6 +24,9 @@
 
 ### Purpose
 The `adn_common_synchronizer` module is a generic multi-stage flip-flop synchronizer designed to safely transfer asynchronous signals between different clock domains. It mitigates metastability issues by passing the input data through a configurable number of sequential stages before outputting the synchronized signal.
+
+### Use Case
+This module is primarily used when a signal originates in one clock domain and must be sampled by logic in a different clock domain. By utilizing a chain of flip-flops, it provides the necessary settling time for the signal to stabilize, effectively preventing metastability from propagating into the destination domain's logic. It is ideal for control signals, status flags, and single-bit handshaking protocols where data integrity across clock boundaries is critical.
 
 | REVISION | DATE       | AUTHOR              | DESCRIPTION                                        |
 |----------|------------|---------------------|----------------------------------------------------|

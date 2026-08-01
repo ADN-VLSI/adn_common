@@ -3,7 +3,11 @@
 ### Purpose
 The `adn_common_cdc_fifo` module implements a high-performance, asynchronous First-In-First-Out (FIFO) buffer designed for reliable data transfer between two independent clock domains. It utilizes Gray-coded pointers and multi-stage synchronizers to mitigate metastability issues, ensuring robust data integrity during Clock Domain Crossing (CDC). The module provides full, empty, and programmable almost-full/almost-empty status flags, along with occupancy counters to facilitate flow control in complex digital systems.
 
-@foez-bhai, describe the use case of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+### Use Case
+This module is intended for scenarios where data must be passed between two modules operating on different clock frequencies or phases. Common use cases include:
+- **Data Buffering:** Smoothing out bursts of data between a high-speed producer and a low-speed consumer.
+- **Clock Domain Crossing (CDC):** Safely transferring control signals or data packets across asynchronous boundaries in SoC designs.
+- **Flow Control:** Utilizing the `almost_full` and `almost_empty` flags to throttle upstream data producers or trigger downstream processing, preventing buffer overflow or underflow.
 
 | REVISION | DATE       | AUTHOR              | DESCRIPTION                                        |
 |----------|------------|---------------------|----------------------------------------------------|

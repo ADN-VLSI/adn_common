@@ -3,7 +3,11 @@
 ### Purpose
 This module provides a configurable edge detection mechanism for a single-bit input signal. It supports rising edge, falling edge, and dual-edge detection, generating a single-clock-cycle pulse whenever the specified transition occurs on the input signal relative to the system clock.
 
-@foez-bhai, describe the use case of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+### Use Case
+This module is primarily used in digital systems to synchronize asynchronous signals or to trigger state machine transitions based on specific signal changes. Common applications include:
+- Generating a single-cycle trigger from a level-sensitive input (e.g., a button press or a status flag).
+- Detecting the start of a data packet in serial communication protocols.
+- Creating pulse-based control signals for counters or registers within a synchronous design.
 
 Connect the system clock (`clk_i`), active-low reset (`arst_ni`), and the target signal (`signal_i`). The `edge_pulse_o` output will assert high for exactly one clock cycle when the specified transition is detected.
 

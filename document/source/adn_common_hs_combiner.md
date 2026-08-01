@@ -24,8 +24,8 @@
 
 This module serves as a synchronization and aggregation unit that combines multiple handshake interfaces. It ensures that data transmission only proceeds when all input valid signals and all output ready signals are simultaneously asserted, effectively acting as a multi-channel AND-gate for handshake protocols.
 
-## Usage
-The `hs_combiner` is designed to synchronize multiple handshake channels. It monitors `NUM_TX` input channels and `NUM_RX` output channels. The module asserts the output valid signals and input ready signals only when all input valid signals are high and all output ready signals are high. This is typically used in data-path synchronization where multiple streams must be aligned before processing.
+## Use Case
+The `adn_common_hs_combiner` is primarily used in high-performance interconnects and data-path pipelines where multiple independent data streams must be synchronized before being processed by a downstream consumer. By aggregating multiple handshake channels, it simplifies control logic in complex SoC architectures, ensuring that data-flow integrity is maintained across multi-channel interfaces without requiring individual state machines for every signal pair.
 
 | REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
 |----------|------------|-----------------|--------------------------------------------------------|

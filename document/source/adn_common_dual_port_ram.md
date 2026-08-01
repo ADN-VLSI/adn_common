@@ -27,8 +27,11 @@
 ### Purpose
 This module implements a synchronous dual-port RAM with independent read and write clock domains. It supports configurable data width, address depth, and an optional output pipeline register to balance between latency and timing performance.
 
-### Usage
-To instantiate this module, define the `DATA_WIDTH` and `ADDR_WIDTH` parameters to match your memory requirements. Set `OUT_REG` to `1` if you require an additional pipeline stage to improve timing at the cost of one extra clock cycle of latency.
+### Use Case
+This module is designed for scenarios requiring asynchronous data buffering between two different clock domains (CDC). It is ideal for:
+- **FIFO Buffers:** Acting as the storage core for asynchronous FIFOs where the producer and consumer operate at different frequencies.
+- **Data Decoupling:** Buffering data streams in high-speed interfaces to prevent data loss during clock domain transitions.
+- **Shared Memory:** Providing a bridge for data exchange between disparate processing units in a System-on-Chip (SoC) architecture.
 
 | REVISION | DATE       | AUTHOR              | DESCRIPTION                                        |
 |----------|------------|---------------------|----------------------------------------------------|
