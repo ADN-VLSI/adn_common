@@ -12,7 +12,27 @@ jobs:
         with:
           token: ${{ secrets.ADN_SECRET_FOEZ_PAT }}
 
+      - name: Fetch and Cycle Key
+        id: select-key
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          KEY_0: ${{ secrets.FOEZ_API_KEY_0 }}
+          KEY_1: ${{ secrets.FOEZ_API_KEY_1 }}
+          KEY_2: ${{ secrets.FOEZ_API_KEY_2 }}
+          KEY_3: ${{ secrets.FOEZ_API_KEY_3 }}
+          INDEX: ${{ vars.KEY_INDEX }}
+        run: |
+          KEYS=("$KEY_0" "$KEY_1" "$KEY_2" "$KEY_3")
+          CURRENT_INDEX=$(( INDEX % 4 ))
+          SELECTED_KEY="${KEYS[$CURRENT_INDEX]}"
+          echo "::add-mask::$SELECTED_KEY"
+          echo "selected_key=$SELECTED_KEY" >> $GITHUB_OUTPUT
+          NEXT_INDEX=$(( (CURRENT_INDEX + 1) % 4 ))
+          gh api -X PATCH /repos/${{ github.repository }}/actions/variables/KEY_INDEX -f name='KEY_INDEX' -f value="$NEXT_INDEX"
+
       - name: Process tagged files
+        env:
+          API_KEY: ${{ steps.select-key.outputs.selected_key }}
         id: tagged-files
         shell: bash
         run: |
@@ -29,7 +49,7 @@ jobs:
           if [ "${#files[@]}" -gt 0 ]; then
             printf '%s\0' "${files[@]}" > tagged-files.txt
             while IFS= read -r -d '' file; do
-              python .github/gemini.py "$file" --api-key "${{ secrets.FOEZ_SECRET_API_KEY }}" -o output.foez
+              python .github/gemini.py "$file" --api-key "$API_KEY"" -o output.foez
               mv output.foez "$file"
               echo "" >> "$file"
               rm -rf __pycache__
