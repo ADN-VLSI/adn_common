@@ -23,12 +23,10 @@ See LICENSE file in the project root for full license information
 `include "adn_common_synth_directives.svh"
 
 module adn_common_synchronizer #(
-    // PARAMETERS
     parameter int WIDTH = 1,  // Bit width of the data bus
     parameter int STAGES = 2,  // Number of synchronization stages (min 2 recommended)
     parameter logic [WIDTH-1:0] RESET_VALUE = '0  // Value to load during reset
 ) (
-    // PORTS
     input logic             clk_i,    // Destination clock domain
     input logic             arst_ni,  // Active-low asynchronous reset
     input logic [WIDTH-1:0] data_i,   // Asynchronous input data

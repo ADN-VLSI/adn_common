@@ -28,19 +28,19 @@ See LICENSE file in the project root for full license information
 */
 
 module adn_common_ring_counter #(
-    // Parameter: DATA_WIDTH defines the number of bits in the ring counter
+    // DATA_WIDTH defines the number of bits in the ring counter
     parameter int DATA_WIDTH = 4
 ) (
-    // Input: System clock signal
+    // System clock signal
     input logic clk_i,
 
-    // Input: Active-low synchronous reset signal
+    // Active-low synchronous reset signal
     input logic arst_ni,
 
-    // Input: Enable signal to trigger the rotation of the bit
+    // Enable signal to trigger the rotation of the bit
     input logic enable_i,
 
-    // Output: One-hot encoded vector representing the current state
+    // One-hot encoded vector representing the current state
     output logic [DATA_WIDTH-1:0] data_o
 );
 
