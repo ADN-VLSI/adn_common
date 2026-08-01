@@ -30,6 +30,7 @@ This module is primarily used in memory-mapped systems, address decoding logic f
 |----------|------------|-----------------|--------------------------------------------------------|
 | 0.1      | 2026-08-01 | Foez Ahmed      | Initial version                                        |
 | 1.0      | 2026-08-01 | Foez Ahmed      | Stable release                                         |
+| 1.1      | 2026-08-01 | Foez Ahmed      | Ratified                                               |
 
 This file is part of ADN-VLSI/adn_common
 <br>**Copyright (c) 2026 ADN Semiconductors**

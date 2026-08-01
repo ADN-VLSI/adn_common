@@ -15,9 +15,9 @@
 ## Ports
 |Name|Direction|Type|Dimension|Description|
 |-|-|-|-|-|
-|in_i|input|logic [DATA_WIDTH-1:0]|[NUM_INPUTS]| Input data ports array|
-|sel_i|input|logic [$clog2(NUM_INPUTS)-1:0]|[NUM_OUTPUTS]| Selection signals for each output port (index of input to route)|
-|out_o|output|logic [DATA_WIDTH-1:0]|[NUM_OUTPUTS]| Output data ports array|
+|in_i|input|logic [NUM_INPUTS-1:0][DATA_WIDTH-1:0]|| Input data ports array|
+|sel_i|input|logic [NUM_OUTPUTS-1:0][$clog2(NUM_INPUTS)-1:0]|| Selection signals for each output port (index of input to route)|
+|out_o|output|logic [NUM_OUTPUTS-1:0][DATA_WIDTH-1:0]|| Output data ports array|
 ## Description
 
 
@@ -35,6 +35,7 @@ The `adn_common_xbar` is designed for high-performance interconnect fabrics wher
 |----------|------------|-----------------|--------------------------------------------------------|
 | 0.1      | 2026-08-01 | Foez Ahmed      | Initial version                                        |
 | 1.0      | 2026-08-01 | Foez Ahmed      | Stable release                                         |
+| 1.1      | 2026-08-01 | Foez Ahmed      | Ratified                                               |
 
 This file is part of ADN-VLSI/adn_common
 <br>**Copyright (c) 2026 ADN Semiconductors**

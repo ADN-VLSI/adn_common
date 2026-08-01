@@ -15,7 +15,7 @@
 |Name|Direction|Type|Dimension|Description|
 |-|-|-|-|-|
 |clk_i|input|logic||Write clock|
-|rst_n_i|input|logic||Active-low asynchronous reset for write domain|
+|arst_ni|input|logic||Active-low asynchronous reset for write domain|
 |wr_en_i|input|logic||Write enable signal|
 |wr_addr_i|input|logic [ADDR_WIDTH-1:0]||Write address|
 |wr_data_i|input|logic [DATA_WIDTH-1:0]||Data to be written|
@@ -34,6 +34,7 @@ To instantiate this module, define the `DATA_WIDTH` and `ADDR_WIDTH` parameters 
 |----------|------------|---------------------|----------------------------------------------------|
 | 0.1      | 2026-07-28 | Ahasan Ullah Khalid | Initial version                                    |
 | 1.0      | 2026-07-28 | Ahasan Ullah Khalid | Stable release                                     |
+| 1.1      | 2026-08-01 | Foez Ahmed          | Ratified                                           |
 
 This file is part of ADN-VLSI/adn_common
 <br>**Copyright (c) 2026 ADN Semiconductors**

@@ -14,9 +14,9 @@
 ## Ports
 |Name|Direction|Type|Dimension|Description|
 |-|-|-|-|-|
-|in_i|input|logic [DATA_WIDTH-1:0]|[NUM_PORTS]| Array of input data buses|
+|in_i|input|logic [NUM_PORTS-1:0][DATA_WIDTH-1:0]|| Array of input data buses|
 |rotation_index_i|input|logic [$clog2(NUM_PORTS)-1:0]|| Control signal defining the cyclic shift offset|
-|out_o|output|logic [DATA_WIDTH-1:0]|[NUM_PORTS]| Array of output data buses after cyclic permutation|
+|out_o|output|logic [NUM_PORTS-1:0][DATA_WIDTH-1:0]|| Array of output data buses after cyclic permutation|
 ## Description
 
 
@@ -30,6 +30,7 @@ This module is primarily used in high-performance interconnects, packet switchin
 |----------|------------|-----------------|--------------------------------------------------------|
 | 0.1      | 2026-08-01 | Foez Ahmed      | Initial version                                        |
 | 1.0      | 2026-08-01 | Foez Ahmed      | Stable release                                         |
+| 1.1      | 2026-08-01 | Foez Ahmed      | Ratified                                               |
 
 This file is part of ADN-VLSI/adn_common
 <br>**Copyright (c) 2026 ADN Semiconductors**

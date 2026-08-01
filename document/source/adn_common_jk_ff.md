@@ -31,6 +31,7 @@ To use this module, instantiate it in your design and connect the `clk_i` to you
 | REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
 |----------|------------|-----------------|--------------------------------------------------------|
 | 1.0      | 2026-05-04 | Shuparna Haque  | Stable release                                         |
+| 1.1      | 2026-08-01 | Foez Ahmed      | Ratified                                               |
 
 <br>**This file is part of https://github.com/ADN-VLSI/adn_common**
 <br>**Copyright (c) 2026 ADN Semiconductors**
