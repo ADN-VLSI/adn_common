@@ -29,8 +29,7 @@ jobs:
           echo "::add-mask::$SELECTED_KEY"
           echo "selected_key=$SELECTED_KEY" >> $GITHUB_OUTPUT
           NEXT_INDEX=$(( (CURRENT_INDEX + 1) % 4 ))
-          gh api -X PATCH repos/${{ github.repository }}/actions/variables/KEY_INDEX -f name='KEY_INDEX' -f value="$NEXT_INDEX" || \
-          gh api -X POST repos/${{ github.repository }}/actions/variables -f name='KEY_INDEX' -f value="$NEXT_INDEX"
+          gh variable set KEY_INDEX --body "$NEXT_INDEX" --repo "${{ github.repository }}"
 
       - name: Process tagged files
         env:
