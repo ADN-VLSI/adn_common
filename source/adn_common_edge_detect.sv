@@ -15,6 +15,7 @@ Connect the system clock (`clk`), active-low reset (`rst_n`), and the target sig
 |----------|------------|------------------------|--------------------------------------------------------|
 | 0.1      | 2026-07-27 | Md. Sakib Hasan Shawon | Initial version                                        |
 | 1.0      | 2026-07-28 | Md. Sakib Hasan Shawon | Stable release                                         |
+| 1.1      | 2026-08-01 | Foez Ahmed             | Ratified                                               |
 
 Author : Md. Sakib Hasan Shawon (mdsakibhasanshawon20@gmail.com)
 This file is part of ADN-VLSI/adn_common

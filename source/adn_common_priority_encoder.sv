@@ -6,12 +6,12 @@ This module implements a parameterized priority encoder that identifies the inde
 ### Use-Case
 This module is primarily used in arbitration logic, interrupt controllers, and resource allocation units where multiple requests arrive simultaneously, and a deterministic selection based on priority is required. By parameterizing the priority direction, it can be seamlessly integrated into both round-robin schedulers and fixed-priority bus masters.
 
-| REVISION | DATE       | AUTHOR             | DESCRIPTION      |
-|----------|------------|--------------------|------------------|
-| 0.1      | 2026-07-30 | Shykul Islam Siam  | Initial version  |
-| 1.0      | 2026-07-30 | Shykul Islam Siam  | Stable release   |
-| 1.1      | 2026-08-01 | Foez Ahmed         | Simplified logic |
-| 1.2      | 2026-08-01 | Foez Ahmed         | Ratified         |
+| REVISION | DATE       | AUTHOR             | DESCRIPTION                                         |
+|----------|------------|--------------------|-----------------------------------------------------|
+| 0.1      | 2026-07-30 | Shykul Islam Siam  | Initial version                                     |
+| 1.0      | 2026-07-30 | Shykul Islam Siam  | Stable release                                      |
+| 1.1      | 2026-08-01 | Foez Ahmed         | Simplified logic                                    |
+| 1.2      | 2026-08-01 | Foez Ahmed         | Ratified                                            |
 
 Author : Shykul Islam Siam (shykulislam32@gmail.com)
 This file is part of ADN-VLSI/adn_common

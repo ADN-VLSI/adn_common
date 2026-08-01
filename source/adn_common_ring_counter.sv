@@ -24,8 +24,8 @@ adn_common_ring_counter #(
 
 | REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
 |----------|------------|-----------------|--------------------------------------------------------|
-| 0.1      | 2026-07-30 | Md. Sakib Hasan Shawon | Initial version                                        |
-| 1.0      | YYYY-MM-DD | Md. Sakib Hasan Shawon | Stable release                                         |
+| 0.1      | 2026-07-30 | Md. Sakib Hasan Shawon | Initial version                                 |
+| 1.0      | YYYY-MM-DD | Md. Sakib Hasan Shawon | Stable release                                  |
 
 Author : Md. Sakib Hasan Shawon (mdsakibhasanshawon20@gmail.com)
 This file is part of ADN-VLSI/adn_common
