@@ -8,33 +8,35 @@
 ## Parameters
 |Name|Type|Dimension|Default Value|Description|
 |-|-|-|-|-|
-|DEPTH|int||8|width of the counter|
-|WIDTH|int||$clog2(DEPTH)||
+|DEPTH|int||8|Maximum capacity of the buffer/pipeline|
 
 ## Ports
 |Name|Direction|Type|Dimension|Description|
 |-|-|-|-|-|
-|clk_i|input|logic||clock input|
-|rst_ni|input|logic||active-low async reset|
-|data_in_valid_i|input|logic||sender says data is valid (input side)|
-|data_in_ready_o|output|logic||receiver says it can accept (input side)|
-|data_out_valid_o|output|logic||sender says data is valid (output side)|
-|data_out_ready_i|input|logic||receiver says it can accept (output side)|
-|count_o|output|logic [WIDTH-1:0]||number of outstanding handshakes|
-|overflow_o|output|logic||pulses if counter wraps around|
+|clk_i|input|logic||System clock|
+|arst_ni|input|logic||Active-low asynchronous reset|
+|data_in_valid_i|input|logic||Input data valid signal|
+|data_in_ready_o|output|logic||Input data ready signal (backpressure)|
+|data_out_valid_o|output|logic||Output data valid signal|
+|data_out_ready_i|input|logic||Output data ready signal|
+|count_o|output|logic [$clog2(DEPTH+1)-1:0]||Current occupancy count|
 ## Description
 
 
 ### Purpose
-The `adn_common_hs_counter` module is designed to track the number of outstanding transactions in a handshake-based data path. It monitors input and output handshake signals to maintain a count of items currently in flight, providing flow control by asserting ready/valid signals based on the counter's state.
+This module implements a handshake-based counter designed to track the number of active data elements within a buffer or pipeline stage. It monitors input and output handshakes to increment or decrement the internal count, ensuring the counter remains within the bounds of the specified `DEPTH`.
 
-### Usage
-To use this module, instantiate it in your design by specifying the `DEPTH` parameter, which defines the maximum number of transactions the counter can track. Connect the `data_in` handshake signals to the source interface and the `data_out` handshake signals to the destination interface. The module will automatically manage the `data_in_ready_o` and `data_out_valid_o` signals to prevent buffer overflow and ensure data availability. The `count_o` port provides the current number of items in the pipeline, and `overflow_o` can be monitored for error detection.
+### Use Case
+This module is primarily used in streaming architectures to manage flow control and occupancy tracking. It is ideal for:
+- **FIFO Depth Monitoring:** Tracking how many slots are currently occupied in a buffer.
+- **Backpressure Management:** Generating `ready` signals based on current occupancy to prevent buffer overflows.
+- **Pipeline Monitoring:** Providing visibility into the number of valid data packets currently traversing a multi-stage pipeline.
 
 | REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
 |----------|------------|-----------------|--------------------------------------------------------|
-| 0.1      | 2026-07-27 | Annim | Initial version                                        |
-| 1.0      | 2026-07-29 | Annim | Stable release                                         |
+| 0.1      | 2026-07-27 | Annim Jannat    | Initial version                                        |
+| 1.0      | 2026-07-29 | Annim Jannat    | Stable release                                         |
+| 1.1      | 2026-08-01 | Foez Ahmed      | Ratified                                               |
 
 This file is part of ADN-VLSI/adn_common
 <br>**Copyright (c) 2026 ADN Semiconductors**
