@@ -14,6 +14,7 @@ jobs:
 
       - name: Fetch and Cycle Key
         id: select-key
+        shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           KEY_0: ${{ secrets.FOEZ_API_KEY_0 }}
@@ -49,7 +50,7 @@ jobs:
           if [ "${#files[@]}" -gt 0 ]; then
             printf '%s\0' "${files[@]}" > tagged-files.txt
             while IFS= read -r -d '' file; do
-              python .github/gemini.py "$file" --api-key "$API_KEY"" -o output.foez
+              python .github/gemini.py "$file" --api-key "$API_KEY" -o output.foez
               mv output.foez "$file"
               echo "" >> "$file"
               rm -rf __pycache__
