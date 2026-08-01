@@ -1,7 +1,6 @@
 ${ADN_COMMON}/interface/dummy_interface.sv
 ${ADN_COMMON}/source/adn_common_address_decoder.sv
 ${ADN_COMMON}/source/adn_common_address_range_compare.sv
-${ADN_COMMON}/source/adn_common_b_rounder.sv
 ${ADN_COMMON}/source/adn_common_bin_to_gray.sv
 ${ADN_COMMON}/source/adn_common_cdc_fifo.sv
 ${ADN_COMMON}/source/adn_common_decoder.sv
