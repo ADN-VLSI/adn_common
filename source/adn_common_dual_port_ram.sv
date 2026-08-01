@@ -10,6 +10,7 @@ To instantiate this module, define the `DATA_WIDTH` and `ADDR_WIDTH` parameters 
 |----------|------------|---------------------|----------------------------------------------------|
 | 0.1      | 2026-07-28 | Ahasan Ullah Khalid | Initial version                                    |
 | 1.0      | 2026-07-28 | Ahasan Ullah Khalid | Stable release                                     |
+| 1.1      | 2026-08-01 | Foez Ahmed          | Ratified                                           |
 
 Author : Ahasan Ullah Khalid (aukhalid02@gmail.com)
 This file is part of ADN-VLSI/adn_common
@@ -28,7 +29,7 @@ module adn_common_dual_port_ram #(
 
     //Clock/Reset
     input logic clk_i,   // Write clock
-    input logic rst_n_i, // Active-low asynchronous reset for write domain
+    input logic arst_ni, // Active-low asynchronous reset for write domain
 
     // Write Port Interface
     input logic                  wr_en_i,    // Write enable signal
@@ -60,7 +61,9 @@ module adn_common_dual_port_ram #(
 
   // Synchronous Write Channel (wr_clk_i Domain): Handles data storage into the memory array
   always_ff @(posedge clk_i) begin
-    if (rst_n_i && wr_en_i) begin
+    if (~arst_ni) begin
+      mem_core[wr_addr_i] <= '0;
+    end else if (wr_en_i) begin
       mem_core[wr_addr_i] <= wr_data_i;
     end
   end
@@ -71,15 +74,5 @@ module adn_common_dual_port_ram #(
 
   // Asynchronous Read Channel: Instantly reflects changes on rd_addr_i when rd_en_i is high
   always_comb rd_data_o = mem_core[rd_addr_i];
-
-
-  // Initialize Memory Array for Simulation (Prevents 'x on unwritten reads)
-`ifdef SIMULATION
-  initial begin
-    for (int i = 0; i < DEPTH; i++) begin
-      mem_core[i] = '0;
-    end
-  end
-`endif
 
 endmodule

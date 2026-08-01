@@ -10,6 +10,7 @@ This module is primarily used in high-performance interconnects, packet switchin
 |----------|------------|-----------------|--------------------------------------------------------|
 | 0.1      | 2026-08-01 | Foez Ahmed      | Initial version                                        |
 | 1.0      | 2026-08-01 | Foez Ahmed      | Stable release                                         |
+| 1.1      | 2026-08-01 | Foez Ahmed      | Ratified                                               |
 
 Author : Foez Ahmed (foez.official@gmail.com)
 This file is part of ADN-VLSI/adn_common
@@ -21,18 +22,18 @@ See LICENSE file in the project root for full license information
 
 module adn_common_rotating_xbar #(
     // Width of each individual data port in bits
-    parameter DATA_WIDTH = 2, 
+    parameter DATA_WIDTH = 2,
     // Total number of input and output ports in the crossbar
-    parameter NUM_PORTS  = 2  
+    parameter NUM_PORTS  = 2
 ) (
     // Array of input data buses
-    input logic [DATA_WIDTH-1:0] in_i[NUM_PORTS],
+    input logic [NUM_PORTS-1:0][DATA_WIDTH-1:0] in_i,
 
     // Control signal defining the cyclic shift offset
     input logic [$clog2(NUM_PORTS)-1:0] rotation_index_i,
 
     // Array of output data buses after cyclic permutation
-    output logic [DATA_WIDTH-1:0] out_o[NUM_PORTS]
+    output logic [NUM_PORTS-1:0][DATA_WIDTH-1:0] out_o
 );
 
   //////////////////////////////////////////////////////////////////////////////////////////////////

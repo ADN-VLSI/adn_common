@@ -14,6 +14,7 @@ The `adn_common_xbar` is designed for high-performance interconnect fabrics wher
 |----------|------------|-----------------|--------------------------------------------------------|
 | 0.1      | 2026-08-01 | Foez Ahmed      | Initial version                                        |
 | 1.0      | 2026-08-01 | Foez Ahmed      | Stable release                                         |
+| 1.1      | 2026-08-01 | Foez Ahmed      | Ratified                                               |
 
 Author : Foez Ahmed (foez.official@gmail.com)
 This file is part of ADN-VLSI/adn_common
@@ -25,20 +26,20 @@ See LICENSE file in the project root for full license information
 
 module adn_common_xbar #(
     // Width of the data bus in bits
-    parameter DATA_WIDTH  = 2, 
+    parameter DATA_WIDTH  = 2,
     // Number of input ports
-    parameter NUM_INPUTS  = 2, 
+    parameter NUM_INPUTS  = 2,
     // Number of output ports
-    parameter NUM_OUTPUTS = 2  
+    parameter NUM_OUTPUTS = 2
 ) (
     // Input data ports array
-    input logic [DATA_WIDTH-1:0] in_i[NUM_INPUTS],
+    input logic [NUM_INPUTS-1:0][DATA_WIDTH-1:0] in_i,
 
     // Selection signals for each output port (index of input to route)
-    input logic [$clog2(NUM_INPUTS)-1:0] sel_i[NUM_OUTPUTS],
+    input logic [NUM_OUTPUTS-1:0][$clog2(NUM_INPUTS)-1:0] sel_i,
 
     // Output data ports array
-    output logic [DATA_WIDTH-1:0] out_o[NUM_OUTPUTS]
+    output logic [NUM_OUTPUTS-1:0][DATA_WIDTH-1:0] out_o
 );
 
   //////////////////////////////////////////////////////////////////////////////////////////////////

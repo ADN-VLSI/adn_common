@@ -7,6 +7,7 @@
 | REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
 |----------|------------|-----------------|--------------------------------------------------------|
 | 1.0      | 2026-07-29 | Foez Ahmed      | Stable release                                         |
+| 1.1      | 2026-08-01 | Foez Ahmed      | Ratified                                               |
 
 Author : Foez Ahmed (foez.official@gmail.com)
 This file is part of ADN-VLSI/adn_common

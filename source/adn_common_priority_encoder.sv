@@ -11,6 +11,7 @@ This module is primarily used in arbitration logic, interrupt controllers, and r
 | 0.1      | 2026-07-30 | Shykul Islam Siam  | Initial version  |
 | 1.0      | 2026-07-30 | Shykul Islam Siam  | Stable release   |
 | 1.1      | 2026-08-01 | Foez Ahmed         | Simplified logic |
+| 1.2      | 2026-08-01 | Foez Ahmed         | Ratified         |
 
 Author : Shykul Islam Siam (shykulislam32@gmail.com)
 This file is part of ADN-VLSI/adn_common
