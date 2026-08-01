@@ -1,27 +1,14 @@
 /*
 
-### Purpose
-This module implements a fixed-priority arbiter that grants access to a resource based on the highest index request. It evaluates multiple input requests and ensures that only the request with the highest priority (highest index) is granted, provided the global allow signal is asserted.
+@foez-bhai, write the purpose of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
 
-### Usage
-To use this module, instantiate it with the desired number of requests (`NUM_REQ`). Connect your request vector to `req_i` and the global enable signal to `allow_req_i`. The module will output a one-hot encoded grant vector `gnt_i` where the highest index bit set in `req_i` is granted, provided `allow_req_i` is high.
+@foez-bhai, describe the use-case of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
 
-Example:
-```systemverilog
-adn_common_fixed_priority_arbiter #(
-    .NUM_REQ(8)
-) u_arbiter (
-    .req_i(request_bus),
-    .allow_req_i(global_enable),
-    .gnt_i(grant_bus)
-);
-```
-
-| REVISION | DATE       | AUTHOR             | DESCRIPTION     |
-|----------|------------|--------------------|-----------------|
-| 0.1      | 2026-07-30 | Shykul Islam Siam  | Initial version |
-| 1.0      | 2026-07-30 | Shykul Islam Siam  | Stable release  |
-| 1.1      | 2026-08-01 | Foez Ahmed         | Port Fix        |
+| REVISION | DATE       | AUTHOR             | DESCRIPTION                      |
+|----------|------------|--------------------|----------------------------------|
+| 0.1      | 2026-07-30 | Shykul Islam Siam  | Initial version                  |
+| 1.0      | 2026-07-30 | Shykul Islam Siam  | Stable release                   |
+| 1.1      | 2026-08-01 | Foez Ahmed         | Ports Fixed and simplified logic |
 
 Author : Shykul Islam Siam (shykulislam32@gmail.com)
 This file is part of ADN-VLSI/adn_common
@@ -32,49 +19,44 @@ See LICENSE file in the project root for full license information
 */
 
 module adn_common_fixed_priority_arbiter #(
-    parameter int NUM_REQ = 4 // Number of request inputs to arbitrate
+    parameter int NUM_REQ             = 4,  // Number of request lines; must be at least one.
+    parameter bit HIGH_INDEX_PRIORITY = 0   // When set, the highest index request has priority.
 ) (
     input logic [NUM_REQ-1:0] req_i,       // Request vector, higher index has higher priority
     input logic               allow_req_i, // Global enable signal to permit granting
 
-    output logic [NUM_REQ-1:0] gnt_i       // One-hot encoded grant output
+    output logic [NUM_REQ-1:0] gnt_o  // One-hot encoded grant output
 );
 
-  //////////////////////////////////////////////////////////////////////////////////////////////////
-  // SIGNALS
-  //////////////////////////////////////////////////////////////////////////////////////////////////
-
-  // Internal tracking signal to identify if any higher-priority request has already claimed the resource
-  logic [NUM_REQ-1:1] already_granted;  
+  // @foez-bhai, add comments to the functional blocks, signals, and submodules
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
-  // ASSIGNMENTS
+  // LOCALPARAMS GENERATED
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  // Logic to propagate the grant status from the highest index downwards
-  always_comb already_granted[NUM_REQ-1] = req_i[NUM_REQ-1];
-  for (genvar i = NUM_REQ - 2; i >= 1; i--) begin
-    // Accumulate requests: if current or any higher index is active, mark as granted
-    always_comb already_granted[i] = req_i[i] | already_granted[i+1];
-  end
-
-  // Generate grant signals: only grant if the request is active, global allow is high, 
-  // and no higher priority request has claimed the resource
-  always_comb gnt_i[NUM_REQ-1] = req_i[NUM_REQ-1] & allow_req_i;
-  for (genvar i = NUM_REQ - 2; i >= 0; i--) begin
-    always_comb gnt_i[i] = req_i[i] & allow_req_i & ~already_granted[i+1];
-  end
+  logic [$clog2(NUM_REQ)-1:0] addr;
+  logic                       addr_valid;
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
-  // ASSERTIONS
+  // SUBMODULES
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-`ifdef SIMULATION
-  initial begin
-    if (NUM_REQ < 1) begin
-      $display("\033[1;33m%m Is arbiter necessary?\033[0m");
-    end
-  end
-`endif  // SIMULATION
+  adn_common_priority_encoder #(
+      .NUM_WIRE           (NUM_REQ),
+      .HIGH_INDEX_PRIORITY(HIGH_INDEX_PRIORITY)
+  ) u_encoder (
+      .d_i   (req_i),
+      .addr_o   (addr),
+      .addr_valid_o(addr_valid)
+  );
+
+  adn_common_decoder #(
+      .ADDR_WIDTH($clog2(NUM_REQ)),
+      .DATA_WIDTH(NUM_REQ)
+  ) u_decoder (
+      .addr_i   (addr),
+      .addr_valid_i(addr_valid),
+      .d_o(gnt_o)
+  );
 
 endmodule
