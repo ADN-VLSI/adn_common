@@ -10,15 +10,15 @@
 ## Parameters
 |Name|Type|Dimension|Default Value|Description|
 |-|-|-|-|-|
-|DATA_WIDTH|int||4| Parameter: DATA_WIDTH defines the number of bits in the ring counter|
+|DATA_WIDTH|int||4| DATA_WIDTH defines the number of bits in the ring counter|
 
 ## Ports
 |Name|Direction|Type|Dimension|Description|
 |-|-|-|-|-|
-|clk_i|input|logic|| Input: System clock signal|
-|arst_ni|input|logic|| Input: Active-low synchronous reset signal|
-|enable_i|input|logic|| Input: Enable signal to trigger the rotation of the bit|
-|data_o|output|logic [DATA_WIDTH-1:0]|| Output: One-hot encoded vector representing the current state|
+|clk_i|input|logic|| System clock signal|
+|arst_ni|input|logic|| Active-low synchronous reset signal|
+|enable_i|input|logic|| Enable signal to trigger the rotation of the bit|
+|data_o|output|logic [DATA_WIDTH-1:0]|| One-hot encoded vector representing the current state|
 ## Description
 
 
