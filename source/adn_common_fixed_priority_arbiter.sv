@@ -1,8 +1,21 @@
 /*
 
-@foez-bhai, write the purpose of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+### Purpose
+This module implements a fixed-priority arbiter that grants access to a resource based on the highest index request. It evaluates multiple input requests and ensures that only the request with the highest priority (highest index) is granted, provided the global allow signal is asserted.
 
-@foez-bhai, describe the usage of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+### Usage
+To use this module, instantiate it with the desired number of requests (`NUM_REQ`). Connect your request vector to `req_i` and the global enable signal to `allow_req_i`. The module will output a one-hot encoded grant vector `gnt_i` where the highest index bit set in `req_i` is granted, provided `allow_req_i` is high.
+
+Example:
+```systemverilog
+adn_common_fixed_priority_arbiter #(
+    .NUM_REQ(8)
+) u_arbiter (
+    .req_i(request_bus),
+    .allow_req_i(global_enable),
+    .gnt_i(grant_bus)
+);
+```
 
 | REVISION | DATE       | AUTHOR             | DESCRIPTION     |
 |----------|------------|--------------------|-----------------|
@@ -18,33 +31,35 @@ See LICENSE file in the project root for full license information
 
 */
 
-// @foez-bhai, add comments to the parameters, ports
 module adn_common_fixed_priority_arbiter #(
-    parameter int NUM_REQ = 4
+    parameter int NUM_REQ = 4 // Number of request inputs to arbitrate
 ) (
-    input logic [NUM_REQ-1:0] req_i,
-    input logic               allow_req_i,
+    input logic [NUM_REQ-1:0] req_i,       // Request vector, higher index has higher priority
+    input logic               allow_req_i, // Global enable signal to permit granting
 
-    output logic [NUM_REQ-1:0] gnt_i
+    output logic [NUM_REQ-1:0] gnt_i       // One-hot encoded grant output
 );
-
-  // @foez-bhai, add comments to the functional blocks, signals, and submodules
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // SIGNALS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  logic [NUM_REQ-1:1] already_granted;  // Tracks if a higher priority request has been granted
+  // Internal tracking signal to identify if any higher-priority request has already claimed the resource
+  logic [NUM_REQ-1:1] already_granted;  
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // ASSIGNMENTS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
+  // Logic to propagate the grant status from the highest index downwards
   always_comb already_granted[NUM_REQ-1] = req_i[NUM_REQ-1];
   for (genvar i = NUM_REQ - 2; i >= 1; i--) begin
+    // Accumulate requests: if current or any higher index is active, mark as granted
     always_comb already_granted[i] = req_i[i] | already_granted[i+1];
   end
 
+  // Generate grant signals: only grant if the request is active, global allow is high, 
+  // and no higher priority request has claimed the resource
   always_comb gnt_i[NUM_REQ-1] = req_i[NUM_REQ-1] & allow_req_i;
   for (genvar i = NUM_REQ - 2; i >= 0; i--) begin
     always_comb gnt_i[i] = req_i[i] & allow_req_i & ~already_granted[i+1];

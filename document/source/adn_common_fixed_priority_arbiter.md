@@ -8,20 +8,33 @@
 ## Parameters
 |Name|Type|Dimension|Default Value|Description|
 |-|-|-|-|-|
-|NUM_REQ|int||4||
+|NUM_REQ|int||4|Number of request inputs to arbitrate|
 
 ## Ports
 |Name|Direction|Type|Dimension|Description|
 |-|-|-|-|-|
-|req_i|input|logic [NUM_REQ-1:0]|||
-|allow_req_i|input|logic|||
-|gnt_i|output|logic [NUM_REQ-1:0]|||
+|req_i|input|logic [NUM_REQ-1:0]||Request vector, higher index has higher priority|
+|allow_req_i|input|logic||Global enable signal to permit granting|
+|gnt_i|output|logic [NUM_REQ-1:0]||One-hot encoded grant output|
 ## Description
 
 
-@foez---bhai, write the purpose of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+### Purpose
+This module implements a fixed-priority arbiter that grants access to a resource based on the highest index request. It evaluates multiple input requests and ensures that only the request with the highest priority (highest index) is granted, provided the global allow signal is asserted.
 
-@foez---bhai, describe the usage of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+### Usage
+To use this module, instantiate it with the desired number of requests (`NUM_REQ`). Connect your request vector to `req_i` and the global enable signal to `allow_req_i`. The module will output a one-hot encoded grant vector `gnt_i` where the highest index bit set in `req_i` is granted, provided `allow_req_i` is high.
+
+Example:
+```systemverilog
+adn_common_fixed_priority_arbiter #(
+    .NUM_REQ(8)
+) u_arbiter (
+    .req_i(request_bus),
+    .allow_req_i(global_enable),
+    .gnt_i(grant_bus)
+);
+```
 
 | REVISION | DATE       | AUTHOR             | DESCRIPTION     |
 |----------|------------|--------------------|-----------------|
