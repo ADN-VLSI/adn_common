@@ -6,9 +6,9 @@ The `adn_common_address_decoder` module is designed to perform address decoding 
 ### Usage
 To use this module, instantiate it by specifying the `ADDR_WIDTH`, `SLAVE_ID_WIDTH`, and `NUM_RULES`. Provide the input address via `addr_i` and define the address space mapping using the `min_addr_i`, `max_addr_i`, and `slave_id_i` arrays. The module will output the identified `slave_index_o` and a valid flag `addr_found_o` indicating if the address falls within any of the defined ranges.
 
-| REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
-|----------|------------|-----------------|--------------------------------------------------------|
-| 1.0      | 2026-07-30 | Adnan Sami Anirban | Stable release                                         |
+| REVISION | DATE       | AUTHOR             | DESCRIPTION                                         |
+|----------|------------|--------------------|-----------------------------------------------------|
+| 1.0      | 2026-07-30 | Adnan Sami Anirban | Stable release                                      |
 
 Author : Adnan Sami Anirban (adnananirban259@gmail.com)
 This file is part of ADN-VLSI/adn_common
