@@ -1,6 +1,6 @@
 # adn_common_fifo (module)
 
-### Author : Annim (jannatannim@gmail.com)
+### Author : Annim Jannat (jannatannim@gmail.com)
 
 ## TOP IO
 <img src="./adn_common_fifo_top.svg">
@@ -25,7 +25,6 @@
 |empty_o|output|logic|||
 |valid_o|output|logic|||
 ## Description
-
 
 ### Purpose
 This module implements a synchronous First-In-First-Out (FIFO) buffer designed for data flow control between clock domains or modules. It provides a configurable data width and depth, utilizing a circular buffer architecture to manage data storage and retrieval with full/empty status flags.
