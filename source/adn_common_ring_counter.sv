@@ -35,7 +35,7 @@ module adn_common_ring_counter #(
     input logic clk_i,
 
     // Active-low synchronous reset signal
-    input logic arst_ni,
+    input logic rst_ni,
 
     // Enable signal to trigger the rotation of the bit
     input logic enable_i,
@@ -72,7 +72,7 @@ module adn_common_ring_counter #(
   // Block: Sequential logic to update the ring counter state on clock edges
   always_ff @(posedge clk_i) begin
 
-    if (~arst_ni) begin
+    if (~rst_ni) begin
 
       // Reset logic: Initialize the counter to the defined RESET_VALUE
       ring_counter <= RESET_VALUE;
