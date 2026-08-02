@@ -49,11 +49,14 @@ module adn_common_jk_ff_tb;
   //////////////////////////////////////////////////////////////////////////////////////////////////
   task automatic apply_reset();
     arst_ni <= 1'b0;
+    j_i     <= 1'b0;
+    k_i     <= 1'b0;
     #22;
     arst_ni <= 1'b1;
   endtask
 
   task automatic apply_input(input logic j_val, input logic k_val);
+  @(negedge clk_i);
     j_i <= j_val;
     k_i <= k_val;
     $display("\033[1;33mApplying Inputs\033[0m: j_i = %b, k_i = %b", j_val, k_val);
@@ -99,7 +102,6 @@ module adn_common_jk_ff_tb;
     #12ns arst_ni = 1'b1; // Release reset after 12 time units
 
     // Test sequence
-    @(posedge clk_i);
 // Testcase 1: Hold state
 $display("\033[1;34mTestcase 1: Hold state\033[0m");
     apply_input(1'b0, 1'b0); // Hold state
@@ -141,10 +143,10 @@ $display("\033[1;34mTestcase 6: Random j and k inputs for 20 cycles\033[0m");
 $display("\033[1;34mTestcase 7: Reset during operation\033[0m");
     apply_input(1'b1, 1'b0); // Set state
     check_output(1'b1);      // Expect q_o = 1
-fork
+//fork
     apply_reset();
     check_output(1'b0); // Expect q_o = 0 after reset
-join
+//join
 
 // set j=1, k=0 and check if q_o goes to 1
 $display("\033[1;34mTestcase 8: Set state after reset\033[0m");
