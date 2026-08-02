@@ -1,0 +1,41 @@
+[*]
+[*] GTKWave Analyzer v3.3.100 (w)1999-2019 BSI
+[*] Sun Aug 02 06:39:34 2026
+[*]
+[dumpfile] "C:\Users\foeza\Documents\ADN-MASTER\adn_common\build\adn_common_edge_detect_tb.vcd"
+[dumpfile_mtime] "Sun Aug 02 06:39:17 2026"
+[dumpfile_size] 5934
+[savefile] "C:\Users\foeza\Documents\ADN-MASTER\adn_common\wcfg\adn_common_edge_detect_tb.gtkw"
+[timestart] 543100
+[size] 1536 793
+[pos] -1 -1
+*-14.642864 637700 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] adn_common_edge_detect_tb.
+[sst_width] 197
+[signals_width] 150
+[sst_expanded] 1
+[sst_vpaned_height] 221
+@28
+adn_common_edge_detect_tb.arst_n
+adn_common_edge_detect_tb.clk
+adn_common_edge_detect_tb.edge_pulse_fall
+adn_common_edge_detect_tb.edge_pulse_rise
+adn_common_edge_detect_tb.edge_pulse_dual
+@200
+-
+@28
+adn_common_edge_detect_tb.ref_sig_new
+adn_common_edge_detect_tb.signal_in
+adn_common_edge_detect_tb.ref_sig_old
+adn_common_edge_detect_tb.is_fall
+adn_common_edge_detect_tb.is_rise
+adn_common_edge_detect_tb.is_dual
+@200
+-
+@28
+adn_common_edge_detect_tb.u_fall.clk_i
+adn_common_edge_detect_tb.u_fall.arst_ni
+adn_common_edge_detect_tb.u_fall.signal_prev
+adn_common_edge_detect_tb.u_fall.signal_i
+[pattern_trace] 1
+[pattern_trace] 0

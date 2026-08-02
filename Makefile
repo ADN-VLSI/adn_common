@@ -16,7 +16,6 @@ COVERAGE_DIR := $(REPO_ROOT)/coverage
 DOCUMENTER := $(REPO_ROOT)/submodule/documenter
 SOURCE_DOC_DIR := $(REPO_ROOT)/document/source
 
-TOP   := hello
 TN    := default
 TC    := 1
 GUI   := 0
@@ -68,6 +67,7 @@ clean_full:
 
 .PHONY: $(REPO_ROOT)/reuse.f
 $(REPO_ROOT)/reuse.f:
+	@git submodule update --init --depth 1
 	@echo -e "\033[1;33m#\033[0m Generating Reusable IP Filelist"
 	@echo "-i $(REPO_ROOT)/include" > $(REPO_ROOT)/reuse.f
 ifeq ($(HAS_SUBMODULES), 1)
@@ -148,7 +148,7 @@ simulate:
 	@make -s __ENV_BUILD__ TOP=$(TOP)
 	@make -s $(BUILD_DIR)/XSIM_ARGS GUI=$(GUI) TN=$(TN) TC=$(TC) VCD=$(VCD) DEBUG=$(DEBUG)
 	@echo -e "\033[1;33m#\033[0m Simulating TOP:$(TOP) Test:$(TN) Count:$(TC)"
-	@cd $(BUILD_DIR) && $(XSIM) snap_$(TOP) -f $(BUILD_DIR)/XSIM_ARGS -log $(LOG_DIR)/xsim_$(TOP)_$(shell date +%Y%m%d_%H%M%S).log $(H_EW)
+	@cd $(BUILD_DIR) && $(XSIM) snap_$(TOP) -f $(BUILD_DIR)/XSIM_ARGS -log $(LOG_DIR)/xsim_$(TOP)_$(TN)_$(shell date +%Y%m%d_%H%M%S).log $(H_EW)
 ifneq ($(VCD), 0)
 	@echo -e "\033[1;33m#\033[0m Loading VCD waveform file"
 	@gtkwave $(REPO_ROOT)/wcfg/$(TOP).gtkw || gtkwave $(BUILD_DIR)/$(TOP).vcd
@@ -199,7 +199,6 @@ clean_all_docs:
 	@mkdir -p $(SOURCE_DOC_DIR)
 	@rm -f $(SOURCE_DOC_DIR)/*.md
 	@rm -f $(SOURCE_DOC_DIR)/*_top.svg
-	@git submodule update --init --depth 1 -- $(DOCUMENTER)
 
 .PHONY: get_source_doc_header
 get_source_doc_header:

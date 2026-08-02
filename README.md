@@ -1,6 +1,12 @@
-# Some Text
+# ADN Common Modules
+
+This Repo is a collection of common modules used in ADN designs. The modules are written in SystemVerilog and are intended to be used as building blocks for larger designs.
+
+# The Reusable Modules are:
 
 ## RTL
+[`adn_common_address_decoder`](document/source/adn_common_address_decoder.md)
+[`adn_common_address_range_compare`](document/source/adn_common_address_range_compare.md)
 [`adn_common_bin_to_gray`](document/source/adn_common_bin_to_gray.md)
 [`adn_common_cdc_fifo`](document/source/adn_common_cdc_fifo.md)
 [`adn_common_decoder`](document/source/adn_common_decoder.md)

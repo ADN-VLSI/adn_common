@@ -27,9 +27,11 @@ module adn_common_synchronizer #(
     parameter int STAGES = 2,  // Number of synchronization stages (min 2 recommended)
     parameter logic [WIDTH-1:0] RESET_VALUE = '0  // Value to load during reset
 ) (
-    input logic             clk_i,    // Destination clock domain
-    input logic             arst_ni,  // Active-low asynchronous reset
-    input logic [WIDTH-1:0] data_i,   // Asynchronous input data
+    input logic clk_i,    // Destination clock domain
+    input logic arst_ni,  // Active-low asynchronous reset
+    input logic en_i,     // Enable signal for synchronization stages
+
+    input logic [WIDTH-1:0] data_i,  // Asynchronous input data
 
     output logic [WIDTH-1:0] data_o  // Synchronized output data
 );
@@ -51,7 +53,7 @@ module adn_common_synchronizer #(
     if (!arst_ni) begin
       // Reset all stages to the defined reset value
       for (int i = 0; i < STAGES; i++) sync_ff[i] <= RESET_VALUE;
-    end else begin
+    end else if (en_i) begin
       // Shift input data through the synchronization stages
       sync_ff[0] <= data_i;
       for (int i = 1; i < STAGES; i++) sync_ff[i] <= sync_ff[i-1];
