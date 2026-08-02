@@ -20,10 +20,10 @@
 |data_in_i|input|logic [DATA_WIDTH-1:0]||Input data bus|
 |data_in_valid_i|input|logic||Input data valid signal|
 |data_in_ready_o|output|logic||Input ready signal (backpressure)|
+|count_o|output|logic [FIFO_SIZE:0]||Current number of elements in FIFO|
 |data_out_o|output|logic [DATA_WIDTH-1:0]||Output data bus|
 |data_out_valid_o|output|logic||Output data valid signal|
 |data_out_ready_i|input|logic||Output ready signal from consumer|
-|count_o|output|logic [FIFO_SIZE:0]||Current number of elements in FIFO|
 ## Description
 
 

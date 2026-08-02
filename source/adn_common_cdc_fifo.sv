@@ -21,53 +21,65 @@ See LICENSE file in the project root for full license information
 */
 
 module adn_common_cdc_fifo #(
-    parameter int DATA_WIDTH  = 8, // Width of the data bus
-    parameter int FIFO_SIZE   = 2, // Log2 of the FIFO depth
-    parameter int SYNC_STAGES = 2  // Number of synchronization stages
+    parameter int DATA_WIDTH  = 8,  // Width of the data bus
+    parameter int FIFO_SIZE   = 2,  // Log2 of the FIFO depth
+    parameter int SYNC_STAGES = 2   // Number of synchronization stages
 ) (
-    input  logic                  data_in_arst_ni,  // Asynchronous reset, active low (input domain)
-    input  logic [DATA_WIDTH-1:0] data_in_clk_i,    // Clock signal for the input domain
-    input  logic [DATA_WIDTH-1:0] data_in_i,        // Data input bus
-    input  logic                  data_in_valid_i,  // Valid signal for input data
-    output logic                  data_in_ready_o,  // Ready signal for input data
-    output logic [   FIFO_SIZE:0] data_in_count_o,  // Current occupancy count (input domain)
+    // Data input bus
+    input  logic [DATA_WIDTH-1:0] data_in_i,
+    // Valid signal for input data
+    input  logic                  data_in_valid_i,
+    // Ready signal for input data
+    output logic                  data_in_ready_o,
+    // Asynchronous reset, active low (input domain)
+    input  logic                  data_in_arst_ni,
+    // Clock signal for the input domain
+    input  logic [DATA_WIDTH-1:0] data_in_clk_i,
+    // Current occupancy count (input domain)
+    output logic [   FIFO_SIZE:0] data_in_count_o,
 
-    input  logic                  data_out_arst_ni, // Asynchronous reset, active low (output domain)
-    output logic [DATA_WIDTH-1:0] data_out_clk_i,   // Clock signal for the output domain
-    output logic [DATA_WIDTH-1:0] data_out_o,       // Data output bus
-    output logic                  data_out_valid_o, // Valid signal for output data
-    input  logic                  data_out_ready_i, // Ready signal for output data
-    output logic [   FIFO_SIZE:0] data_out_count_o  // Current occupancy count (output domain)
+    // Data output bus
+    output logic [DATA_WIDTH-1:0] data_out_o,
+    // Valid signal for output data
+    output logic                  data_out_valid_o,
+    // Ready signal for output data
+    input  logic                  data_out_ready_i,
+    // Asynchronous reset, active low (output domain)
+    input  logic                  data_out_arst_ni,
+    // Clock signal for the output domain
+    output logic [DATA_WIDTH-1:0] data_out_clk_i,
+    // Current occupancy count (output domain)
+    output logic [   FIFO_SIZE:0] data_out_count_o
 );
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // SIGNALS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  logic common_arst_n; // Combined asynchronous reset for both domains
+  logic common_arst_n;  // Combined asynchronous reset for both domains
 
-  logic [FIFO_SIZE:0] wr_addr; // Write pointer (binary)
-  logic [FIFO_SIZE:0] rd_addr; // Read pointer (binary)
+  logic [FIFO_SIZE:0] wr_addr;  // Write pointer (binary)
+  logic [FIFO_SIZE:0] rd_addr;  // Read pointer (binary)
 
-  logic [FIFO_SIZE:0] wr_addr_; // Synchronized write pointer (binary, output domain)
-  logic [FIFO_SIZE:0] rd_addr_; // Synchronized read pointer (binary, input domain)
+  logic [FIFO_SIZE:0] wr_addr_;  // Synchronized write pointer (binary, output domain)
+  logic [FIFO_SIZE:0] rd_addr_;  // Synchronized read pointer (binary, input domain)
 
-  logic [FIFO_SIZE:0] wpgi; // Write pointer (Gray, input domain)
-  logic [FIFO_SIZE:0] wpgo; // Write pointer (Gray, output domain)
-  logic [FIFO_SIZE:0] rpgi; // Read pointer (Gray, output domain)
-  logic [FIFO_SIZE:0] rpgo; // Read pointer (Gray, input domain)
+  logic [FIFO_SIZE:0] wpgi;  // Write pointer (Gray, input domain)
+  logic [FIFO_SIZE:0] wpgo;  // Write pointer (Gray, output domain)
+  logic [FIFO_SIZE:0] rpgi;  // Read pointer (Gray, output domain)
+  logic [FIFO_SIZE:0] rpgo;  // Read pointer (Gray, input domain)
 
-  logic [FIFO_SIZE:0] wr_ptr_pass; // Intermediate write pointer for synchronization
-  logic [FIFO_SIZE:0] rd_ptr_pass; // Intermediate read pointer for synchronization
+  logic [FIFO_SIZE:0] wr_ptr_pass;  // Intermediate write pointer for synchronization
+  logic [FIFO_SIZE:0] rd_ptr_pass;  // Intermediate read pointer for synchronization
 
-  logic [FIFO_SIZE:0] wr_ptr_ic; // Unused
-  logic [FIFO_SIZE:0] rd_ptr_oc; // Unused
+  logic [FIFO_SIZE:0] wr_ptr_ic;  // Unused
+  logic [FIFO_SIZE:0] rd_ptr_oc;  // Unused
 
   logic in_hs;  // Input handshake signal
-  logic out_hs; // Output handshake signal
+  logic out_hs;  // Output handshake signal
 
   logic full_ic;  // FIFO full status (input domain)
-  logic empty_oc; // FIFO empty status (output domain)
+  logic empty_oc;  // FIFO empty status (output domain)
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // ASSIGNMENTS

@@ -35,11 +35,11 @@ module adn_common_fifo #(
     input  logic                  data_in_valid_i,  // Input data valid signal
     output logic                  data_in_ready_o,  // Input ready signal (backpressure)
 
+    output logic [FIFO_SIZE:0] count_o,  // Current number of elements in FIFO
+
     output logic [DATA_WIDTH-1:0] data_out_o,        // Output data bus
     output logic                  data_out_valid_o,  // Output data valid signal
-    input  logic                  data_out_ready_i,  // Output ready signal from consumer
-
-    output logic [FIFO_SIZE:0] count_o  // Current number of elements in FIFO
+    input  logic                  data_out_ready_i   // Output ready signal from consumer
 );
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
