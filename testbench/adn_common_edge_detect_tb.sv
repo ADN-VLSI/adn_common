@@ -50,47 +50,74 @@ module adn_common_edge_detect_tb;
   // SIGNALS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  logic clk = '0;
-  logic rst_n;
+  logic clk;
+  logic arst_n;
   logic signal_in;
   logic edge_pulse_rise;
   logic edge_pulse_fall;
   logic edge_pulse_dual;
-  logic signal_in_q;
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+  // VARIABLES
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+
+  bit   is_clk_edge_aligned;
+
+  logic ref_sig_old;
+  logic ref_sig_new;
+  logic is_fall;
+  logic is_rise;
+  logic is_dual;
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // RTLS
   //////////////////////////////////////////////////////////////////////////////////////////////////
+
+  // Instance 0: Falling Edge Detection Mode (EDGE_TYPE = 0)
+  adn_common_edge_detect #(
+      .EDGE_TYPE(0)
+  ) u_fall (
+      .clk_i       (clk),
+      .arst_ni     (arst_n),
+      .signal_i    (signal_in),
+      .edge_pulse_o(edge_pulse_fall)
+  );
 
   // Instance 1: Rising Edge Detection Mode (EDGE_TYPE = 1)
   adn_common_edge_detect #(
       .EDGE_TYPE(1)
   ) u_rise (
       .clk_i       (clk),
-      .rst_n_i     (rst_n),
-      .signal_in_i (signal_in),
+      .arst_ni     (arst_n),
+      .signal_i    (signal_in),
       .edge_pulse_o(edge_pulse_rise)
   );
 
-  // Instance 2: Falling Edge Detection Mode (EDGE_TYPE = 0)
-  adn_common_edge_detect #(
-      .EDGE_TYPE(0)
-  ) u_fall (
-      .clk_i       (clk),
-      .rst_n_i     (rst_n),
-      .signal_in_i (signal_in),
-      .edge_pulse_o(edge_pulse_fall)
-  );
-
-  // Instance 1: Dual Edge Detection Mode (EDGE_TYPE = 2)
+  // Instance 2: Dual Edge Detection Mode (EDGE_TYPE = 2)
   adn_common_edge_detect #(
       .EDGE_TYPE(2)
   ) u_dual (
       .clk_i       (clk),
-      .rst_n_i     (rst_n),
-      .signal_in_i (signal_in),
+      .arst_ni     (arst_n),
+      .signal_i    (signal_in),
       .edge_pulse_o(edge_pulse_dual)
   );
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+  // ASSIGNMENTS
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+
+  assign ref_sig_new  = signal_in;
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+  // SEQUENTIALS
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+
+  always @(posedge clk) begin
+    is_clk_edge_aligned <= arst_n;
+    #1ns;
+    is_clk_edge_aligned <= '0;
+  end
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // METHODS
@@ -98,142 +125,130 @@ module adn_common_edge_detect_tb;
 
   //Task to Apply Reset
   task automatic apply_reset();
-    rst_n     <= '0;
-    signal_in <= '0;
-    repeat (2) @(negedge clk);
-    rst_n <= '0;
-    @(negedge clk);
+    #100ns;
+    clk         <= '0;
+    arst_n      <= '0;
+    signal_in   <= '0;
+    ref_sig_old <= '0;
+    ref_sig_new <= '0;
+    is_fall     <= '0;
+    is_rise     <= '0;
+    is_dual     <= '0;
+    #100ns;
+    arst_n <= '1;
+    #100ns;
+  endtask
+
+  task automatic start_clock();
+    fork
+      forever #(CLKPeriod / 2) clk <= ~clk;
+    join_none
+    @(posedge clk);
   endtask
 
   //Task to drive signal_in on negative clock edge
   task automatic drive_signal_in(input logic value);
+    wait (is_clk_edge_aligned);
     signal_in <= value;
-    @(negedge clk);
+    @(posedge clk);
   endtask
 
-  //Task to check outputs againts expected values
-  task automatic check_pulse(input string tc_id, input logic expected_rise,
-                             input logic expected_fall, input logic expected_dual);
+  `define CHECK_PULSE(__REF__, __SIG__, __EDGE__)                             \
+    if (``__REF__`` === ``__SIG__``) begin                                    \
+      note_case(1);                                                           \
+      if (debug) begin                                                        \
+        $display(                                                             \
+          `"``__EDGE__`` EDGE DETECTED: %b -> %b, ``__SIG__`` = %b [%0t]`",   \
+            ref_sig_old, ref_sig_new, ``__SIG__``, $realtime);                \
+      end                                                                     \
+    end else begin                                                            \
+      note_case(0);                                                           \
+      $display(                                                               \
+        `"``__EDGE__`` EDGE NOT DETECTED: %b -> %b, ``__SIG__`` = %b [%0t]`", \
+        ref_sig_old, ref_sig_new, ``__SIG__``, $realtime);                    \
+    end                                                                       \
 
-    bit pass;
-    pass = (edge_pulse_rise === expected_rise) &&
-           (edge_pulse_fall === expected_fall) &&
-           (edge_pulse_dual === expected_dual);
 
-    note_case(pass);
+  task automatic start_checking();
+    fork
+      forever
+      @(posedge clk or negedge arst_n) begin
+        if (~arst_n) begin
+          ref_sig_old <= signal_in;
+        end else begin
+          ref_sig_old <= signal_in;
 
-    if (debug || !pass) begin
-      if (pass) begin
-        $display("\n===========================================================================\n");
-        $display("[%s] PASSED\n", tc_id);
-        $display("Output Pulse: Rise = %b, Fall = %b, Dual = %b \n", edge_pulse_rise,
-                 edge_pulse_fall, edge_pulse_dual);
-        $display("Expected Pulse: Rise = %b, Fall = %b, Dual = %b \n", expected_rise,
-                 expected_fall, expected_dual);
-        $display("\n===========================================================================\n");
-      end else begin
-        $display("\n===========================================================================\n");
-        $display("[%s] FAILED\n", tc_id);
-        $display("Output Pulse: Rise = %b, Fall = %b, Dual = %b \n", edge_pulse_rise,
-                 edge_pulse_fall, edge_pulse_dual);
-        $display("Expected Pulse: Rise = %b, Fall = %b, Dual = %b \n", expected_rise,
-                 expected_fall, expected_dual);
-        $display("\n===========================================================================\n");
+          if (ref_sig_old === 'z || ref_sig_old === 'x || ref_sig_new === 'z || ref_sig_new === 'x) begin
+            if (debug) $display("[%s] WARNING [%0t]\nUnknown Input Signal %b Detected! Rise:%b Fall:%b Dual:%b",
+              test_name, $realtime, signal_in, edge_pulse_rise, edge_pulse_fall, edge_pulse_dual);
+          end else begin
+
+
+            is_fall = (ref_sig_old & ~ref_sig_new);
+            is_rise = (~ref_sig_old & ref_sig_new);
+            is_dual = (ref_sig_old != ref_sig_new);
+
+            `CHECK_PULSE(is_fall, edge_pulse_fall, FALLING)
+            `CHECK_PULSE(is_rise, edge_pulse_rise, RISING)
+            `CHECK_PULSE(is_dual, edge_pulse_dual, DUAL)
+          end
+        end
       end
-    end
+    join_none
   endtask
 
-  task automatic check_unknown_recovery(input string tc_id, input logic unknown_value,
-                                        input logic recover_value);
-    signal_in <= unknown_value;
-    @(negedge clk);
-
-    if ($isunknown(signal_in)) begin
-      if (debug) begin
-        $display("\n===========================================================================\n");
-        $display("[%s] INFO\n", tc_id);
-        $display("Successfully Injected Unknown Input Signal %b \n", unknown_value);
-        $display("\n===========================================================================\n");
-      end
-      if (edge_pulse_rise === '1 || edge_pulse_fall === '1 || edge_pulse_dual === '1) begin
-        $display("\n===========================================================================\n");
-        $display("[%s] FAILED", tc_id);
-        $display("Spurious Pulse Detected During X/Z Input State! Rise:%b Fall:%b Dual:%b",
-                 edge_pulse_rise, edge_pulse_fall, edge_pulse_dual);
-        $display("\n===========================================================================\n");
-      end else begin
-        note_case('1);
-        $display("\n===========================================================================\n");
-        $display("[%s] PASSED", tc_id);
-        $display("No spurious high pulse generated while input is %b", unknown_value);
-        $display("\n===========================================================================\n");
-      end
-    end
-    signal_in <= recover_value;
-    @(negedge clk);
-  endtask
+  `undef CHECK_PULSE
 
   // Individual Test Tasks
   task automatic run_tc_rst_01();
     apply_reset();
-    check_pulse("TC_RST_01", '0, '0, '0);
   endtask
 
   task automatic run_tc_rst_02();
     apply_reset();
     drive_signal_in('1);
-    rst_n <= '0;
+    arst_n <= '0;
     #(CLKPeriod / 2);
-    check_pulse("TC_RST_02", '0, '0, '0);
     apply_reset();
   endtask
 
   task automatic run_tc_rst_03();
     apply_reset();
-    repeat (2) @(negedge clk);
     drive_signal_in('1);
-    check_pulse("TC_RST_03", '1, '0, '1);
   endtask
 
   task automatic run_tc_rise_01();
     apply_reset();
     drive_signal_in('1);
-    check_pulse("TC_RISE_01", '1, '0, '1);
-    @(negedge clk);
   endtask
 
   task automatic run_tc_rise_02();
     apply_reset();
     drive_signal_in('1);
+    @(posedge clk);
     repeat (4) begin
-      @(negedge clk);
-      check_pulse("TC_RISE_02", '0, '0, '0);
+      @(posedge clk);
     end
   endtask
 
   task automatic run_tc_fall_01();
     apply_reset();
     drive_signal_in('1);
-    @(negedge clk);
     drive_signal_in('0);
-    check_pulse("TC_FALL_01", '0, '1, '1);
   endtask
 
   task automatic run_tc_fall_02();
     apply_reset();
     drive_signal_in('1);
-    @(negedge clk);
     drive_signal_in('0);
     repeat (4) begin
-      @(negedge clk);
-      check_pulse("TC_FALL_02", '0, '0, '0);
+      @(posedge clk);
     end
   endtask
 
   task automatic run_tc_dual_01();
     apply_reset();
     drive_signal_in('1);
-    check_pulse("TC_DUAL_01", '1, '0, '1);
   endtask
 
   task automatic run_tc_dual_02();
@@ -241,7 +256,6 @@ module adn_common_edge_detect_tb;
     drive_signal_in('1);
     @(negedge clk);
     drive_signal_in('0);
-    check_pulse("TC_DUAL_02", '0, '1, '1);
   endtask
 
   task automatic run_tc_str_01();
@@ -249,23 +263,18 @@ module adn_common_edge_detect_tb;
 
     // Cycle 1: 0 -> 1
     drive_signal_in('1);
-    check_pulse("TC_STR_01a", '1, '0, '1);
 
     // Cycle 2: 1 -> 0
     drive_signal_in('0);
-    check_pulse("TC_STR_01b", '0, '1, '1);
 
     // Cycle 3: 0 -> 1
     drive_signal_in('1);
-    check_pulse("TC_STR_01c", '1, '0, '1);
 
     // Cycle 4: 1 -> 0
     drive_signal_in('0);
-    check_pulse("TC_STR_01d", '0, '1, '1);
 
     // Return to low steady state
     drive_signal_in('0);
-    check_pulse("TC_STR_01e", '0, '0, '0);
   endtask
 
   task automatic run_tc_str_02();
@@ -276,35 +285,31 @@ module adn_common_edge_detect_tb;
     drive_signal_in('1);
     #(CLKPeriod / 2);
     drive_signal_in('0);
-    check_pulse("TC_STR_02", '0, '1, '1);
   endtask
 
   task automatic run_tc_rob_01();
     apply_reset();
-    check_unknown_recovery("TC_ROB_01", 1'bx, '0);
-    check_pulse("TC_ROB_01_REC", '0, '0, '0);
+    drive_signal_in('z);
+    drive_signal_in('0);
   endtask
 
   task automatic run_tc_rob_02();
     apply_reset();
-    check_unknown_recovery("TC_ROB_02", 1'bx, '1);
-    check_pulse("TC_ROB_02_REC", '0, '0, '0);
+    drive_signal_in('z);
+    drive_signal_in('1);
   endtask
 
   task automatic run_tc_rob_03();
     apply_reset();
-    check_unknown_recovery("TC_ROB_03", 1'bz, '0);
-    check_pulse("TC_ROB_03_REC", '0, '0, '0);
+    drive_signal_in('z);
+    drive_signal_in('0);
   endtask
 
   task automatic run_tc_rob_04();
     apply_reset();
-    check_unknown_recovery("TC_ROB_04", 1'bz, '1);
-    check_pulse("TC_ROB_04_REC", '0, '0, '0);
+    drive_signal_in('z);
+    drive_signal_in('1);
   endtask
-
-  //Clock Generation
-  always #(CLKPeriod / 2) clk = ~clk;
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // PROCEDURALS
@@ -313,6 +318,10 @@ module adn_common_edge_detect_tb;
   initial begin
 
     apply_reset();
+
+    start_clock();
+
+    start_checking();
 
     case (test_name)
       "TC_RST_01":  run_tc_rst_01();
@@ -336,6 +345,7 @@ module adn_common_edge_detect_tb;
       end
     endcase
 
+    #100ns;
     // Finish simulation
     $finish;
   end

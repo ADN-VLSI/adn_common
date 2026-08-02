@@ -13,4 +13,3 @@ ci_simulate adn_common_edge_detect_tb TC_RST_02 0
 ci_simulate adn_common_edge_detect_tb TC_RST_03 0
 ci_simulate adn_common_edge_detect_tb TC_STR_01 0
 ci_simulate adn_common_edge_detect_tb TC_STR_02 0
-ci_simulate hello default 0
