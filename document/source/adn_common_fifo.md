@@ -8,32 +8,28 @@
 ## Parameters
 |Name|Type|Dimension|Default Value|Description|
 |-|-|-|-|-|
-|DATA_WIDTH|int||32| //////////////////////////////////////////////////////////////////////////////////////////////// PARAMETERS ////////////////////////////////////////////////////////////////////////////////////////////////|
-|DEPTH|int||16||
-|ADDR_WIDTH|int||$clog2(DEPTH)| //////////////////////////////////////////////////////////////////////////////////////////////// LOCALPARAMS ////////////////////////////////////////////////////////////////////////////////////////////////|
+|DATA_WIDTH|int||8||
+|FIFO_SIZE|int||2||
+|PIPELINED|bit||1||
 
 ## Ports
 |Name|Direction|Type|Dimension|Description|
 |-|-|-|-|-|
-|clk_i|input|logic|| //////////////////////////////////////////////////////////////////////////////////////////////// PORTS ////////////////////////////////////////////////////////////////////////////////////////////////|
-|rst_ni|input|logic|||
-|wr_en_i|input|logic|||
-|rd_en_i|input|logic|||
-|data_i|input|logic [DATA_WIDTH-1:0]|||
-|data_o|output|logic [DATA_WIDTH-1:0]|||
-|full_o|output|logic|||
-|empty_o|output|logic|||
-|valid_o|output|logic|||
+|arst_ni|input|logic|||
+|clk_i|input|logic|||
+|data_in_i|input|logic [DATA_WIDTH-1:0]|||
+|data_in_valid_i|input|logic|||
+|data_in_ready_o|output|logic|||
+|data_out_o|output|logic [DATA_WIDTH-1:0]|||
+|data_out_valid_o|output|logic|||
+|data_out_ready_i|input|logic|||
+|count_o|output|logic [(2**FIFO_SIZE):0]|||
 ## Description
 
-### Purpose
-This module implements a synchronous First-In-First-Out (FIFO) buffer designed for data flow control between clock domains or modules. It provides a configurable data width and depth, utilizing a circular buffer architecture to manage data storage and retrieval with full/empty status flags.
 
-### Use Case
-The `adn_common_fifo` is primarily used to decouple producers and consumers that operate at different rates or require buffering to prevent data loss during bursts. Typical applications include:
-- **Data Streaming:** Buffering packets between a high-speed interface (e.g., AXI, SPI) and a processing core.
-- **Clock Domain Crossing (CDC):** Acting as a staging area for data moving between synchronous domains (when managed with appropriate synchronization logic).
-- **Flow Control:** Providing backpressure mechanisms in pipelines to ensure that data is not overwritten before it is consumed.
+@foez---bhai, write the purpose of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+
+@foez---bhai, describe the use case of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
 
 | REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
 |----------|------------|-----------------|--------------------------------------------------------|
