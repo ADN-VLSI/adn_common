@@ -72,9 +72,6 @@ module adn_common_cdc_fifo #(
   logic [FIFO_SIZE:0] wr_ptr_pass;  // Intermediate write pointer for synchronization
   logic [FIFO_SIZE:0] rd_ptr_pass;  // Intermediate read pointer for synchronization
 
-  logic [FIFO_SIZE:0] wr_ptr_ic;  // Unused
-  logic [FIFO_SIZE:0] rd_ptr_oc;  // Unused
-
   logic in_hs;  // Input handshake signal
   logic out_hs;  // Output handshake signal
 
