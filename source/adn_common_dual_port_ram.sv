@@ -24,15 +24,11 @@ See LICENSE file in the project root for full license information
 */
 
 module adn_common_dual_port_ram #(
-    // PARAMETERS
     parameter int DATA_WIDTH = 32,  // Width of the data bus in bits
     parameter int ADDR_WIDTH = 8    // Width of the address bus (determines depth)
 ) (
-    // PORTS
-
     //Clock/Reset
-    input logic clk_i,   // Write clock
-    input logic arst_ni, // Active-low asynchronous reset for write domain
+    input logic clk_i,  // Write clock
 
     // Write Port Interface
     input logic                  wr_en_i,    // Write enable signal
@@ -63,13 +59,7 @@ module adn_common_dual_port_ram #(
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
   // Synchronous Write Channel (wr_clk_i Domain): Handles data storage into the memory array
-  always_ff @(posedge clk_i) begin
-    if (~arst_ni) begin
-      mem_core[wr_addr_i] <= '0;
-    end else if (wr_en_i) begin
-      mem_core[wr_addr_i] <= wr_data_i;
-    end
-  end
+  always_ff @(posedge clk_i iff wr_en_i) mem_core[wr_addr_i] <= wr_data_i;
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // ASSIGNMENTS
