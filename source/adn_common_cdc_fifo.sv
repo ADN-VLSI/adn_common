@@ -1,8 +1,10 @@
 /*
 
-@foez-bhai, write the purpose of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+### Purpose
+This module implements a Clock Domain Crossing (CDC) FIFO, designed to safely transfer data between two independent clock domains using Gray-coded pointers and multi-stage synchronizers to prevent metastability.
 
-@foez-bhai, describe the use case of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+### Use Case
+The `adn_common_cdc_fifo` is primarily used in digital systems where data must be passed between modules operating on different, asynchronous clock frequencies. By utilizing Gray-coded pointers, it ensures that only one bit changes at a time during pointer synchronization, effectively mitigating the risk of metastability that typically occurs when sampling signals across clock boundaries. It is ideal for streaming data interfaces, buffer management in high-speed communication protocols, and decoupling producer-consumer throughput variations.
 
 | REVISION | DATE       | AUTHOR              | DESCRIPTION                                        |
 |----------|------------|---------------------|----------------------------------------------------|
@@ -18,57 +20,54 @@ See LICENSE file in the project root for full license information
 
 */
 
-// @foez-bhai, add comments to the parameters, ports
 module adn_common_cdc_fifo #(
-    parameter int DATA_WIDTH  = 8,
-    parameter int FIFO_SIZE   = 2,
-    parameter int SYNC_STAGES = 2
+    parameter int DATA_WIDTH  = 8, // Width of the data bus
+    parameter int FIFO_SIZE   = 2, // Log2 of the FIFO depth
+    parameter int SYNC_STAGES = 2  // Number of synchronization stages
 ) (
-    input  logic                  data_in_arst_ni,
-    input  logic [DATA_WIDTH-1:0] data_in_clk_i,
-    input  logic [DATA_WIDTH-1:0] data_in_i,
-    input  logic                  data_in_valid_i,
-    output logic                  data_in_ready_o,
-    output logic [   FIFO_SIZE:0] data_in_count_o,
+    input  logic                  data_in_arst_ni,  // Asynchronous reset, active low (input domain)
+    input  logic [DATA_WIDTH-1:0] data_in_clk_i,    // Clock signal for the input domain
+    input  logic [DATA_WIDTH-1:0] data_in_i,        // Data input bus
+    input  logic                  data_in_valid_i,  // Valid signal for input data
+    output logic                  data_in_ready_o,  // Ready signal for input data
+    output logic [   FIFO_SIZE:0] data_in_count_o,  // Current occupancy count (input domain)
 
-    input  logic                  data_out_arst_ni,
-    output logic [DATA_WIDTH-1:0] data_out_clk_i,
-    output logic [DATA_WIDTH-1:0] data_out_o,
-    output logic                  data_out_valid_o,
-    input  logic                  data_out_ready_i,
-    output logic [   FIFO_SIZE:0] data_out_count_o
+    input  logic                  data_out_arst_ni, // Asynchronous reset, active low (output domain)
+    output logic [DATA_WIDTH-1:0] data_out_clk_i,   // Clock signal for the output domain
+    output logic [DATA_WIDTH-1:0] data_out_o,       // Data output bus
+    output logic                  data_out_valid_o, // Valid signal for output data
+    input  logic                  data_out_ready_i, // Ready signal for output data
+    output logic [   FIFO_SIZE:0] data_out_count_o  // Current occupancy count (output domain)
 );
-
-  // @foez-bhai, add comments to the functional blocks, signals, and submodules
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // SIGNALS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  logic common_arst_n;
+  logic common_arst_n; // Combined asynchronous reset for both domains
 
-  logic [FIFO_SIZE:0] wr_addr;
-  logic [FIFO_SIZE:0] rd_addr;
+  logic [FIFO_SIZE:0] wr_addr; // Write pointer (binary)
+  logic [FIFO_SIZE:0] rd_addr; // Read pointer (binary)
 
-  logic [FIFO_SIZE:0] wr_addr_;
-  logic [FIFO_SIZE:0] rd_addr_;
+  logic [FIFO_SIZE:0] wr_addr_; // Synchronized write pointer (binary, output domain)
+  logic [FIFO_SIZE:0] rd_addr_; // Synchronized read pointer (binary, input domain)
 
-  logic [FIFO_SIZE:0] wpgi;
-  logic [FIFO_SIZE:0] wpgo;
-  logic [FIFO_SIZE:0] rpgi;
-  logic [FIFO_SIZE:0] rpgo;
+  logic [FIFO_SIZE:0] wpgi; // Write pointer (Gray, input domain)
+  logic [FIFO_SIZE:0] wpgo; // Write pointer (Gray, output domain)
+  logic [FIFO_SIZE:0] rpgi; // Read pointer (Gray, output domain)
+  logic [FIFO_SIZE:0] rpgo; // Read pointer (Gray, input domain)
 
-  logic [FIFO_SIZE:0] wr_ptr_pass;
-  logic [FIFO_SIZE:0] rd_ptr_pass;
+  logic [FIFO_SIZE:0] wr_ptr_pass; // Intermediate write pointer for synchronization
+  logic [FIFO_SIZE:0] rd_ptr_pass; // Intermediate read pointer for synchronization
 
-  logic [FIFO_SIZE:0] wr_ptr_ic;
-  logic [FIFO_SIZE:0] rd_ptr_oc;
+  logic [FIFO_SIZE:0] wr_ptr_ic; // Unused
+  logic [FIFO_SIZE:0] rd_ptr_oc; // Unused
 
-  logic in_hs;
-  logic out_hs;
+  logic in_hs;  // Input handshake signal
+  logic out_hs; // Output handshake signal
 
-  logic full_ic;
-  logic empty_oc;
+  logic full_ic;  // FIFO full status (input domain)
+  logic empty_oc; // FIFO empty status (output domain)
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // ASSIGNMENTS
@@ -95,6 +94,7 @@ module adn_common_cdc_fifo #(
   // SUBMODULES
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
+  // Dual-port RAM for data storage
   adn_common_dual_port_ram #(
       .DATA_WIDTH(DATA_WIDTH),
       .ADDR_WIDTH(FIFO_SIZE)
@@ -107,6 +107,7 @@ module adn_common_cdc_fifo #(
       .rd_data_o(data_out_o)
   );
 
+  // Binary to Gray converters for pointers
   adn_common_bin_to_gray #(
       .WIDTH(FIFO_SIZE + 1)
   ) b2g_w (
@@ -121,6 +122,7 @@ module adn_common_cdc_fifo #(
       .gray_o(rpgi)
   );
 
+  // Gray to Binary converters for pointers
   adn_common_gray_to_bin #(
       .WIDTH(FIFO_SIZE + 1)
   ) g2b_wi (
@@ -149,6 +151,7 @@ module adn_common_cdc_fifo #(
       .bin_o (rd_addr)
   );
 
+  // Multi-stage synchronizers for CDC
   adn_common_synchronizer #(
       .WIDTH(FIFO_SIZE + 1),
       .STAGES(1),
@@ -210,4 +213,3 @@ module adn_common_cdc_fifo #(
 `endif  // SIMULATION
 
 endmodule
-

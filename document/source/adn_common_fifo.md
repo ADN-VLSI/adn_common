@@ -23,7 +23,7 @@
 |data_out_o|output|logic [DATA_WIDTH-1:0]||Output data bus|
 |data_out_valid_o|output|logic||Output data valid signal|
 |data_out_ready_i|input|logic||Output ready signal from consumer|
-|count_o|output|logic [(2**FIFO_SIZE):0]||Current number of elements in FIFO|
+|count_o|output|logic [FIFO_SIZE:0]||Current number of elements in FIFO|
 ## Description
 
 
@@ -32,7 +32,6 @@ This module implements a configurable, synchronous First-In-First-Out (FIFO) buf
 
 ### Use Case
 This FIFO is ideal for:
-- **Clock Domain Crossing (CDC) buffering:** Managing data flow between modules operating at different speeds.
 - **Backpressure Handling:** Acting as a shock absorber when a consumer module cannot keep up with a producer.
 - **Pipelined Data Paths:** Decoupling stages in a high-performance processing pipeline to prevent stalls.
 - **Burst Data Management:** Storing bursts of data to be processed at a steady rate by downstream logic.
@@ -41,6 +40,7 @@ This FIFO is ideal for:
 |----------|------------|-----------------|--------------------------------------------------------|
 | 0.1      | 2026-07-27 | Annim Jannat    | Initial version                                        |
 | 1.0      | 2026-07-28 | Annim Jannat    | Stable release                                         |
+| 1.1      | 2026-08-02 | Foez Ahmed      | Ratified                                               |
 
 This file is part of ADN-VLSI/adn_common
 <br>**Copyright (c) 2026 ADN Semiconductors**
