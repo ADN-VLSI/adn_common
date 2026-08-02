@@ -10,8 +10,8 @@
 
 | REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
 |----------|------------|-----------------|--------------------------------------------------------|
-| 0.1      | YYYY-MM-DD | Shuparna Haque | Initial version                                        |
-| 1.0      | YYYY-MM-DD | Shuparna Haque | Stable release                                         |
+| 0.1      | 2026-07-30 | Shuparna Haque | Initial version                                        |
+| 1.0      | 2026-08-02 | Shuparna Haque | Stable release                                         |
 
 Author : Shuparna Haque (sheikhshuparna3108@gmail.com)
 This file is part of ADN-VLSI/adn_common
@@ -104,7 +104,7 @@ module adn_common_address_decoder_tb;
 
       addr_i = addr;
       #1;
-
+      if (addr_i >= min_addr_i[0] && addr_i < max_addr_i[NUM_RULES-1]) begin
       exp_gen(addr_i, expected_index, expected_found);
       if (u_dut.slave_index_o !== expected_index || u_dut.addr_found_o !== expected_found) begin
         $display(
@@ -117,6 +117,20 @@ module adn_common_address_decoder_tb;
             addr_i, expected_index, expected_found, u_dut.slave_index_o, u_dut.addr_found_o);
         note_case(1'b1);
       end
+    end
+    else begin
+      if (u_dut.addr_found_o !== 1'b0) begin
+        $display(
+            "Test failed for address: %h. Expected not found. Got index: %h, found: %b",
+            addr_i, u_dut.slave_index_o, u_dut.addr_found_o);
+        note_case(1'b0);
+      end else begin
+        $display(
+            "Test passed for address: %h. Expected not found. Got index: %h, found: %b",
+            addr_i, u_dut.slave_index_o, u_dut.addr_found_o);
+        note_case(1'b1);
+      end
+    end
     end
   endtask
 
