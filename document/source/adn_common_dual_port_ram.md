@@ -15,7 +15,6 @@
 |Name|Direction|Type|Dimension|Description|
 |-|-|-|-|-|
 |clk_i|input|logic||Write clock|
-|arst_ni|input|logic||Active-low asynchronous reset for write domain|
 |wr_en_i|input|logic||Write enable signal|
 |wr_addr_i|input|logic [ADDR_WIDTH-1:0]||Write address|
 |wr_data_i|input|logic [DATA_WIDTH-1:0]||Data to be written|

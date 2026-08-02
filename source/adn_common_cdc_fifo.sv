@@ -172,7 +172,6 @@ module adn_common_cdc_fifo #(
       .ADDR_WIDTH(ADDR_WIDTH)
   ) u_dual_port_ram (
       .clk_i    (wr_clk_i),
-      .rst_n_i  (wr_rst_n_int),
       .wr_en_i  (wr_en_qualified),
       .wr_addr_i(wr_ptr_bin[ADDR_WIDTH-1:0]),
       .wr_data_i(wr_data_i),
