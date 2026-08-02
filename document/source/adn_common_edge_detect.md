@@ -15,28 +15,29 @@
 ## Ports
 |Name|Direction|Type|Dimension|Description|
 |-|-|-|-|-|
-|clk_i|input|logic||Active-low asynchronous reset|
-|rst_n_i|input|logic||Input signal to be monitored for edges|
-|signal_in_i|input|logic||Output pulse indicating edge detection|
-|edge_pulse_o|output|logic|| System clock input Active-low asynchronous reset Input signal to be monitored for edges Output pulse indicating edge detection|
+|clk_i|input|logic|| System clock input|
+|arst_ni|input|logic|| Active-low asynchronous reset|
+|signal_i|input|logic|| Input signal to be monitored for edges|
+|edge_pulse_o|output|logic|| Output pulse indicating edge detection|
 ## Description
 
 
 ### Purpose
 This module provides a configurable edge detection mechanism for a single-bit input signal. It supports rising edge, falling edge, and dual-edge detection, generating a single-clock-cycle pulse whenever the specified transition occurs on the input signal relative to the system clock.
 
-### Usage
-To use this module, instantiate it in your design and set the `EDGE_TYPE` parameter to the desired detection mode:
-- `0`: Rising edge detection.
-- `1`: Falling edge detection.
-- `2`: Dual-edge (both rising and falling) detection.
+### Use Case
+This module is primarily used in digital systems to synchronize asynchronous signals or to trigger state machine transitions based on specific signal changes. Common applications include:
+- Generating a single-cycle trigger from a level-sensitive input (e.g., a button press or a status flag).
+- Detecting the start of a data packet in serial communication protocols.
+- Creating pulse-based control signals for counters or registers within a synchronous design.
 
-Connect the system clock (`clk_i`), active-low reset (`rst_n_i`), and the target signal (`signal_in_i`). The `edge_pulse_o` output will assert high for exactly one clock cycle when the specified transition is detected.
+Connect the system clock (`clk_i`), active-low reset (`arst_ni`), and the target signal (`signal_i`). The `edge_pulse_o` output will assert high for exactly one clock cycle when the specified transition is detected.
 
 | REVISION | DATE       | AUTHOR                 | DESCRIPTION                                            |
 |----------|------------|------------------------|--------------------------------------------------------|
 | 0.1      | 2026-07-27 | Md. Sakib Hasan Shawon | Initial version                                        |
 | 1.0      | 2026-07-28 | Md. Sakib Hasan Shawon | Stable release                                         |
+| 1.1      | 2026-08-01 | Foez Ahmed             | Ratified                                               |
 
 This file is part of ADN-VLSI/adn_common
 <br>**Copyright (c) 2026 ADN Semiconductors**
