@@ -1,5 +1,4 @@
 /*
- 
 ### Purpose
 This module implements a synchronous First-In-First-Out (FIFO) buffer designed for data flow control between clock domains or modules. It provides a configurable data width and depth, utilizing a circular buffer architecture to manage data storage and retrieval with full/empty status flags.
 
@@ -14,7 +13,7 @@ The `adn_common_fifo` is primarily used to decouple producers and consumers that
 | 0.1      | 2026-07-27 | Annim Jannat    | Initial version                                        |
 | 1.0      | 2026-07-28 | Annim Jannat    | Stable release                                         |
  
-Author : Annim (jannatannim@gmail.com)
+Author : Annim Jannat (jannatannim@gmail.com)
 This file is part of ADN-VLSI/adn_common
 Copyright (c) 2026 ADN Semiconductors
 Licensed under the MIT License
@@ -55,10 +54,9 @@ module adn_common_fifo #(
   // SIGNALS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  logic [DATA_WIDTH-1:0] mem[DEPTH];
-
-  logic [ADDR_WIDTH:0] wr_ptr;
-  logic [ADDR_WIDTH:0] rd_ptr;  // extra bit for msb that checks if the fifo is full or empty
+  logic [DATA_WIDTH-1:0] rd_data_comb;  // output from the RAM
+  logic [  ADDR_WIDTH:0] wr_ptr;
+  logic [  ADDR_WIDTH:0] rd_ptr;  // extra bit for msb that checks if the fifo is full or empty
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // ASSIGNMENTS
@@ -68,8 +66,21 @@ module adn_common_fifo #(
   assign empty_o = (wr_ptr == rd_ptr);
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
-  // SUBMODULES   - different memory module use kortesi na
+  // SUBMODULES
   //////////////////////////////////////////////////////////////////////////////////////////////////
+
+  adn_common_dual_port_ram #(
+      .DATA_WIDTH(DATA_WIDTH),
+      .ADDR_WIDTH(ADDR_WIDTH)
+  ) u_mem (
+      .clk_i(clk_i),
+      .rst_n_i(rst_ni),
+      .wr_en_i(wr_en_i && !full_o),
+      .wr_addr_i(wr_ptr[ADDR_WIDTH-1:0]),
+      .wr_data_i(data_i),
+      .rd_addr_i(rd_ptr[ADDR_WIDTH-1:0]),
+      .rd_data_o(rd_data_comb)
+  );
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // SEQUENTIALS
@@ -86,13 +97,12 @@ module adn_common_fifo #(
 
       // Write
       if (wr_en_i && !full_o) begin
-        mem[wr_ptr[ADDR_WIDTH-1:0]] <= data_i;
         wr_ptr <= wr_ptr + 1'b1;
       end
 
       // Read
       if (rd_en_i && !empty_o) begin
-        data_o  <= mem[rd_ptr[ADDR_WIDTH-1:0]];
+        data_o  <= rd_data_comb;  // take the RAM's output
         valid_o <= 1'b1;
         rd_ptr  <= rd_ptr + 1'b1;
       end
@@ -105,9 +115,10 @@ module adn_common_fifo #(
 
 `ifndef SYNTHESIS
   initial begin
-    if (DEPTH <= 0) $fatal("DEPTH must be greater than 0.");
+    if (DEPTH <= 0) $fatal(1, "DEPTH must be greater than 0.");
 
-    if ((1 << ADDR_WIDTH) < DEPTH) $fatal("ADDR_WIDTH is insufficient for DEPTH.");
+    if ((1 << ADDR_WIDTH) < DEPTH) $fatal(1, "ADDR_WIDTH is insufficient for DEPTH.");
   end
 `endif
 endmodule
+
