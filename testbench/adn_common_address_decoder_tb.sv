@@ -2,9 +2,9 @@
 
 | TEST CASE | DATE       | AUTHOR          | DESCRIPTION                                           |
 |-----------|------------|-----------------|-------------------------------------------------------|  
-| TC_001    | YYYY-MM-DD | Shuparna Haque | Each Rule Check : lower & upper-1 boundary of all rules |
-| TC_002    | YYYY-MM-DD | Shuparna Haque | Test case description goes here                       |
-| TC_003    | YYYY-MM-DD | Shuparna Haque | Test case description goes here                       |
+| TC_001    | 2026-07-30 | Shuparna Haque | Each Rule Check : lower & upper-1 boundary of all rules |
+| TC_002    | 2026-08-02 | Shuparna Haque | Out of Boundary : just above global max               |
+| TC_003    | 2026-08-02 | Shuparna Haque | mid-range value inside each rule                       |
 | TC_004    | YYYY-MM-DD | Shuparna Haque | Test case description goes here                       |
 | TC_005    | YYYY-MM-DD | Shuparna Haque | Test case description goes here                       |
 
@@ -110,11 +110,12 @@ module adn_common_address_decoder_tb;
         $display(
             "Test failed for address: %h. Expected index: %h, found: %b. Got index: %h, found: %b",
             addr_i, expected_index, expected_found, u_dut.slave_index_o, u_dut.addr_found_o);
-            note_case(1'b0);
+        note_case(1'b0);
       end else begin
-        $display("Test passed for address: %h. Expected index: %h, found: %b. Got index: %h, found: %b",
+        $display(
+            "Test passed for address: %h. Expected index: %h, found: %b. Got index: %h, found: %b",
             addr_i, expected_index, expected_found, u_dut.slave_index_o, u_dut.addr_found_o);
-            note_case(1'b1); 
+        note_case(1'b1);
       end
     end
   endtask
@@ -131,6 +132,28 @@ module adn_common_address_decoder_tb;
       check_address(min_addr_i[i]);
       check_address(max_addr_i[i] - 1);
     end
+    $display("All test cases for lower and upper boundary completed.");
+
+    // TC_002: Above the last rule's max address
+    check_address(max_addr_i[NUM_RULES - 1]);  // Check just above the last rule's max address
+    check_address(max_addr_i[NUM_RULES+3]);   //  Check well above the last rule's max address
+    $display("Out of Boundary Tests Completed(Should be 2 failed cases).");
+
+    //TC_003: mid-range value inside each rule
+    for ( int i = 0; i < NUM_RULES; i++) begin 
+      logic [ADDR_WIDTH-1:0] mid_addr = (min_addr_i[i] + max_addr_i[i]) >> 1; // Calculate mid-range address
+      check_address(mid_addr);
+    end
+    $display("Mid-range Tests Completed.");
+
+    // TC_004: Pressure test: Check all addresses in the range of each rule
+    for (int i = 0; i < NUM_RULES; i++) begin
+      for (int j = min_addr_i[i]; j < max_addr_i[i]; j++) begin
+        check_address(j);
+      end
+    end
+    $display("Pressure Tests Completed.");
+    
     $display("All test cases completed.");
     $finish;
 
