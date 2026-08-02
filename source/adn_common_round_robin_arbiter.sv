@@ -83,7 +83,7 @@ module adn_common_round_robin_arbiter #(
   );
 
   adn_common_fixed_priority_arbiter #(
-      .NUM_WIRE(NUM_REQ),
+      .NUM_REQ(NUM_REQ),
       .HIGH_INDEX_PRIORITY(0)
   ) fp_arb (
       .d_i(fpa_in),
