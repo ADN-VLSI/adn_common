@@ -70,7 +70,6 @@ module adn_common_edge_detect #(
         // Invalid configuration handling.
         // Keep output deasserted for unsupported values.
         default: edge_pulse_o <= 1'b0;
-        default: edge_pulse_o <= 1'b0;
       endcase
 
       // Update stored input history for the next clock cycle.
