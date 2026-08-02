@@ -331,42 +331,8 @@ module adn_common_edge_detect_tb;
       "TC_ROB_03":  run_tc_rob_03();
       "TC_ROB_04":  run_tc_rob_04();
 
-      "all": begin
-        $display("[INFO] Running full test regression suite...");
-        run_tc_rst_01();
-        run_tc_rst_02();
-        run_tc_rst_03();
-        run_tc_rise_01();
-        run_tc_rise_02();
-        run_tc_fall_01();
-        run_tc_fall_02();
-        run_tc_dual_01();
-        run_tc_dual_02();
-        run_tc_str_01();
-        run_tc_str_02();
-        run_tc_rob_01();
-        run_tc_rob_02();
-        run_tc_rob_03();
-        run_tc_rob_04();
-      end
-
       default: begin
-        $display("[WARNING] Unrecognized test_name '%s'. Executing full regression...", test_name);
-        run_tc_rst_01();
-        run_tc_rst_02();
-        run_tc_rst_03();
-        run_tc_rise_01();
-        run_tc_rise_02();
-        run_tc_fall_01();
-        run_tc_fall_02();
-        run_tc_dual_01();
-        run_tc_dual_02();
-        run_tc_str_01();
-        run_tc_str_02();
-        run_tc_rob_01();
-        run_tc_rob_02();
-        run_tc_rob_03();
-        run_tc_rob_04();
+        $fatal(1, "Unrecognized test_name '%s'", test_name);
       end
     endcase
 
