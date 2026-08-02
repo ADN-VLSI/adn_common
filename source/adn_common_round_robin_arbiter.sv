@@ -51,12 +51,17 @@ module adn_common_round_robin_arbiter #(
   // SIGNALS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  // @foez-bhai, add commentos
+  // Last granted request index
   logic [$clog2(NUM_REQ)-1:0] last_gnt;
+  // Next potential grant index based on rotation
   logic [$clog2(NUM_REQ)-1:0] next_gnt;
+  // Rotated input request bus
   logic [NUM_REQ-1:0]         fpa_in;
+  // Encoded output from priority encoder
   logic [NUM_REQ-1:0]         fpa_out;
+  // Priority encoder grant address
   logic [$clog2(NUM_REQ)-1:0] fpa_gnt_addr;
+  // Priority encoder valid signal
   logic                       fpa_gnt_addr_valid;
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
