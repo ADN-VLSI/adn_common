@@ -15,17 +15,10 @@
 ## Ports
 |Name|Direction|Type|Dimension|Description|
 |-|-|-|-|-|
-<<<<<<< HEAD
 |clk_i|input|logic||Active-low asynchronous reset|
 |rst_n_i|input|logic||Input signal to be monitored for edges|
 |signal_in_i|input|logic||Output pulse indicating edge detection|
 |edge_pulse_o|output|logic|| System clock input Active-low asynchronous reset Input signal to be monitored for edges Output pulse indicating edge detection|
-=======
-|clk_i|input|logic|| System clock input|
-|arst_ni|input|logic|| Active-low asynchronous reset|
-|signal_i|input|logic|| Input signal to be monitored for edges|
-|edge_pulse_o|output|logic|| Output pulse indicating edge detection|
->>>>>>> f37a8c425e9a3d29398b9c1fa64206cc938dac88
 ## Description
 
 
@@ -38,11 +31,7 @@ This module is primarily used in digital systems to synchronize asynchronous sig
 - Detecting the start of a data packet in serial communication protocols.
 - Creating pulse-based control signals for counters or registers within a synchronous design.
 
-<<<<<<< HEAD
 Connect the system clock (`clk_i`), active-low reset (`rst_n_i`), and the target signal (`signal_in_i`). The `edge_pulse_o` output will assert high for exactly one clock cycle when the specified transition is detected.
-=======
-Connect the system clock (`clk_i`), active-low reset (`arst_ni`), and the target signal (`signal_i`). The `edge_pulse_o` output will assert high for exactly one clock cycle when the specified transition is detected.
->>>>>>> f37a8c425e9a3d29398b9c1fa64206cc938dac88
 
 | REVISION | DATE       | AUTHOR                 | DESCRIPTION                                            |
 |----------|------------|------------------------|--------------------------------------------------------|
