@@ -74,7 +74,7 @@ module adn_common_fifo #(
       .ADDR_WIDTH(ADDR_WIDTH)
   ) u_mem (
       .clk_i(clk_i),
-      .rst_n_i(rst_ni),
+      .arst_ni(rst_ni),
       .wr_en_i(wr_en_i && !full_o),
       .wr_addr_i(wr_ptr[ADDR_WIDTH-1:0]),
       .wr_data_i(data_i),
