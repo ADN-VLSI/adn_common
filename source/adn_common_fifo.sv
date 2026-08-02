@@ -5,7 +5,6 @@ This module implements a configurable, synchronous First-In-First-Out (FIFO) buf
 
 ### Use Case
 This FIFO is ideal for:
-- **Clock Domain Crossing (CDC) buffering:** Managing data flow between modules operating at different speeds.
 - **Backpressure Handling:** Acting as a shock absorber when a consumer module cannot keep up with a producer.
 - **Pipelined Data Paths:** Decoupling stages in a high-performance processing pipeline to prevent stalls.
 - **Burst Data Management:** Storing bursts of data to be processed at a steady rate by downstream logic.
@@ -14,7 +13,8 @@ This FIFO is ideal for:
 |----------|------------|-----------------|--------------------------------------------------------|
 | 0.1      | 2026-07-27 | Annim Jannat    | Initial version                                        |
 | 1.0      | 2026-07-28 | Annim Jannat    | Stable release                                         |
- 
+| 1.1      | 2026-08-02 | Foez Ahmed      | Ratified                                               |
+
 Author : Annim Jannat (jannatannim@gmail.com)
 This file is part of ADN-VLSI/adn_common
 Copyright (c) 2026 ADN Semiconductors
@@ -24,44 +24,44 @@ See LICENSE file in the project root for full license information
 */
 
 module adn_common_fifo #(
-    parameter int DATA_WIDTH = 8,   // Width of the data bus in bits
-    parameter int FIFO_SIZE  = 2,   // Log2 of the FIFO depth
-    parameter bit PIPELINED  = 1    // Enable pipelined mode for higher throughput
+    parameter int DATA_WIDTH = 8,  // Width of the data bus in bits
+    parameter int FIFO_SIZE  = 2,  // Log2 of the FIFO depth
+    parameter bit PIPELINED  = 1   // Enable pipelined mode for higher throughput
 ) (
-    input logic arst_ni,            // Asynchronous reset, active low
-    input logic clk_i,              // System clock
+    input logic arst_ni,  // Asynchronous reset, active low
+    input logic clk_i,    // System clock
 
-    input  logic [DATA_WIDTH-1:0] data_in_i,       // Input data bus
-    input  logic                  data_in_valid_i, // Input data valid signal
-    output logic                  data_in_ready_o, // Input ready signal (backpressure)
+    input  logic [DATA_WIDTH-1:0] data_in_i,        // Input data bus
+    input  logic                  data_in_valid_i,  // Input data valid signal
+    output logic                  data_in_ready_o,  // Input ready signal (backpressure)
 
-    output logic [DATA_WIDTH-1:0] data_out_o,       // Output data bus
-    output logic                  data_out_valid_o, // Output data valid signal
-    input  logic                  data_out_ready_i, // Output ready signal from consumer
+    output logic [DATA_WIDTH-1:0] data_out_o,        // Output data bus
+    output logic                  data_out_valid_o,  // Output data valid signal
+    input  logic                  data_out_ready_i,  // Output ready signal from consumer
 
-    output logic [(2**FIFO_SIZE):0] count_o         // Current number of elements in FIFO
+    output logic [FIFO_SIZE:0] count_o  // Current number of elements in FIFO
 );
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // LOCALPARAMS GENERATED
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  localparam int FIFO_DEPTH = 2 ** FIFO_SIZE; // Calculated maximum capacity of the FIFO
+  localparam int FIFO_DEPTH = 2 ** FIFO_SIZE;  // Calculated maximum capacity of the FIFO
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // SIGNALS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  logic [(2**FIFO_SIZE):0] wr_ptr; // Write pointer tracking the head of the queue
-  logic [(2**FIFO_SIZE):0] rd_ptr; // Read pointer tracking the tail of the queue
+  logic [(2**FIFO_SIZE):0] wr_ptr;  // Write pointer tracking the head of the queue
+  logic [(2**FIFO_SIZE):0] rd_ptr;  // Read pointer tracking the tail of the queue
 
   logic in_hs;  // Handshake signal for input interface
-  logic out_hs; // Handshake signal for output interface
+  logic out_hs;  // Handshake signal for output interface
 
   logic full;  // Status flag: FIFO is at maximum capacity
-  logic empty; // Status flag: FIFO contains no data
+  logic empty;  // Status flag: FIFO contains no data
 
-  logic [DATA_WIDTH-1:0] mem_out; // Data read from the internal RAM
+  logic [DATA_WIDTH-1:0] mem_out;  // Data read from the internal RAM
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // ASSIGNMENTS

@@ -1,18 +1,14 @@
 /*
 
-### Purpose
-The `adn_common_cdc_fifo` module implements a high-performance, asynchronous First-In-First-Out (FIFO) buffer designed for reliable data transfer between two independent clock domains. It utilizes Gray-coded pointers and multi-stage synchronizers to mitigate metastability issues, ensuring robust data integrity during Clock Domain Crossing (CDC). The module provides full, empty, and programmable almost-full/almost-empty status flags, along with occupancy counters to facilitate flow control in complex digital systems.
+@foez-bhai, write the purpose of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
 
-### Use Case
-This module is intended for scenarios where data must be passed between two modules operating on different clock frequencies or phases. Common use cases include:
-- **Data Buffering:** Smoothing out bursts of data between a high-speed producer and a low-speed consumer.
-- **Clock Domain Crossing (CDC):** Safely transferring control signals or data packets across asynchronous boundaries in SoC designs.
-- **Flow Control:** Utilizing the `almost_full` and `almost_empty` flags to throttle upstream data producers or trigger downstream processing, preventing buffer overflow or underflow.
+@foez-bhai, describe the use case of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
 
 | REVISION | DATE       | AUTHOR              | DESCRIPTION                                        |
 |----------|------------|---------------------|----------------------------------------------------|
 | 0.1      | 2026-07-27 | Ahasan Ullah Khalid | Initial version                                    |
 | 1.0      | 2026-07-29 | Ahasan Ullah Khalid | Stable release                                     |
+| 1.1      | 2026-08-02 | Foez Ahmed          | Ratified                                           |
 
 Author : Ahasan Ullah Khalid (aukhalid02@gmail.com)
 This file is part of ADN-VLSI/adn_common
@@ -22,265 +18,196 @@ See LICENSE file in the project root for full license information
 
 */
 
+// @foez-bhai, add comments to the parameters, ports
 module adn_common_cdc_fifo #(
-    // Width of the data bus
-    parameter int DATA_WIDTH          = 32,
-    // Address width
-    parameter int ADDR_WIDTH          = 8,
-    // Number of synchronization stages
-    parameter int SYNC_STAGES         = 2,
-    // Threshold for almost_full_o flag
-    parameter int ALMOST_FULL_THRESH  = (1 << ADDR_WIDTH) - 2,
-    // Threshold for almost_empty_o flag
-    parameter int ALMOST_EMPTY_THRESH = 2
-
+    parameter int DATA_WIDTH  = 8,
+    parameter int FIFO_SIZE   = 2,
+    parameter int SYNC_STAGES = 2
 ) (
-    // PORTS
+    input  logic                  data_in_arst_ni,
+    input  logic [DATA_WIDTH-1:0] data_in_clk_i,
+    input  logic [DATA_WIDTH-1:0] data_in_i,
+    input  logic                  data_in_valid_i,
+    output logic                  data_in_ready_o,
+    output logic [   FIFO_SIZE:0] data_in_count_o,
 
-    //Write Clock Domain
-    input  logic                  wr_clk_i,       // Write domain clock
-    input  logic                  wr_rst_n_i,     // Active-low asynchronous reset for write domain
-    input  logic                  wr_en_i,        // Write enable signal
-    input  logic [DATA_WIDTH-1:0] wr_data_i,      // Data input bus
-    output logic                  full_o,         // FIFO full flag
-    output logic                  almost_full_o,  // FIFO almost full flag
-    output logic [  ADDR_WIDTH:0] wr_count_o,     // Write domain occupancy count
-
-    //Read Clock Domain
-    input  logic                  rd_clk_i,        // Read domain clock
-    input  logic                  rd_rst_n_i,      // Active-low asynchronous reset for read domain
-    input  logic                  rd_en_i,         // Read enable signal
-    output logic [DATA_WIDTH-1:0] rd_data_o,       // Data output bus
-    output logic                  empty_o,         // FIFO empty flag
-    output logic                  almost_empty_o,  // FIFO almost empty flag
-    output logic [  ADDR_WIDTH:0] rd_count_o       // Read domain occupancy count
+    input  logic                  data_out_arst_ni,
+    output logic [DATA_WIDTH-1:0] data_out_clk_i,
+    output logic [DATA_WIDTH-1:0] data_out_o,
+    output logic                  data_out_valid_o,
+    input  logic                  data_out_ready_i,
+    output logic [   FIFO_SIZE:0] data_out_count_o
 );
 
-  //////////////////////////////////////////////////////////////////////////////////////////////////
-  // LOCALPARAMS GENERATED
-  //////////////////////////////////////////////////////////////////////////////////////////////////
-
-  // Pointer width includes 1 extra bit (MSB) to distinguish full from empty conditions
-  localparam int PtrWidth = ADDR_WIDTH + 1;
+  // @foez-bhai, add comments to the functional blocks, signals, and submodules
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // SIGNALS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  // Internal synchronized active-low resets for domain isolation
-  logic                wr_rst_n_int;
-  logic                rd_rst_n_int;
+  logic common_arst_n;
 
-  // Write Domain Pointers & Control Signals
-  logic [PtrWidth-1:0] wr_ptr_bin;  // Binary write pointer
-  logic [PtrWidth-1:0] wr_ptr_bin_next;  // Next binary write pointer
-  logic [PtrWidth-1:0] wr_ptr_gray;  // Gray-coded write pointer
-  logic [PtrWidth-1:0] wr_ptr_gray_next;  // Next Gray-coded write pointer
-  logic [PtrWidth-1:0] wr_ptr_gray_rdclk;  // Write pointer synchronized to read domain
-  logic [PtrWidth-1:0] wr_ptr_bin_rdclk;  // Write pointer converted to binary in read domain
-  logic                wr_en_qualified;  // Write enable gated by full flag
+  logic [FIFO_SIZE:0] wr_addr;
+  logic [FIFO_SIZE:0] rd_addr;
 
-  // Read Domain Pointers & Control Signals
-  logic [PtrWidth-1:0] rd_ptr_bin;  // Binary read pointer
-  logic [PtrWidth-1:0] rd_ptr_bin_next;  // Next binary read pointer
-  logic [PtrWidth-1:0] rd_ptr_gray;  // Gray-coded read pointer
-  logic [PtrWidth-1:0] rd_ptr_gray_next;  // Next Gray-coded read pointer
-  logic [PtrWidth-1:0] rd_ptr_gray_wrclk;  // Read pointer synchronized to write domain
-  logic [PtrWidth-1:0] rd_ptr_bin_wrclk;  // Read pointer converted to binary in write domain
-  logic                rd_en_qualified;  // Read enable gated by empty flag
+  logic [FIFO_SIZE:0] wr_addr_;
+  logic [FIFO_SIZE:0] rd_addr_;
 
-  // Combinational Next-State Flag Calculations
-  logic                empty_next;  // Combinational empty status
-  logic                full_next;  // Combinational full status
+  logic [FIFO_SIZE:0] wpgi;
+  logic [FIFO_SIZE:0] wpgo;
+  logic [FIFO_SIZE:0] rpgi;
+  logic [FIFO_SIZE:0] rpgo;
+
+  logic [FIFO_SIZE:0] wr_ptr_pass;
+  logic [FIFO_SIZE:0] rd_ptr_pass;
+
+  logic [FIFO_SIZE:0] wr_ptr_ic;
+  logic [FIFO_SIZE:0] rd_ptr_oc;
+
+  logic in_hs;
+  logic out_hs;
+
+  logic full_ic;
+  logic empty_oc;
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // ASSIGNMENTS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  // Qualify write/read requests to ensure operations only occur when safe
-  assign wr_en_qualified = wr_en_i && !full_o;
-  assign rd_en_qualified = rd_en_i && !empty_o;
+  always_comb common_arst_n = data_in_arst_ni & data_out_arst_ni;
 
-  // Calculate next binary pointers based on qualified enable signals
-  assign wr_ptr_bin_next = wr_ptr_bin + (wr_en_qualified ? {{(PtrWidth - 1) {1'b0}}, 1'b1} : '0);
-  assign rd_ptr_bin_next = rd_ptr_bin + (rd_en_qualified ? {{(PtrWidth - 1) {1'b0}}, 1'b1} : '0);
+  always_comb
+    full_ic = (wr_addr[FIFO_SIZE-1:0] == rd_addr_[FIFO_SIZE-1:0])
+                    & (wr_addr[FIFO_SIZE] != rd_addr_[FIFO_SIZE]);
 
-  // Look-Ahead Empty Condition: FIFO is empty when read pointer matches synchronized write pointer
-  assign empty_next = (rd_ptr_gray_next == wr_ptr_gray_rdclk);
+  always_comb empty_oc = (wr_addr_[FIFO_SIZE-1:0] == rd_addr[FIFO_SIZE-1:0]);
 
-  // Look-Ahead Full Condition: FIFO is full when Gray pointers match MSB/MSB-1 inversion
-  assign full_next  =
-        (wr_ptr_gray_next[ADDR_WIDTH]     != rd_ptr_gray_wrclk[ADDR_WIDTH])   &&
-        (wr_ptr_gray_next[ADDR_WIDTH-1]   != rd_ptr_gray_wrclk[ADDR_WIDTH-1]) &&
-        (wr_ptr_gray_next[ADDR_WIDTH-2:0] == rd_ptr_gray_wrclk[ADDR_WIDTH-2:0]);
+  always_comb data_in_ready_o = ~full_ic;
+  always_comb data_out_valid_o = ~empty_oc;
 
-  // Occupancy Count Logic: Difference between pointers in respective domains
-  assign wr_count_o = wr_ptr_bin - rd_ptr_bin_wrclk;
-  assign rd_count_o = wr_ptr_bin_rdclk - rd_ptr_bin;
+  always_comb in_hs = data_in_valid_i & data_in_ready_o;
+  always_comb out_hs = data_out_valid_o & data_out_ready_i;
 
-  // Threshold-based status indicators for flow control
-  assign almost_full_o = (wr_count_o >= ALMOST_FULL_THRESH[ADDR_WIDTH:0]);
-  assign almost_empty_o = (rd_count_o <= ALMOST_EMPTY_THRESH[ADDR_WIDTH:0]);
+  always_comb data_in_count_o = wr_addr - rd_addr_;
+  always_comb data_out_count_o = wr_addr_ - rd_addr;
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // SUBMODULES
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  // Reset Synchronizer: Write Clock Domain (Multi-stage FF chain)
-  adn_common_synchronizer #(
-      .WIDTH      (1),
-      .STAGES     (SYNC_STAGES),
-      .RESET_VALUE('0)
-  ) u_wr_rst_sync (
-      .clk_i  (wr_clk_i),
-      .arst_ni(wr_rst_n_i),
-      .data_i ('1),
-      .data_o (wr_rst_n_int)
-  );
-
-  // Reset Synchronizer: Read Clock Domain (Multi-stage FF chain)
-  adn_common_synchronizer #(
-      .WIDTH      (1),
-      .STAGES     (SYNC_STAGES),
-      .RESET_VALUE('0)
-  ) u_rd_rst_sync (
-      .clk_i  (rd_clk_i),
-      .arst_ni(rd_rst_n_i),
-      .data_i ('1),
-      .data_o (rd_rst_n_int)
-  );
-
-  // Binary-to-Gray Code Converter: Write Pointer (Prevents multi-bit transition glitches)
-  adn_common_bin_to_gray #(
-      .WIDTH(PtrWidth)
-  ) u_wr_ptr_bin2gray (
-      .bin_i (wr_ptr_bin_next),
-      .gray_o(wr_ptr_gray_next)
-  );
-
-  // Binary-to-Gray Code Converter: Read Pointer
-  adn_common_bin_to_gray #(
-      .WIDTH(PtrWidth)
-  ) u_rd_ptr_bin2gray (
-      .bin_i (rd_ptr_bin_next),
-      .gray_o(rd_ptr_gray_next)
-  );
-
-  // Dual-Port RAM: Memory Storage Block (Asynchronous read/write)
   adn_common_dual_port_ram #(
       .DATA_WIDTH(DATA_WIDTH),
-      .ADDR_WIDTH(ADDR_WIDTH)
-  ) u_dual_port_ram (
-      .clk_i    (wr_clk_i),
-      .wr_en_i  (wr_en_qualified),
-      .wr_addr_i(wr_ptr_bin[ADDR_WIDTH-1:0]),
-      .wr_data_i(wr_data_i),
-
-      .rd_addr_i(rd_ptr_bin[ADDR_WIDTH-1:0]),
-      .rd_data_o(rd_data_o)
+      .ADDR_WIDTH(FIFO_SIZE)
+  ) u_mem (
+      .clk_i(data_in_clk_i),
+      .wr_en_i(in_hs),
+      .wr_addr_i(wr_addr[FIFO_SIZE-1:0]),
+      .wr_data_i(data_in_i),
+      .rd_addr_i(rd_addr[FIFO_SIZE-1:0]),
+      .rd_data_o(data_out_o)
   );
 
-  // CDC Synchronizer: Write Gray Pointer -> Read Domain (For Empty calculation)
-  adn_common_synchronizer #(
-      .WIDTH      (PtrWidth),
-      .STAGES     (SYNC_STAGES),
-      .RESET_VALUE('0)
-  ) u_wr_ptr_sync (
-      .clk_i  (rd_clk_i),
-      .arst_ni(rd_rst_n_int),
-      .data_i (wr_ptr_gray),
-      .data_o (wr_ptr_gray_rdclk)
+  adn_common_bin_to_gray #(
+      .WIDTH(FIFO_SIZE + 1)
+  ) b2g_w (
+      .bin_i (wr_addr + 1),
+      .gray_o(wpgi)
   );
 
-  // CDC Synchronizer: Read Gray Pointer -> Write Domain (For Full calculation)
-  adn_common_synchronizer #(
-      .WIDTH      (PtrWidth),
-      .STAGES     (SYNC_STAGES),
-      .RESET_VALUE('0)
-  ) u_rd_ptr_sync (
-      .clk_i  (wr_clk_i),
-      .arst_ni(wr_rst_n_int),
-      .data_i (rd_ptr_gray),
-      .data_o (rd_ptr_gray_wrclk)
-  );
-
-  // Gray-to-Binary Converters (Used for occupancy/fill count metrics)
-  adn_common_gray_to_bin #(
-      .WIDTH(PtrWidth)
-  ) u_rdptr_gray2bin_wrclk (
-      .gray_i(rd_ptr_gray_wrclk),
-      .bin_o (rd_ptr_bin_wrclk)
+  adn_common_bin_to_gray #(
+      .WIDTH(FIFO_SIZE + 1)
+  ) b2g_r (
+      .bin_i (rd_addr + 1),
+      .gray_o(rpgi)
   );
 
   adn_common_gray_to_bin #(
-      .WIDTH(PtrWidth)
-  ) u_wrptr_gray2bin_rdclk (
-      .gray_i(wr_ptr_gray_rdclk),
-      .bin_o (wr_ptr_bin_rdclk)
+      .WIDTH(FIFO_SIZE + 1)
+  ) g2b_wi (
+      .gray_i(wr_ptr_pass),
+      .bin_o (wr_addr)
   );
 
+  adn_common_gray_to_bin #(
+      .WIDTH(FIFO_SIZE + 1)
+  ) g2b_wo (
+      .gray_i(wpgo),
+      .bin_o (wr_addr_)
+  );
 
-  //////////////////////////////////////////////////////////////////////////////////////////////////
-  // SEQUENTIALS
-  //////////////////////////////////////////////////////////////////////////////////////////////////
+  adn_common_gray_to_bin #(
+      .WIDTH(FIFO_SIZE + 1)
+  ) g2b_ri (
+      .gray_i(rpgo),
+      .bin_o (rd_addr_)
+  );
 
-  // Write Domain Sequential Register Updating (Pointers)
-  always_ff @(posedge wr_clk_i or negedge wr_rst_n_int) begin
-    if (!wr_rst_n_int) begin
-      wr_ptr_bin  <= '0;
-      wr_ptr_gray <= '0;
-    end else begin
-      wr_ptr_bin  <= wr_ptr_bin_next;
-      wr_ptr_gray <= wr_ptr_gray_next;
-    end
-  end
+  adn_common_gray_to_bin #(
+      .WIDTH(FIFO_SIZE + 1)
+  ) g2b_ro (
+      .gray_i(rd_ptr_pass),
+      .bin_o (rd_addr)
+  );
 
-  // Read Domain Sequential Register Updating (Pointers)
-  always_ff @(posedge rd_clk_i or negedge rd_rst_n_int) begin
-    if (!rd_rst_n_int) begin
-      rd_ptr_bin  <= '0;
-      rd_ptr_gray <= '0;
-    end else begin
-      rd_ptr_bin  <= rd_ptr_bin_next;
-      rd_ptr_gray <= rd_ptr_gray_next;
-    end
-  end
+  adn_common_synchronizer #(
+      .WIDTH(FIFO_SIZE + 1),
+      .STAGES(1),
+      .RESET_VALUE('0)
+  ) wr_ptr_ic (
+      .clk_i(data_in_clk_i),
+      .arst_ni(common_arst_n),
+      .en_i(in_hs),
+      .data_i(wpgi),
+      .data_o(wr_ptr_pass)
+  );
 
-  // Read Domain Output Flag Registering
-  always_ff @(posedge rd_clk_i or negedge rd_rst_n_int) begin
-    if (!rd_rst_n_int) empty_o <= 1'b1;
-    else empty_o <= empty_next;
-  end
+  adn_common_synchronizer #(
+      .WIDTH(FIFO_SIZE + 1),
+      .STAGES(SYNC_STAGES),
+      .RESET_VALUE('0)
+  ) wr_ptr_oc (
+      .clk_i(data_out_clk_i),
+      .arst_ni(common_arst_n),
+      .en_i('1),
+      .data_i(wr_ptr_pass),
+      .data_o(wpgo)
+  );
 
-  // Write Domain Output Flag Registering
-  always_ff @(posedge wr_clk_i or negedge wr_rst_n_int) begin
-    if (!wr_rst_n_int) full_o <= 1'b0;
-    else full_o <= full_next;
-  end
+  adn_common_synchronizer #(
+      .WIDTH(FIFO_SIZE + 1),
+      .STAGES(1),
+      .RESET_VALUE('0)
+  ) rd_ptr_oc (
+      .clk_i(data_out_clk_i),
+      .arst_ni(common_arst_n),
+      .en_i(out_hs),
+      .data_i(rpgi),
+      .data_o(rd_ptr_pass)
+  );
+
+  adn_common_synchronizer #(
+      .WIDTH(FIFO_SIZE + 1),
+      .STAGES(SYNC_STAGES),
+      .RESET_VALUE('0)
+  ) rd_ptr_ic (
+      .clk_i(data_in_clk_i),
+      .arst_ni(common_arst_n),
+      .en_i('1),
+      .data_i(rd_ptr_pass),
+      .data_o(rpgo)
+  );
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // ASSERTIONS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
 `ifdef SIMULATION
-
-  // Validate parameter constraints at elaboration time.
   initial begin
-    if (SYNC_STAGES < 2) begin
-      $error("%m: SYNC_STAGES must be >= 2 for reliable CDC metastability protection.");
-    end
-    if (ALMOST_FULL_THRESH >= (1 << ADDR_WIDTH)) begin
-      $error("%m: ALMOST_FULL_THRESH (%0d) must be less than FIFO depth (%0d).",
-             ALMOST_FULL_THRESH, (1 << ADDR_WIDTH));
-    end
-    if (ALMOST_EMPTY_THRESH < 0) begin
-      $error("%m: ALMOST_EMPTY_THRESH must be non-negative.");
-    end
-    if (DATA_WIDTH <= 0) begin
-      $error("%m: DATA_WIDTH must be > 0.");
+    if (DATA_WIDTH > 2) begin
+      $display("\033[1;33m%m DATA_WIDTH\033[0m");
     end
   end
-
 `endif  // SIMULATION
 
 endmodule
+
