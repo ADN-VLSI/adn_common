@@ -8,28 +8,34 @@
 ## Parameters
 |Name|Type|Dimension|Default Value|Description|
 |-|-|-|-|-|
-|DATA_WIDTH|int||8||
-|FIFO_SIZE|int||2||
-|PIPELINED|bit||1||
+|DATA_WIDTH|int||8|Width of the data bus in bits|
+|FIFO_SIZE|int||2|Log2 of the FIFO depth|
+|PIPELINED|bit||1|Enable pipelined mode for higher throughput|
 
 ## Ports
 |Name|Direction|Type|Dimension|Description|
 |-|-|-|-|-|
-|arst_ni|input|logic|||
-|clk_i|input|logic|||
-|data_in_i|input|logic [DATA_WIDTH-1:0]|||
-|data_in_valid_i|input|logic|||
-|data_in_ready_o|output|logic|||
-|data_out_o|output|logic [DATA_WIDTH-1:0]|||
-|data_out_valid_o|output|logic|||
-|data_out_ready_i|input|logic|||
-|count_o|output|logic [(2**FIFO_SIZE):0]|||
+|arst_ni|input|logic||Asynchronous reset, active low|
+|clk_i|input|logic||System clock|
+|data_in_i|input|logic [DATA_WIDTH-1:0]||Input data bus|
+|data_in_valid_i|input|logic||Input data valid signal|
+|data_in_ready_o|output|logic||Input ready signal (backpressure)|
+|data_out_o|output|logic [DATA_WIDTH-1:0]||Output data bus|
+|data_out_valid_o|output|logic||Output data valid signal|
+|data_out_ready_i|input|logic||Output ready signal from consumer|
+|count_o|output|logic [(2**FIFO_SIZE):0]||Current number of elements in FIFO|
 ## Description
 
 
-@foez---bhai, write the purpose of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+### Purpose
+This module implements a configurable, synchronous First-In-First-Out (FIFO) buffer. It provides a flexible mechanism for data buffering between modules with different throughput requirements, supporting both pipelined and non-pipelined modes to optimize for either latency or throughput.
 
-@foez---bhai, describe the use case of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+### Use Case
+This FIFO is ideal for:
+- **Clock Domain Crossing (CDC) buffering:** Managing data flow between modules operating at different speeds.
+- **Backpressure Handling:** Acting as a shock absorber when a consumer module cannot keep up with a producer.
+- **Pipelined Data Paths:** Decoupling stages in a high-performance processing pipeline to prevent stalls.
+- **Burst Data Management:** Storing bursts of data to be processed at a steady rate by downstream logic.
 
 | REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
 |----------|------------|-----------------|--------------------------------------------------------|

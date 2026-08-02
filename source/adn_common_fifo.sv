@@ -1,8 +1,14 @@
 /*
 
-@foez-bhai, write the purpose of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+### Purpose
+This module implements a configurable, synchronous First-In-First-Out (FIFO) buffer. It provides a flexible mechanism for data buffering between modules with different throughput requirements, supporting both pipelined and non-pipelined modes to optimize for either latency or throughput.
 
-@foez-bhai, describe the use case of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+### Use Case
+This FIFO is ideal for:
+- **Clock Domain Crossing (CDC) buffering:** Managing data flow between modules operating at different speeds.
+- **Backpressure Handling:** Acting as a shock absorber when a consumer module cannot keep up with a producer.
+- **Pipelined Data Paths:** Decoupling stages in a high-performance processing pipeline to prevent stalls.
+- **Burst Data Management:** Storing bursts of data to be processed at a steady rate by downstream logic.
 
 | REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
 |----------|------------|-----------------|--------------------------------------------------------|
@@ -17,61 +23,62 @@ See LICENSE file in the project root for full license information
 
 */
 
-// @foez-bhai, add comments to the parameters, ports
 module adn_common_fifo #(
-    parameter int DATA_WIDTH = 8,
-    parameter int FIFO_SIZE  = 2,
-    parameter bit PIPELINED  = 1
+    parameter int DATA_WIDTH = 8,   // Width of the data bus in bits
+    parameter int FIFO_SIZE  = 2,   // Log2 of the FIFO depth
+    parameter bit PIPELINED  = 1    // Enable pipelined mode for higher throughput
 ) (
-    input logic arst_ni,
-    input logic clk_i,
+    input logic arst_ni,            // Asynchronous reset, active low
+    input logic clk_i,              // System clock
 
-    input  logic [DATA_WIDTH-1:0] data_in_i,
-    input  logic                  data_in_valid_i,
-    output logic                  data_in_ready_o,
+    input  logic [DATA_WIDTH-1:0] data_in_i,       // Input data bus
+    input  logic                  data_in_valid_i, // Input data valid signal
+    output logic                  data_in_ready_o, // Input ready signal (backpressure)
 
-    output logic [DATA_WIDTH-1:0] data_out_o,
-    output logic                  data_out_valid_o,
-    input  logic                  data_out_ready_i,
+    output logic [DATA_WIDTH-1:0] data_out_o,       // Output data bus
+    output logic                  data_out_valid_o, // Output data valid signal
+    input  logic                  data_out_ready_i, // Output ready signal from consumer
 
-    output logic [(2**FIFO_SIZE):0] count_o
+    output logic [(2**FIFO_SIZE):0] count_o         // Current number of elements in FIFO
 );
-
-  // @foez-bhai, add comments to the functional blocks, signals, and submodules
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // LOCALPARAMS GENERATED
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  localparam int FIFO_DEPTH = 2 ** FIFO_SIZE;
+  localparam int FIFO_DEPTH = 2 ** FIFO_SIZE; // Calculated maximum capacity of the FIFO
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // SIGNALS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  logic [(2**FIFO_SIZE):0] wr_ptr;
-  logic [(2**FIFO_SIZE):0] rd_ptr;
+  logic [(2**FIFO_SIZE):0] wr_ptr; // Write pointer tracking the head of the queue
+  logic [(2**FIFO_SIZE):0] rd_ptr; // Read pointer tracking the tail of the queue
 
-  logic in_hs;
-  logic out_hs;
+  logic in_hs;  // Handshake signal for input interface
+  logic out_hs; // Handshake signal for output interface
 
-  logic full;
-  logic empty;
+  logic full;  // Status flag: FIFO is at maximum capacity
+  logic empty; // Status flag: FIFO contains no data
 
-  logic [DATA_WIDTH-1:0] mem_out;
+  logic [DATA_WIDTH-1:0] mem_out; // Data read from the internal RAM
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // ASSIGNMENTS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
+  // Handshake logic: high when both valid and ready are asserted
   always_comb in_hs = data_in_valid_i & data_in_ready_o;
   always_comb out_hs = data_out_valid_o & data_out_ready_i;
 
+  // Status flag generation based on current count
   always_comb full = (count_o == FIFO_DEPTH);
   always_comb empty = (count_o == 0);
 
+  // Backpressure logic: ready is low when full, unless consumer is ready to accept
   always_comb data_in_ready_o = full ? data_out_ready_i : 1'b1;
 
+  // Output selection logic based on pipeline configuration
   if (PIPELINED) begin
     always_comb data_out_o = mem_out;
     always_comb data_out_valid_o = ~empty;
@@ -80,12 +87,14 @@ module adn_common_fifo #(
     always_comb data_out_valid_o = empty ? data_in_valid_i : '1;
   end
 
+  // Calculate current occupancy
   always_comb count_o = wr_ptr - rd_ptr;
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // SUBMODULES
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
+  // Dual-port RAM instance for data storage
   adn_common_dual_port_ram #(
       .DATA_WIDTH(DATA_WIDTH),
       .ADDR_WIDTH(FIFO_SIZE)
@@ -102,6 +111,7 @@ module adn_common_fifo #(
   // SEQUENTIALS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
+  // Pointer update logic with asynchronous reset
   always_ff @(posedge clk_i or negedge arst_ni) begin
     if (~arst_ni) begin
       wr_ptr <= '0;
