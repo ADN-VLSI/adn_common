@@ -86,8 +86,8 @@ module adn_common_address_decoder_tb;
     end
   endtask
 
-  task exp_gen(input logic [ADDR_WIDTH-1:0] addr_i,
-               output logic [SLAVE_ID_WIDTH-1:0] expected_index, output logic expected_found);
+  task exp_gen(input logic [ADDR_WIDTH-1:0] addr_i, output logic [SLAVE_ID_WIDTH-1:0] expected_index,
+               output logic expected_found);
     begin
       for (int i = 0; i < NUM_RULES; i++) begin
         if (addr_i >= min_addr_i[i] && addr_i < max_addr_i[i]) begin
