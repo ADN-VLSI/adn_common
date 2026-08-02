@@ -63,7 +63,7 @@ module adn_common_dual_port_ram #(
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
   // Synchronous Write Channel (wr_clk_i Domain): Handles data storage into the memory array
-  always_ff @(posedge clk_i) begin
+  always_ff @(posedge clk_i or negedge arst_ni) begin
     if (~arst_ni) begin
       mem_core[wr_addr_i] <= '0;
     end else if (wr_en_i) begin
