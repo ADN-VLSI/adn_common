@@ -16,7 +16,7 @@
 |Name|Direction|Type|Dimension|Description|
 |-|-|-|-|-|
 |clk_i|input|logic|| System clock signal|
-|arst_ni|input|logic|| Active-low synchronous reset signal|
+|rst_ni|input|logic|| Active-low synchronous reset signal|
 |enable_i|input|logic|| Enable signal to trigger the rotation of the bit|
 |data_o|output|logic [DATA_WIDTH-1:0]|| One-hot encoded vector representing the current state|
 ## Description
