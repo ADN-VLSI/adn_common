@@ -14,7 +14,6 @@ ${ADN_COMMON}/source/adn_common_hs_counter.sv
 ${ADN_COMMON}/source/adn_common_jk_ff.sv
 ${ADN_COMMON}/source/adn_common_pipeline.sv
 ${ADN_COMMON}/source/adn_common_priority_encoder.sv
-${ADN_COMMON}/source/adn_common_priority_selector.sv
 ${ADN_COMMON}/source/adn_common_ring_counter.sv
 ${ADN_COMMON}/source/adn_common_rotating_xbar.sv
 ${ADN_COMMON}/source/adn_common_round_robin_arbiter.sv

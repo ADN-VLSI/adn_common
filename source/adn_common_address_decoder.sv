@@ -41,6 +41,8 @@ module adn_common_address_decoder #(
   //////////////////////////////////////////////////////////////////////////////////////////////////
     // One-hot encoded vector indicating which address range the input address matches
     logic [NUM_RULES-1:0] match;
+    // One-hot encoded grant vector from the fixed priority arbiter
+    logic [NUM_RULES-1:0] gnt;
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // SUBMODULES
@@ -64,16 +66,31 @@ module adn_common_address_decoder #(
     end
   endgenerate
 
-  // Priority selector to resolve multiple matches and output the highest priority slave ID
-  adn_common_priority_selector #(
-      .NUM_RULES         (NUM_RULES),
-      .SLAVE_ID_WIDTH    (SLAVE_ID_WIDTH)
+ adn_common_fixed_priority_arbiter #(
+      .NUM_REQ             (NUM_RULES),
+      .HIGH_INDEX_PRIORITY (0)
   )
-  u_priority_selector
+  u_fixed_priority_arbiter
   (
-      .match_i           (match),
-      .slave_id_i        (slave_id_i),
-      .slave_index_o     (slave_index_o),
-      .addr_found_o      (addr_found_o)
+      .req_i               (match),
+      .allow_req_i         (1'b1),
+      .gnt_o               (gnt)
   );
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+  // ASSIGNMENTS
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+ 
+  // A match was found if the arbiter granted any request
+  always_comb addr_found_o = |gnt;
+ 
+  // Mux the slave_id_i array using the one-hot gnt vector to get the granted slave ID
+  always_comb begin
+    slave_index_o = '0;
+    for (int i = 0; i < NUM_RULES; i = i + 1) begin
+      if (gnt[i]) begin
+        slave_index_o = slave_id_i[i];
+      end
+    end
+  end
 endmodule
