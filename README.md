@@ -16,7 +16,6 @@
 [`adn_common_jk_ff`](document/source/adn_common_jk_ff.md)
 [`adn_common_pipeline`](document/source/adn_common_pipeline.md)
 [`adn_common_priority_encoder`](document/source/adn_common_priority_encoder.md)
-[`adn_common_priority_selector`](document/source/adn_common_priority_selector.md)
 [`adn_common_ring_counter`](document/source/adn_common_ring_counter.md)
 [`adn_common_rotating_xbar`](document/source/adn_common_rotating_xbar.md)
 [`adn_common_round_robin_arbiter`](document/source/adn_common_round_robin_arbiter.md)
