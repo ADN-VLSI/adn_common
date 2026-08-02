@@ -53,8 +53,6 @@ module adn_common_edge_detect #(
       // Reset state: Clear history and output pulse.
       signal_prev  <= 1'b0;
       edge_pulse_o <= 1'b0;
-      signal_prev  <= 1'b0;
-      edge_pulse_o <= 1'b0;
     end else begin
       // Edge detection logic: Compare current input with previous state based on mode.
       case (EDGE_TYPE)
