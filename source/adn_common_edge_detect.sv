@@ -16,6 +16,8 @@ Connect the system clock (`clk_i`), active-low reset (`arst_ni`), and the target
 | 0.1      | 2026-07-27 | Md. Sakib Hasan Shawon | Initial version                                        |
 | 1.0      | 2026-07-28 | Md. Sakib Hasan Shawon | Stable release                                         |
 | 1.1      | 2026-08-01 | Foez Ahmed             | Ratified                                               |
+| 1.2      | 2026-08-01 | Foez Ahmed             | Cycle fix                                              |
+| 1.3      | 2026-08-01 | Foez Ahmed             | Ratified                                               |
 
 Author : Md. Sakib Hasan Shawon (mdsakibhasanshawon20@gmail.com)
 This file is part of ADN-VLSI/adn_common
@@ -51,31 +53,32 @@ module adn_common_edge_detect #(
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
   // Main sequential block: Synchronous logic to detect transitions and update state.
-  always_ff @(posedge clk_i) begin
+  always_ff @(posedge clk_i or negedge arst_ni) begin
     if (!arst_ni) begin
       // Reset state: Clear history and output pulse.
-      signal_prev  <= 1'b0;
-      edge_pulse_o <= 1'b0;
+      signal_prev <= 1'b0;
     end else begin
-      // Edge detection logic: Compare current input with previous state based on mode.
-      case (EDGE_TYPE)
-        // Falling edge detection:
-        // Current signal is low and previous signal was high.
-        0: edge_pulse_o <= signal_prev & ~signal_i;
-        // Rising edge detection:
-        // Current signal is high and previous signal was low.
-        1: edge_pulse_o <= ~signal_prev & signal_i;
-        // Both edge detection:
-        // Current signal differs from previous sampled value.
-        2: edge_pulse_o <= signal_prev ^ signal_i;
-        // Invalid configuration handling.
-        // Keep output deasserted for unsupported values.
-        default: edge_pulse_o <= 1'b0;
-      endcase
-
       // Update stored input history for the next clock cycle.
       signal_prev <= signal_i;
     end
+  end
+
+  always_comb begin
+    // Edge detection logic: Compare current input with previous state based on mode.
+    case (EDGE_TYPE)
+      // Falling edge detection:
+      // Current signal is low and previous signal was high.
+      0: edge_pulse_o <= signal_prev & ~signal_i;
+      // Rising edge detection:
+      // Current signal is high and previous signal was low.
+      1: edge_pulse_o <= ~signal_prev & signal_i;
+      // Both edge detection:
+      // Current signal differs from previous sampled value.
+      2: edge_pulse_o <= signal_prev ^ signal_i;
+      // Invalid configuration handling.
+      // Keep output deasserted for unsupported values.
+      default: edge_pulse_o <= 1'b0;
+    endcase
   end
 
 
