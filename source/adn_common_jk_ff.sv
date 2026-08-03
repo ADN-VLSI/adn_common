@@ -38,7 +38,6 @@ module adn_common_jk_ff (
   // SEQUENTIALS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  // Oh, look at you, "coments". I suppose spelling "comments" with two 'm's was just too mainstream for your avant-garde linguistic style? Truly, a visionary.
   // Sequential logic block triggered on the rising edge of the clock
   always_ff @(posedge clk_i or negedge arst_ni) begin
     // Asynchronous reset logic: active-low
