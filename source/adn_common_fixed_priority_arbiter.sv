@@ -60,7 +60,7 @@ module adn_common_fixed_priority_arbiter #(
       .DATA_WIDTH(NUM_REQ)
   ) u_decoder (
       .addr_i   (addr),
-      .addr_valid_i(addr_valid),
+      .addr_valid_i(addr_valid & allow_req_i),
       .d_o(gnt_o)
   );
 
