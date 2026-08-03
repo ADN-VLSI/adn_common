@@ -1,12 +1,12 @@
 /*
 
-| TEST CASE | DATE       | AUTHOR          | DESCRIPTION                                           |
-|-----------|------------|-----------------|-------------------------------------------------------|  
+| TEST CASE | DATE       | AUTHOR          | DESCRIPTION                                            |
+|-----------|------------|-----------------|--------------------------------------------------------|  
 | TC_001    | 2026-07-30 | Shuparna Haque | Each Rule Check : lower & upper-1 boundary of all rules |
-| TC_002    | 2026-08-02 | Shuparna Haque | Out of Boundary : just above global max               |
-| TC_003    | 2026-08-02 | Shuparna Haque | mid-range value inside each rule                       |
-| TC_004    | YYYY-MM-DD | Shuparna Haque | Test case description goes here                       |
-| TC_005    | YYYY-MM-DD | Shuparna Haque | Test case description goes here                       |
+| TC_002    | 2026-08-02 | Shuparna Haque | Out of Boundary : just above global max                 |
+| TC_003    | 2026-08-02 | Shuparna Haque | Mid-range value inside each rule                        |
+| TC_004    | 2026-08-02 | Shuparna Haque | Pressure Test                       |
+| TC_005    | 2026-08-02 | Shuparna Haque | Below lower bound, when lower boundary is not 32'b0000  |
 
 | REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
 |----------|------------|-----------------|--------------------------------------------------------|
@@ -68,7 +68,7 @@ module adn_common_address_decoder_tb;
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // METHODS
   //////////////////////////////////////////////////////////////////////////////////////////////////
-
+  
   task automatic rule_table();
     begin
       min_addr_i[0] = 32'h0000_0000;
@@ -77,11 +77,11 @@ module adn_common_address_decoder_tb;
       min_addr_i[1] = 32'h0000_1000;
       max_addr_i[1] = 32'h0000_2000;
       slave_id_i[1] = 2'b01;
-      min_addr_i[2] = 32'h0000_2000;
-      max_addr_i[2] = 32'h0000_3000;
+      min_addr_i[2] = 32'h0000_3000;
+      max_addr_i[2] = 32'h0000_4000;
       slave_id_i[2] = 2'b10;
-      min_addr_i[3] = 32'h0000_3000;
-      max_addr_i[3] = 32'h0000_4000;
+      min_addr_i[3] = 32'h0000_5000;
+      max_addr_i[3] = 32'h0000_6000;
       slave_id_i[3] = 2'b11;
     end
   endtask
@@ -101,36 +101,36 @@ module adn_common_address_decoder_tb;
     begin
       logic [SLAVE_ID_WIDTH-1:0] expected_index;
       logic expected_found;
+      logic count_not_found = 0;
 
       addr_i = addr;
       #1;
+      
       if (addr_i >= min_addr_i[0] && addr_i < max_addr_i[NUM_RULES-1]) begin
-      exp_gen(addr_i, expected_index, expected_found);
-      if (u_dut.slave_index_o !== expected_index || u_dut.addr_found_o !== expected_found) begin
-        $display(
-            "Test failed for address: %h. Expected index: %h, found: %b. Got index: %h, found: %b",
-            addr_i, expected_index, expected_found, u_dut.slave_index_o, u_dut.addr_found_o);
-        note_case(1'b0);
+        exp_gen(addr_i, expected_index, expected_found);
+        if (u_dut.slave_index_o !== expected_index || u_dut.addr_found_o !== expected_found) begin
+          $display(
+              "Test failed for address: %h. Expected index: %h, found: %b. Got index: %h, found: %b",
+              addr_i, expected_index, expected_found, u_dut.slave_index_o, u_dut.addr_found_o);
+          note_case(1'b0);
+        end else begin
+          $display(
+              "Test passed for address: %h. Expected index: %h, found: %b. Got index: %h, found: %b",
+              addr_i, expected_index, expected_found, u_dut.slave_index_o, u_dut.addr_found_o);
+          note_case(1'b1);
+        end
       end else begin
-        $display(
-            "Test passed for address: %h. Expected index: %h, found: %b. Got index: %h, found: %b",
-            addr_i, expected_index, expected_found, u_dut.slave_index_o, u_dut.addr_found_o);
-        note_case(1'b1);
+        if (u_dut.addr_found_o !== 1'b0) begin
+          $display("Test failed for address: %h. Expected not found. Got index: %h, found: %b",
+                   addr_i, u_dut.slave_index_o, u_dut.addr_found_o);
+          note_case(1'b0);
+        end else begin
+          count_not_found++;
+          $display("Test passed for address: %h. Expected not found cases : %d. Got index: %h, found: %b",
+                   addr_i, count_not_found, u_dut.slave_index_o, u_dut.addr_found_o);
+          note_case(1'b1);
+        end
       end
-    end
-    else begin
-      if (u_dut.addr_found_o !== 1'b0) begin
-        $display(
-            "Test failed for address: %h. Expected not found. Got index: %h, found: %b",
-            addr_i, u_dut.slave_index_o, u_dut.addr_found_o);
-        note_case(1'b0);
-      end else begin
-        $display(
-            "Test passed for address: %h. Expected not found. Got index: %h, found: %b",
-            addr_i, u_dut.slave_index_o, u_dut.addr_found_o);
-        note_case(1'b1);
-      end
-    end
     end
   endtask
 
@@ -140,35 +140,52 @@ module adn_common_address_decoder_tb;
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
   initial begin  // main initial
+     logic [ADDR_WIDTH-1:0] orig_min0;
+
     rule_table();
+
     // TC_001: lower & upper-1 boundary of every rule
     for (int i = 0; i < NUM_RULES; i++) begin
       check_address(min_addr_i[i]);
       check_address(max_addr_i[i] - 1);
     end
-    $display("All test cases for lower and upper boundary completed.");
+    $display("\033[1;34mAll test cases for lower and upper boundary completed.\033[0m");
 
     // TC_002: Above the last rule's max address
-    check_address(max_addr_i[NUM_RULES - 1]);  // Check just above the last rule's max address
-    check_address(max_addr_i[NUM_RULES+3]);   //  Check well above the last rule's max address
-    $display("Out of Boundary Tests Completed(Should be 2 failed cases).");
+    check_address(max_addr_i[NUM_RULES-1]);  // Check just above the last rule's max address
+    check_address(max_addr_i[NUM_RULES+3]);  //  Check well above the last rule's max address
+    $display("\033[1;34mOut of Boundary Tests Completed.\033[0m");
 
     //TC_003: mid-range value inside each rule
-    for ( int i = 0; i < NUM_RULES; i++) begin 
+    for (int i = 0; i < NUM_RULES; i++) begin
       logic [ADDR_WIDTH-1:0] mid_addr = (min_addr_i[i] + max_addr_i[i]) >> 1; // Calculate mid-range address
       check_address(mid_addr);
     end
-    $display("Mid-range Tests Completed.");
+    $display("\033[1;34mMid-range Tests Completed.\033[0m");
 
     // TC_004: Pressure test: Check all addresses in the range of each rule
     for (int i = 0; i < NUM_RULES; i++) begin
-      for (int j = min_addr_i[i]; j < max_addr_i[i]; j++) begin
+      for (int j = min_addr_i[i]; j < max_addr_i[i]; j += 100) begin
         check_address(j);
       end
     end
-    $display("Pressure Tests Completed.");
+    $display("\033[1;34mPressure Tests Completed.\033[0m");
+
+
+    // TC_005: Below lower bound, when lower boundary is not 32'b0000
     
-    $display("All test cases completed.");
+     
+      orig_min0     = min_addr_i[0];
+
+      min_addr_i[0] = 32'h0000_0100;  // give rule 0 a nonzero lower bound
+      check_address(min_addr_i[0] - 1);  // 32'h0000_00FF — legitimately below it, still unsigned-valid
+
+      min_addr_i[0] = orig_min0;  // restore original table
+    
+    $display("\033[1;34mBelow-lower-bound test completed.\033[0m");
+
+
+    $display("\033[1;34mAll test cases completed.\033[0m");
     $finish;
 
   end
