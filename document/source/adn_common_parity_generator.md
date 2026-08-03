@@ -14,7 +14,7 @@
 |Name|Direction|Type|Dimension|Description|
 |-|-|-|-|-|
 |data_i|input|logic [ DATA_WIDTH-1:0]||Input data to calculate parity for|
-|parity_valid_bits_i|input|logic [clog2(DATA_WIDTH)-1:0]||Number of bits to consider for parity|
+|parity_valid_bits_i|input|logic [$clog2(DATA_WIDTH)-1:0]||Number of bits to consider for parity|
 |parity_type_i|input|logic||1 for even parity, 0 for odd parity|
 |parity_o|output|logic||Calculated parity bit|
 ## Description
