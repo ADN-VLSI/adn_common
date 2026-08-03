@@ -12,6 +12,7 @@ This Repo is a collection of common modules used in ADN designs. The modules are
 [`adn_common_rotating_xbar`](document/source/adn_common_rotating_xbar.md)
 [`adn_common_fifo`](document/source/adn_common_fifo.md)
 [`adn_common_ring_counter`](document/source/adn_common_ring_counter.md)
+[`adn_common_parity_generator`](document/source/adn_common_parity_generator.md)
 [`adn_common_round_robin_arbiter`](document/source/adn_common_round_robin_arbiter.md)
 [`adn_common_address_decoder`](document/source/adn_common_address_decoder.md)
 [`adn_common_hs_combiner`](document/source/adn_common_hs_combiner.md)
