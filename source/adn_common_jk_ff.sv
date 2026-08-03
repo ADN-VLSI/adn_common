@@ -38,24 +38,40 @@ module adn_common_jk_ff (
   // SEQUENTIALS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
+  // foez-bhai, add coments
   // Sequential logic block triggered on the rising edge of the clock
   always_ff @(posedge clk_i or negedge arst_ni) begin
     // Asynchronous reset logic: active-low
     if (~arst_ni) begin
-      q_o <= '0; // Reset output to 0 on asynchronous reset
+      q_o  <= '0;
+      q_no <= '1;
     end else begin
-      // JK Flip-Flop truth table implementation
       case ({
         j_i, k_i
       })
-        'b01: q_o <= '0;      // Reset state
-        'b10: q_o <= '1;      // Set state
-        'b11: q_o <= q_no;    // Toggle state
-        default: q_o <= q_o;  // Hold state
+
+        'b01: begin
+          q_o  <= '0;
+          q_no <= '1;
+        end
+
+        'b10: begin
+          q_o  <= '1;
+          q_no <= '0;
+        end
+
+        'b11: begin
+          q_o  <= q_no;
+          q_no <= q_o;
+        end
+
+        default: begin
+          q_o  <= q_o;
+          q_no <= q_no;
+        end
+
       endcase
     end
   end
-
-  assign q_no = ~q_o;  // Ensure complementary output is always the inverse of q_o
 
 endmodule
