@@ -1,8 +1,8 @@
 /*
 
-@foez---bhai, write the purpose of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+@foez-bhai, write the purpose of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
 
-@foez---bhai, describe the use case of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+@foez-bhai, describe the use case of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
 
 | REVISION | DATE       | AUTHOR              | DESCRIPTION                                        |
 |----------|------------|---------------------|----------------------------------------------------|
@@ -17,7 +17,7 @@ See LICENSE file in the project root for full license information
 
 */
 
-// @foez---bhai, add comments to the parameters, ports
+// @foez-bhai, add comments to the parameters, ports
 module adn_common_parity_generator #(
     parameter int DATA_WIDTH = 8
 ) (
@@ -27,7 +27,7 @@ module adn_common_parity_generator #(
     output logic                         parity_o
 );
 
-  // @foez---bhai, add comments to the functional blocks, signals, and submodules
+  // @foez-bhai, add comments to the functional blocks, signals, and submodules
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // SIGNALS
@@ -51,33 +51,6 @@ module adn_common_parity_generator #(
   assign even_parity = ^masked_data;
   assign parity_o = parity_type_i ? even_parity : ~even_parity;
 
-  //////////////////////////////////////////////////////////////////////////////////////////////////
-  // SUBMODULES
-  //////////////////////////////////////////////////////////////////////////////////////////////////
-
-  //////////////////////////////////////////////////////////////////////////////////////////////////
-  // SEQUENTIALS
-  //////////////////////////////////////////////////////////////////////////////////////////////////
-
-  //////////////////////////////////////////////////////////////////////////////////////////////////
-  // INITIAL CHECKS
-  //////////////////////////////////////////////////////////////////////////////////////////////////
-
-  //////////////////////////////////////////////////////////////////////////////////////////////////
-  // METHODS
-  //////////////////////////////////////////////////////////////////////////////////////////////////
-
-  //////////////////////////////////////////////////////////////////////////////////////////////////
-  // ASSERTIONS
-  //////////////////////////////////////////////////////////////////////////////////////////////////
-
-`ifdef SIMULATION
-  initial begin
-    if (DATA_WIDTH > 2) begin
-      $display("\033[1;33m%m DATA_WIDTH\033[0m");
-    end
-  end
-`endif  // SIMULATION
-
 endmodule
+
 
