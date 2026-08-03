@@ -10,45 +10,39 @@
 ## Parameters
 |Name|Type|Dimension|Default Value|Description|
 |-|-|-|-|-|
-|DATA_WIDTH|int||32| Width of the data bus|
-|ADDR_WIDTH|int||8| Address width|
-|SYNC_STAGES|int||2| Number of synchronization stages|
-|ALMOST_FULL_THRESH|int||(1 << ADDR_WIDTH) - 2| Threshold for almost_full_o flag|
-|ALMOST_EMPTY_THRESH|int||2| Threshold for almost_empty_o flag|
+|DATA_WIDTH|int||8|Width of the data bus|
+|FIFO_SIZE|int||2|Log2 of the FIFO depth|
+|SYNC_STAGES|int||2|Number of synchronization stages|
 
 ## Ports
 |Name|Direction|Type|Dimension|Description|
 |-|-|-|-|-|
-|wr_clk_i|input|logic||Write domain clock|
-|wr_rst_n_i|input|logic||Active-low asynchronous reset for write domain|
-|wr_en_i|input|logic||Write enable signal|
-|wr_data_i|input|logic [DATA_WIDTH-1:0]||Data input bus|
-|full_o|output|logic||FIFO full flag|
-|almost_full_o|output|logic||FIFO almost full flag|
-|wr_count_o|output|logic [ ADDR_WIDTH:0]||Write domain occupancy count|
-|rd_clk_i|input|logic||Read domain clock|
-|rd_rst_n_i|input|logic||Active-low asynchronous reset for read domain|
-|rd_en_i|input|logic||Read enable signal|
-|rd_data_o|output|logic [DATA_WIDTH-1:0]||Data output bus|
-|empty_o|output|logic||FIFO empty flag|
-|almost_empty_o|output|logic||FIFO almost empty flag|
-|rd_count_o|output|logic [ ADDR_WIDTH:0]||Read domain occupancy count|
+|data_in_i|input|logic [DATA_WIDTH-1:0]|| Data input bus|
+|data_in_valid_i|input|logic|| Valid signal for input data|
+|data_in_ready_o|output|logic|| Ready signal for input data|
+|data_in_arst_ni|input|logic|| Asynchronous reset, active low (input domain)|
+|data_in_clk_i|input|logic [DATA_WIDTH-1:0]|| Clock signal for the input domain|
+|data_in_count_o|output|logic [ FIFO_SIZE:0]|| Current occupancy count (input domain)|
+|data_out_o|output|logic [DATA_WIDTH-1:0]|| Data output bus|
+|data_out_valid_o|output|logic|| Valid signal for output data|
+|data_out_ready_i|input|logic|| Ready signal for output data|
+|data_out_arst_ni|input|logic|| Asynchronous reset, active low (output domain)|
+|data_out_clk_i|output|logic [DATA_WIDTH-1:0]|| Clock signal for the output domain|
+|data_out_count_o|output|logic [ FIFO_SIZE:0]|| Current occupancy count (output domain)|
 ## Description
 
 
 ### Purpose
-The `adn_common_cdc_fifo` module implements a high-performance, asynchronous First-In-First-Out (FIFO) buffer designed for reliable data transfer between two independent clock domains. It utilizes Gray-coded pointers and multi-stage synchronizers to mitigate metastability issues, ensuring robust data integrity during Clock Domain Crossing (CDC). The module provides full, empty, and programmable almost-full/almost-empty status flags, along with occupancy counters to facilitate flow control in complex digital systems.
+This module implements a Clock Domain Crossing (CDC) FIFO, designed to safely transfer data between two independent clock domains using Gray-coded pointers and multi-stage synchronizers to prevent metastability.
 
 ### Use Case
-This module is intended for scenarios where data must be passed between two modules operating on different clock frequencies or phases. Common use cases include:
-- **Data Buffering:** Smoothing out bursts of data between a high-speed producer and a low-speed consumer.
-- **Clock Domain Crossing (CDC):** Safely transferring control signals or data packets across asynchronous boundaries in SoC designs.
-- **Flow Control:** Utilizing the `almost_full` and `almost_empty` flags to throttle upstream data producers or trigger downstream processing, preventing buffer overflow or underflow.
+The `adn_common_cdc_fifo` is primarily used in digital systems where data must be passed between modules operating on different, asynchronous clock frequencies. By utilizing Gray-coded pointers, it ensures that only one bit changes at a time during pointer synchronization, effectively mitigating the risk of metastability that typically occurs when sampling signals across clock boundaries. It is ideal for streaming data interfaces, buffer management in high-speed communication protocols, and decoupling producer-consumer throughput variations.
 
 | REVISION | DATE       | AUTHOR              | DESCRIPTION                                        |
 |----------|------------|---------------------|----------------------------------------------------|
 | 0.1      | 2026-07-27 | Ahasan Ullah Khalid | Initial version                                    |
 | 1.0      | 2026-07-29 | Ahasan Ullah Khalid | Stable release                                     |
+| 1.1      | 2026-08-02 | Foez Ahmed          | Ratified                                           |
 
 This file is part of ADN-VLSI/adn_common
 <br>**Copyright (c) 2026 ADN Semiconductors**

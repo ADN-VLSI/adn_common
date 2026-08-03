@@ -17,6 +17,7 @@
 |-|-|-|-|-|
 |clk_i|input|logic||Destination clock domain|
 |arst_ni|input|logic||Active-low asynchronous reset|
+|en_i|input|logic||Enable signal for synchronization stages|
 |data_i|input|logic [WIDTH-1:0]||Asynchronous input data|
 |data_o|output|logic [WIDTH-1:0]||Synchronized output data|
 ## Description
