@@ -27,10 +27,11 @@ module adn_common_jk_ff (
     input logic arst_ni,  // Active-low asynchronous reset
     input logic clk_i,    // Clock input
 
-    input logic j_i,      // J input (Set control)
-    input logic k_i,      // K input (Reset control)
+    input logic j_i,  // J input (Set control)
+    input logic k_i,  // K input (Reset control)
 
-    output logic q_o      // Output state
+    output logic q_o,  // Output state
+    output logic q_no  // Complementary output state
 );
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -40,21 +41,21 @@ module adn_common_jk_ff (
   // Sequential logic block triggered on the rising edge of the clock
   always_ff @(posedge clk_i or negedge arst_ni) begin
     // Asynchronous reset logic: active-low
-    if (!arst_ni) begin
-      q_o <= 1'b0;
-    // Set condition: J=1, K=0
-    end else if (j_i == 1'b1 && k_i == 1'b0) begin
-      q_o <= 1'b1;
-    // Reset condition: J=0, K=1
-    end else if (j_i == 1'b0 && k_i == 1'b1) begin
-      q_o <= 1'b0;
-    // Toggle condition: J=1, K=1
-    end else if (j_i == 1'b1 && k_i == 1'b1) begin
-      q_o <= ~q_o;
-    // Hold condition: J=0, K=0
+    if (~arst_ni) begin
+      q_o <= '0; // Reset output to 0 on asynchronous reset
     end else begin
-      q_o <= q_o;
+      // JK Flip-Flop truth table implementation
+      case ({
+        j_i, k_i
+      })
+        'b01: q_o <= '0;      // Reset state
+        'b10: q_o <= '1;      // Set state
+        'b11: q_o <= q_no;    // Toggle state
+        default: q_o <= q_o;  // Hold state
+      endcase
     end
   end
+
+  assign q_no = ~q_o;  // Ensure complementary output is always the inverse of q_o
 
 endmodule
