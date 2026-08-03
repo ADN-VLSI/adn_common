@@ -157,8 +157,9 @@ module adn_common_address_decoder_tb;
     $display("\033[1;34mOut of Boundary Tests Completed.\033[0m");
 
     //TC_003: mid-range value inside each rule
-    for (int i = 0; i < NUM_RULES; i++) begin
-      logic [ADDR_WIDTH-1:0] mid_addr = (min_addr_i[i] + max_addr_i[i]) >> 1; // Calculate mid-range address
+    for ( int i = 0; i < NUM_RULES; i++) begin 
+      automatic logic [ADDR_WIDTH-1:0] mid_addr;
+      mid_addr = (min_addr_i[i] + max_addr_i[i]) >> 1; // Calculate mid-range address
       check_address(mid_addr);
     end
     $display("\033[1;34mMid-range Tests Completed.\033[0m");
