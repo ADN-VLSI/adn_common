@@ -8,21 +8,23 @@
 ## Parameters
 |Name|Type|Dimension|Default Value|Description|
 |-|-|-|-|-|
-|DATA_WIDTH|int||8||
+|DATA_WIDTH|int||8|Width of the input data vector|
 
 ## Ports
 |Name|Direction|Type|Dimension|Description|
 |-|-|-|-|-|
-|data_i|input|logic [ DATA_WIDTH-1:0]|||
-|parity_valid_bits_i|input|logic [clog2(DATA_WIDTH)-1:0]|||
-|parity_type_i|input|logic|||
-|parity_o|output|logic|||
+|data_i|input|logic [ DATA_WIDTH-1:0]||Input data to calculate parity for|
+|parity_valid_bits_i|input|logic [clog2(DATA_WIDTH)-1:0]||Number of bits to consider for parity|
+|parity_type_i|input|logic||1 for even parity, 0 for odd parity|
+|parity_o|output|logic||Calculated parity bit|
 ## Description
 
 
-@foez---bhai, write the purpose of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+### Purpose
+This module generates a parity bit for a given input data vector. It supports configurable data widths and allows for dynamic selection between even and odd parity modes based on a specified number of valid bits.
 
-@foez---bhai, describe the use case of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+### Use Case
+This module is primarily used in communication interfaces and memory controllers where data integrity verification is required. By allowing dynamic selection of the number of valid bits and parity type (even/odd), it provides a flexible solution for error detection in systems handling variable-length data packets or protocols requiring specific parity schemes.
 
 | REVISION | DATE       | AUTHOR              | DESCRIPTION                                        |
 |----------|------------|---------------------|----------------------------------------------------|
