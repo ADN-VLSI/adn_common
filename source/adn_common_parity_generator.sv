@@ -49,7 +49,7 @@ module adn_common_parity_generator #(
   end
   assign masked_data = data_i & mask;
   assign even_parity = ^masked_data;
-  assign parity_o = parity_type_i ? even_parity : ~even_parity;
+  assign parity_o    = parity_type_i ? ~even_parity : even_parity;
 
 endmodule
 
