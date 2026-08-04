@@ -1,8 +1,14 @@
 /*
 
-@foez-bhai, write the purpose of this file in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+# Purpose
+This file provides a collection of SystemVerilog macros designed to standardize the generation of packed structures for the PMI (Processor Memory Interface). By using these macros, developers can consistently define request and response interfaces with configurable address and data widths, ensuring architectural uniformity across the ADN-VLSI/adn_common project.
 
-@foez-bhai, describe the use case of this file in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+# Use Case
+This file serves as a centralized library for generating standardized SystemVerilog packed structures. It is primarily used to:
+- Ensure architectural consistency across the PMI (Processor Memory Interface) by enforcing a uniform signal layout.
+- Reduce boilerplate code when defining request and response interfaces.
+- Provide flexibility through configurable parameters for address (`__AW__`) and data (`__DW__`) widths.
+- Facilitate rapid integration of master-slave communication channels in the `ADN-VLSI/adn_common` project.
 
 | REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
 |----------|------------|-----------------|--------------------------------------------------------|
