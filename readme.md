@@ -28,6 +28,11 @@ This Repo is a collection of common modules used in ADN designs. The modules are
 [`adn_common_xbar`](document/source/adn_common_xbar.md)
 
 ## INTERFACE
+[`dummy_interface`](document/interface/dummy_interface.md)
 
 ## INCLUDE
+[`adn_common_synth_directives.svh`](document/include/adn_common_synth_directives.md)
+[`pmi/assign.svh`](document/include/pmi/assign.md)
+[`pmi/typedef.svh`](document/include/pmi/typedef.md)
+[`vip/adn_common_tb_headers.sv`](document/include/vip/adn_common_tb_headers.md)
 
