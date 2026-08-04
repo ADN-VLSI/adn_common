@@ -4,7 +4,7 @@ This Repo is a collection of common modules used in ADN designs. The modules are
 
 # The Reusable Modules are:
 
-## RTL
+## DESIGN SOURCE
 [`adn_common_address_decoder`](document/source/adn_common_address_decoder.md)
 [`adn_common_address_range_compare`](document/source/adn_common_address_range_compare.md)
 [`adn_common_bin_to_gray`](document/source/adn_common_bin_to_gray.md)
@@ -26,4 +26,8 @@ This Repo is a collection of common modules used in ADN designs. The modules are
 [`adn_common_round_robin_arbiter`](document/source/adn_common_round_robin_arbiter.md)
 [`adn_common_synchronizer`](document/source/adn_common_synchronizer.md)
 [`adn_common_xbar`](document/source/adn_common_xbar.md)
+
+## INTERFACE
+
+## INCLUDE
 
