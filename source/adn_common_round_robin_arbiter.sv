@@ -51,12 +51,18 @@ module adn_common_round_robin_arbiter #(
   // SIGNALS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
+  // Last granted request index
   logic [$clog2(NUM_REQ)-1:0] last_gnt;
+  // Next potential grant index based on rotation
   logic [$clog2(NUM_REQ)-1:0] next_gnt;
-  logic [NUM_REQ-1:0] fpa_in;
-  logic [NUM_REQ-1:0] fpa_out;
+  // Rotated input request bus
+  logic [NUM_REQ-1:0]         fpa_in;
+  // Encoded output from priority encoder
+  logic [NUM_REQ-1:0]         fpa_out;
+  // Priority encoder grant address
   logic [$clog2(NUM_REQ)-1:0] fpa_gnt_addr;
-  logic [NUM_REQ-1:0] fpa_gnt_addr_valid;
+  // Priority encoder valid signal
+  logic                       fpa_gnt_addr_valid;
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // ASSIGNMENTS
@@ -82,10 +88,10 @@ module adn_common_round_robin_arbiter #(
       .out_o(fpa_in)
   );
 
-  adn_common_fixed_priority_arbiter #(
+  adn_common_priority_encoder #(
       .NUM_WIRE(NUM_REQ),
       .HIGH_INDEX_PRIORITY(0)
-  ) fp_arb (
+  ) prio_enc (
       .d_i(fpa_in),
       .addr_o(fpa_gnt_addr),
       .addr_valid_o(fpa_gnt_addr_valid)

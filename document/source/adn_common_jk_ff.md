@@ -19,6 +19,7 @@
 |j_i|input|logic||J input (Set control)|
 |k_i|input|logic||Clock input|
 |q_o|output|logic||Output state|
+|q_no|output|logic||Complementary output state|
 ## Description
 
 

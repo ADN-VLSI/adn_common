@@ -1,6 +1,6 @@
 # adn_common_fifo (module)
 
-### Author : Annim (jannatannim@gmail.com)
+### Author : Annim Jannat (jannatannim@gmail.com)
 
 ## TOP IO
 <img src="./adn_common_fifo_top.svg">
@@ -8,38 +8,39 @@
 ## Parameters
 |Name|Type|Dimension|Default Value|Description|
 |-|-|-|-|-|
-|DATA_WIDTH|int||32| //////////////////////////////////////////////////////////////////////////////////////////////// PARAMETERS ////////////////////////////////////////////////////////////////////////////////////////////////|
-|DEPTH|int||16||
-|ADDR_WIDTH|int||$clog2(DEPTH)| //////////////////////////////////////////////////////////////////////////////////////////////// LOCALPARAMS ////////////////////////////////////////////////////////////////////////////////////////////////|
+|DATA_WIDTH|int||8|Width of the data bus in bits|
+|FIFO_SIZE|int||2|Log2 of the FIFO depth|
+|PIPELINED|bit||1|Enable pipelined mode for higher throughput|
 
 ## Ports
 |Name|Direction|Type|Dimension|Description|
 |-|-|-|-|-|
-|clk_i|input|logic|| //////////////////////////////////////////////////////////////////////////////////////////////// PORTS ////////////////////////////////////////////////////////////////////////////////////////////////|
-|rst_ni|input|logic|||
-|wr_en_i|input|logic|||
-|rd_en_i|input|logic|||
-|data_i|input|logic [DATA_WIDTH-1:0]|||
-|data_o|output|logic [DATA_WIDTH-1:0]|||
-|full_o|output|logic|||
-|empty_o|output|logic|||
-|valid_o|output|logic|||
+|arst_ni|input|logic||Asynchronous reset, active low|
+|clk_i|input|logic||System clock|
+|data_in_i|input|logic [DATA_WIDTH-1:0]||Input data bus|
+|data_in_valid_i|input|logic||Input data valid signal|
+|data_in_ready_o|output|logic||Input ready signal (backpressure)|
+|count_o|output|logic [FIFO_SIZE:0]||Current number of elements in FIFO|
+|data_out_o|output|logic [DATA_WIDTH-1:0]||Output data bus|
+|data_out_valid_o|output|logic||Output data valid signal|
+|data_out_ready_i|input|logic||Output ready signal from consumer|
 ## Description
 
 
 ### Purpose
-This module implements a synchronous First-In-First-Out (FIFO) buffer designed for data flow control between clock domains or modules. It provides a configurable data width and depth, utilizing a circular buffer architecture to manage data storage and retrieval with full/empty status flags.
+This module implements a configurable, synchronous First-In-First-Out (FIFO) buffer. It provides a flexible mechanism for data buffering between modules with different throughput requirements, supporting both pipelined and non-pipelined modes to optimize for either latency or throughput.
 
 ### Use Case
-The `adn_common_fifo` is primarily used to decouple producers and consumers that operate at different rates or require buffering to prevent data loss during bursts. Typical applications include:
-- **Data Streaming:** Buffering packets between a high-speed interface (e.g., AXI, SPI) and a processing core.
-- **Clock Domain Crossing (CDC):** Acting as a staging area for data moving between synchronous domains (when managed with appropriate synchronization logic).
-- **Flow Control:** Providing backpressure mechanisms in pipelines to ensure that data is not overwritten before it is consumed.
+This FIFO is ideal for:
+- **Backpressure Handling:** Acting as a shock absorber when a consumer module cannot keep up with a producer.
+- **Pipelined Data Paths:** Decoupling stages in a high-performance processing pipeline to prevent stalls.
+- **Burst Data Management:** Storing bursts of data to be processed at a steady rate by downstream logic.
 
 | REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
 |----------|------------|-----------------|--------------------------------------------------------|
 | 0.1      | 2026-07-27 | Annim Jannat    | Initial version                                        |
 | 1.0      | 2026-07-28 | Annim Jannat    | Stable release                                         |
+| 1.1      | 2026-08-02 | Foez Ahmed      | Ratified                                               |
 
 This file is part of ADN-VLSI/adn_common
 <br>**Copyright (c) 2026 ADN Semiconductors**

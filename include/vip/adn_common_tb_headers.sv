@@ -1,4 +1,7 @@
-initial $display("\033[7;38m################ TEST STARTED ################\033[0m");
+initial begin
+  $display("\033[7;38m################ TEST STARTED ################\033[0m");
+  $timeformat(-9, 0, "ns");
+end
 
 longint passed_cases;
 longint failed_cases;

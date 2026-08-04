@@ -20,7 +20,7 @@ ci_simulate () {
   end_time=$(date +%s)
   time_diff=$((end_time - start_time))
   # Print Done in green with elapsed time
-  echo -e "\033[1G\033[1;32mDone!\033[0m ($time_diff seconds)   \033[21G - \033[1;33mSIMULATING $1\033[0m"
+  echo -e "\033[1G\033[1;32mDone!\033[0m ($time_diff seconds)   \033[21G - \033[1;33mSIMULATING TB:$1 TN:$2 TC:$3\033[0m"
 }
 
 ################################################################################
