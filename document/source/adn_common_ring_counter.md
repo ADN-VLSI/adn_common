@@ -1,26 +1,33 @@
 # adn_common_ring_counter (module)
 
-### Author : Md. Sakib Hasan Shawon (mdsakibhasanshawon20@gmail.com)
+### Author: Md. Sakib Hasan Shawon (mdsakibhasanshawon20@gmail.com)
 
-## TOP IO
+### Source: adn_common_ring_counter.sv
+
+## Top IO
+
 <img src="./adn_common_ring_counter_top.svg">
 
 <img src="./adn_common_ring_counter_des.svg">
 
 ## Parameters
-|Name|Type|Dimension|Default Value|Description|
+
+|Name|Type|Dimension|Default|Description|
 |-|-|-|-|-|
-|DATA_WIDTH|int||4| DATA_WIDTH defines the number of bits in the ring counter|
+|DATA_WIDTH|int||4|DATA_WIDTH defines the number of bits in the ring counter|
+
 
 ## Ports
+
 |Name|Direction|Type|Dimension|Description|
 |-|-|-|-|-|
-|clk_i|input|logic|| System clock signal|
-|arst_ni|input|logic|| Active-low asynchronous reset signal|
-|enable_i|input|logic|| Enable signal to trigger the rotation of the bit|
-|data_o|output|logic [DATA_WIDTH-1:0]|| One-hot encoded vector representing the current state|
-## Description
+|clk_i|input|logic|||
+|arst_ni|input|logic|||
+|enable_i|input|logic|||
+|data_o|output|logic [DATA_WIDTH-1:0]|||
 
+
+## Description
 
 The `adn_common_ring_counter` module implements a synchronous one-hot ring counter. It rotates a single high bit through a register of a configurable width, providing a circular shift operation that is useful for state machine sequencing, token passing, or simple pulse generation.
 
@@ -41,8 +48,4 @@ The `adn_common_ring_counter` module implements a synchronous one-hot ring count
 | 1.0      | 2026-07-30 | Md. Sakib Hasan Shawon | Stable release                                  |
 | 1.1      | 2026-08-01 | Foez Ahmed             | Ratified                                        |
 
-This file is part of ADN-VLSI/adn_common
-<br>**Copyright (c) 2026 ADN Semiconductors**
-<br>**Licensed under the MIT License**
-<br>**See LICENSE file in the project root for full license information**
-
+Author : Md. Sakib Hasan Shawon (mdsakibhasanshawon20@gmail.com)

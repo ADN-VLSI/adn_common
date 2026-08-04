@@ -1,27 +1,33 @@
 # adn_common_jk_ff (module)
 
-### Author : Shuparna Haque (sheikhshuparna3108@gmail.com)
+### Author: Shuparna Haque (sheikhshuparna3108@gmail.com)
 
-## TOP IO
+### Source: adn_common_jk_ff.sv
+
+## Top IO
+
 <img src="./adn_common_jk_ff_top.svg">
 
 <img src="./adn_common_jk_ff_des.svg">
 
 ## Parameters
-|Name|Type|Dimension|Default Value|Description|
-|-|-|-|-|-|
+
+_None_
+
 
 ## Ports
+
 |Name|Direction|Type|Dimension|Description|
 |-|-|-|-|-|
 |arst_ni|input|logic||Active-low asynchronous reset|
 |clk_i|input|logic||Clock input|
 |j_i|input|logic||J input (Set control)|
-|k_i|input|logic||Clock input|
+|k_i|input|logic||K input (Reset control)|
 |q_o|output|logic||Output state|
 |q_no|output|logic||Complementary output state|
-## Description
 
+
+## Description
 
 ### Purpose
 This module implements a synchronous JK flip-flop with an active-low asynchronous reset. It provides the standard JK flip-flop functionality: holding the state, resetting to 0, setting to 1, or toggling the output based on the J and K inputs on the rising edge of the clock.
@@ -38,8 +44,4 @@ This module is primarily used in digital logic designs requiring state storage w
 | 1.0      | 2026-05-04 | Shuparna Haque  | Stable release                                         |
 | 1.1      | 2026-08-01 | Foez Ahmed      | Ratified                                               |
 
-<br>**This file is part of https://github.com/ADN-VLSI/adn_common**
-<br>**Copyright (c) 2026 ADN Semiconductors**
-<br>**Licensed under the MIT License**
-<br>**See LICENSE file in the project root for full license information**
-
+Author : Shuparna Haque (sheikhshuparna3108@gmail.com)

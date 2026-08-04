@@ -1,22 +1,29 @@
 # adn_common_gray_to_bin (module)
 
-### Author : Foez Ahmed (foez.official@gmail.com)
+### Author: Foez Ahmed (foez.official@gmail.com)
 
-## TOP IO
+### Source: adn_common_gray_to_bin.sv
+
+## Top IO
+
 <img src="./adn_common_gray_to_bin_top.svg">
 
 ## Parameters
-|Name|Type|Dimension|Default Value|Description|
+
+|Name|Type|Dimension|Default|Description|
 |-|-|-|-|-|
-|WIDTH|int||8|Width of the input and output vectors|
+|WIDTH|int||8||
+
 
 ## Ports
+
 |Name|Direction|Type|Dimension|Description|
 |-|-|-|-|-|
 |gray_i|input|logic [WIDTH-1:0]||Gray-coded input vector|
 |bin_o|output|logic [WIDTH-1:0]||Binary-coded output vector|
-## Description
 
+
+## Description
 
 ### Purpose
 This module performs a combinatorial conversion of a Gray-coded input vector to its equivalent binary representation. It is designed to be generic, supporting arbitrary bit-widths defined by the `WIDTH` parameter.
@@ -29,8 +36,4 @@ This module is primarily used in clock domain crossing (CDC) interfaces, such as
 | 1.0      | 2026-07-29 | Foez Ahmed      | Stable release                                         |
 | 1.1      | 2026-08-01 | Foez Ahmed      | Ratified                                               |
 
-This file is part of ADN-VLSI/adn_common
-<br>**Copyright (c) 2026 ADN Semiconductors**
-<br>**Licensed under the MIT License**
-<br>**See LICENSE file in the project root for full license information**
-
+Author : Foez Ahmed (foez.official@gmail.com)

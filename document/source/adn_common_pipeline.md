@@ -1,16 +1,22 @@
 # adn_common_pipeline (module)
 
-### Author : Foez Ahmed (foez.official@gmail.com)
+### Author: Foez Ahmed (foez.official@gmail.com)
 
-## TOP IO
+### Source: adn_common_pipeline.sv
+
+## Top IO
+
 <img src="./adn_common_pipeline_top.svg">
 
 ## Parameters
-|Name|Type|Dimension|Default Value|Description|
+
+|Name|Type|Dimension|Default|Description|
 |-|-|-|-|-|
 |DATA_WIDTH|int||32|Data bus width|
 
+
 ## Ports
+
 |Name|Direction|Type|Dimension|Description|
 |-|-|-|-|-|
 |arst_ni|input|logic||Active-low asynchronous reset|
@@ -21,8 +27,9 @@
 |data_out_o|output|logic [DATA_WIDTH-1:0]||Output data|
 |data_out_valid_o|output|logic||Output data valid|
 |data_out_ready_i|input|logic||Output ready (backpressure from downstream)|
-## Description
 
+
+## Description
 
 ### Purpose
 The `adn_common_pipeline` module implements a single-stage pipeline register with a standard ready/valid handshake protocol. It acts as a buffer to decouple timing paths between upstream and downstream modules, allowing for improved clock frequency by inserting a register stage in the data path while maintaining flow control.
@@ -38,8 +45,4 @@ This module is primarily used in high-speed digital designs to break long combin
 | 1.0      | 2026-07-20 | Foez Ahmed      | Stable release                                         |
 | 1.1      | 2026-08-01 | Foez Ahmed      | Ratified                                               |
 
-<br>**This file is part of https://github.com/ADN-VLSI/adn_common**
-<br>**Copyright (c) 2026 ADN Semiconductors**
-<br>**Licensed under the MIT License**
-<br>**See LICENSE file in the project root for full license information**
-
+Author : Foez Ahmed (foez.official@gmail.com)
