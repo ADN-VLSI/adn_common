@@ -4,7 +4,7 @@ This Repo is a collection of common modules used in ADN designs. The modules are
 
 # The Reusable Modules are:
 
-## DESIGN SOURCE
+## SOURCE
 [`adn_common_address_decoder`](document/source/adn_common_address_decoder.md)
 [`adn_common_address_range_compare`](document/source/adn_common_address_range_compare.md)
 [`adn_common_bin_to_gray`](document/source/adn_common_bin_to_gray.md)
@@ -39,5 +39,5 @@ This Repo is a collection of common modules used in ADN designs. The modules are
 [`vip/adn_common_tb_headers.sv`](document/include/vip/adn_common_tb_headers.md)
 
 
-# [](https://github.com/squared-studio/documenter/blob/main/README.md)
+<span style="font-size: 1.3em; font-weight: bold;"> <a href="https://github.com/squared-studio/documenter/blob/main/README.md">Coding & Commenting Guidelines</a></span>
 
