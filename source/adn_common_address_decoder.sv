@@ -20,70 +20,70 @@ See LICENSE file in the project root for full license information
 
 module adn_common_address_decoder #(
 
-    parameter int ADDR_WIDTH     = 32, // Width of the address bus
-    parameter int SLAVE_ID_WIDTH = 4,  // Width of the slave identifier
-    parameter int NUM_RULES      = 4   // Number of address ranges to decode
+    parameter int ADDR_WIDTH     = 32,  // Width of the address bus
+    parameter int SLAVE_ID_WIDTH = 4,   // Width of the slave identifier
+    parameter int NUM_RULES      = 4    // Number of address ranges to decode
 
-)(
+) (
 
-    input logic [ADDR_WIDTH-1:0]      addr_i,                     // Input address to be decoded
-    input logic [ADDR_WIDTH-1:0]      min_addr_i [0:NUM_RULES-1], // Array of minimum address boundaries
-    input logic [ADDR_WIDTH-1:0]      max_addr_i [0:NUM_RULES-1], // Array of maximum address boundaries
-    input logic [SLAVE_ID_WIDTH-1:0]  slave_id_i [0:NUM_RULES-1], // Array of slave IDs corresponding to ranges
+    // Input address to be decoded
+    input logic [    ADDR_WIDTH-1:0] addr_i,
+    // Array of minimum address boundaries
+    input logic [    ADDR_WIDTH-1:0] min_addr_i[NUM_RULES],
+    // Array of maximum address boundaries
+    input logic [    ADDR_WIDTH-1:0] max_addr_i[NUM_RULES],
+    // Array of slave IDs corresponding to ranges
+    input logic [SLAVE_ID_WIDTH-1:0] slave_id_i[NUM_RULES],
 
-    output logic [SLAVE_ID_WIDTH-1:0] slave_index_o,              // Identified slave ID
-    output logic                      addr_found_o                // Valid flag if address matches a range
+    // Identified slave ID
+    output logic [SLAVE_ID_WIDTH-1:0] slave_index_o,
+    // Valid flag if address matches a range
+    output logic                      addr_found_o
 
 );
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // SIGNALS
   //////////////////////////////////////////////////////////////////////////////////////////////////
-    // One-hot encoded vector indicating which address range the input address matches
-    logic [NUM_RULES-1:0] match;
-    // One-hot encoded grant vector from the fixed priority arbiter
-    logic [NUM_RULES-1:0] gnt;
+
+  // One-hot encoded vector indicating which address range the input address matches
+  logic [NUM_RULES-1:0] match;
+  // One-hot encoded grant vector from the fixed priority arbiter
+  logic [NUM_RULES-1:0] gnt;
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // SUBMODULES
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
   // Generate block to instantiate multiple range comparators for each defined rule
-  generate
-    for(genvar i = 0; i < NUM_RULES; i++)
-    begin : GEN_ADDRESS_COMPARE
-        // Comparator submodule to check if addr_i is within [min_addr_i, max_addr_i]
-        adn_common_address_range_compare #(
-            .ADDR_WIDTH    (ADDR_WIDTH)
-        )
-        u_address_range_compare
-        (
-            .min_addr_i    (min_addr_i[i]),
-            .max_addr_i    (max_addr_i[i]),
-            .addr_i        (addr_i),
-            .match_o       (match[i])
-        );
-    end
-  endgenerate
+  for (genvar i = 0; i < NUM_RULES; i++) begin : GEN_ADDRESS_COMPARE
+    // Comparator submodule to check if addr_i is within [min_addr_i, max_addr_i]
+    adn_common_range_checker #(
+        .WIDTH(ADDR_WIDTH)
+    ) u_address_range_compare (
+        .min_i  (min_addr_i[i]),
+        .max_i  (max_addr_i[i]),
+        .value_i(addr_i),
+        .match_o(match[i])
+    );
+  end
 
- adn_common_fixed_priority_arbiter #(
-      .NUM_REQ             (NUM_RULES),
-      .HIGH_INDEX_PRIORITY (0)
-  )
-  u_fixed_priority_arbiter
-  (
-      .req_i               (match),
-      .allow_req_i         (1'b1),
-      .gnt_o               (gnt)
+  adn_common_fixed_priority_arbiter #(
+      .NUM_REQ            (NUM_RULES),
+      .HIGH_INDEX_PRIORITY(1)
+  ) u_fixed_priority_arbiter (
+      .req_i      (match),
+      .allow_req_i(1'b1),
+      .gnt_o      (gnt)
   );
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // ASSIGNMENTS
   //////////////////////////////////////////////////////////////////////////////////////////////////
- 
+
   // A match was found if the arbiter granted any request
   always_comb addr_found_o = |gnt;
- 
+
   // Mux the slave_id_i array using the one-hot gnt vector to get the granted slave ID
   always_comb begin
     slave_index_o = '0;
@@ -93,4 +93,5 @@ module adn_common_address_decoder #(
       end
     end
   end
+
 endmodule
