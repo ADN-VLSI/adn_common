@@ -8,7 +8,6 @@ This Repo is a collection of common modules used in ADN designs. The modules are
 
 ## SOURCE
 [`adn_common_address_decoder`](document/source/adn_common_address_decoder.md)
-[`document/source/adn_common_address_range_compare.md)
 [`adn_common_bin_to_gray`](document/source/adn_common_bin_to_gray.md)
 [`adn_common_cdc_fifo`](document/source/adn_common_cdc_fifo.md)
 [`adn_common_decoder`](document/source/adn_common_decoder.md)
@@ -25,6 +24,7 @@ This Repo is a collection of common modules used in ADN designs. The modules are
 [`adn_common_pipeline`](document/source/adn_common_pipeline.md)
 [`adn_common_pipeline_split`](document/source/adn_common_pipeline_split.md)
 [`adn_common_priority_encoder`](document/source/adn_common_priority_encoder.md)
+[`adn_common_range_checker`](document/source/adn_common_range_checker.md)
 [`adn_common_ring_counter`](document/source/adn_common_ring_counter.md)
 [`adn_common_rotating_xbar`](document/source/adn_common_rotating_xbar.md)
 [`adn_common_round_robin_arbiter`](document/source/adn_common_round_robin_arbiter.md)
