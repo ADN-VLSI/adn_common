@@ -2,8 +2,7 @@
 
 ## 1. Purpose
 
-The Pipelined Memory Interface (PMI) is a synchronous request/response
-protocol for on-chip communication between one master and one slave.
+The Pipelined Memory Interface (PMI) is a synchronous request/response protocol for on-chip communication between one master and one slave.
 
 PMI supports:
 
@@ -42,14 +41,11 @@ Each accepted request creates one outstanding transaction.
 
 ### 3.2 Response Completion
 
-A transaction completes when `mack` is asserted on a rising clock edge.
-Exactly one completion response is generated per accepted request.
+A transaction completes when `mack` is asserted on a rising clock edge. Exactly one completion response is generated per accepted request.
 
 ### 3.3 Channel Independence
 
-The request channel (`mreq`/`mgnt`) and response channel (`mack` +
-payload) are independent. A response can occur in the same cycle as a
-new request acceptance.
+The request channel (`mreq`/`mgnt`) and response channel (`mack` + payload) are independent. A response can occur in the same cycle as a new request acceptance.
 
 ## 4. Reset Behavior
 
@@ -84,8 +80,7 @@ While `mreq=1` and `mgnt=0`, the master shall keep `maddr`, `mwe`,
 
 ### PR-5 Post-Handshake Update
 
-After a request is accepted, the master may change request signals on
-the next cycle.
+After a request is accepted, the master may change request signals on the next cycle.
 
 ### PR-6 Backpressure
 
@@ -93,13 +88,11 @@ The slave shall throttle new requests only by deasserting `mgnt`.
 
 ### PR-7 Outstanding Transactions
 
-Multiple outstanding transactions are allowed. Maximum depth is
-implementation-defined.
+Multiple outstanding transactions are allowed. Maximum depth is implementation-defined.
 
 ### PR-8 Continuous Grant
 
-If `mgnt` remains asserted, the master may issue one accepted request
-per cycle.
+If `mgnt` remains asserted, the master may issue one accepted request per cycle.
 
 ### PR-9 One Response Per Request
 
@@ -111,13 +104,11 @@ Responses shall return in the same order as request acceptance order.
 
 ### PR-11 Read Response Payload
 
-For read responses (`mwe=0` for the corresponding request), `mrdata` and
-`mresp` are valid when `mack=1`.
+For read responses (`mwe=0` for the corresponding request), `mrdata` and `mresp` are valid when `mack=1`.
 
 ### PR-12 Write Response Payload
 
-For write responses (`mwe=1` for the corresponding request), `mrdata` is
-don't-care and `mresp` indicates status.
+For write responses (`mwe=1` for the corresponding request), `mrdata` is don't-care and `mresp` indicates status.
 
 ### PR-13 Transaction Completion Point
 
@@ -129,8 +120,7 @@ No minimum or maximum response latency is required by PMI.
 
 ### PR-15 Byte Strobes
 
-`mstrb` selects active write byte lanes. `mstrb==0` is legal and
-produces a no-op write.
+`mstrb` selects active write byte lanes. `mstrb==0` is legal and produces a no-op write.
 
 ### PR-16 Address Alignment
 

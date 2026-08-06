@@ -1,5 +1,7 @@
 # adn_common_synth_directives.svh  (include)
 
+### Author: Foez Ahmed (foez.official@gmail.com)
+
 ### Source: adn_common_synth_directives.svh
 
 ## Parameters
@@ -9,4 +11,25 @@ _None_
 
 ## Description
 
-_No top-level description found._
+FILE: adn_common_synth_directives.svh
+
+### Purpose
+This file contains synthesis directives for not ungrouping and not optimizing the boundary the
+modules. This file is intended to be included in synthesis scripts or synthesis-related files to
+provide directives that control the synthesis behavior of ADN Common modules. The directives
+specified in this file are used to ensure that the synthesis tool does not ungroup or optimize the
+boundaries of the modules, which can be important for maintaining the intended structure and
+functionality of the design.
+
+### Use Case
+This file must be included immediately before the module defination in the source code to ensure
+that the synthesis directives are applied correctly. By including this file, designers can control
+the synthesis behavior of ADN Common modules and ensure that the design is synthesized as intended,
+without unwanted optimizations or ungrouping of module boundaries.
+
+| REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
+|----------|------------|-----------------|--------------------------------------------------------|
+| 1.0      | 2026-07-20 | Foez Ahmed      | Stable release                                         |
+| 1.1      | 2026-08-01 | Foez Ahmed      | Ratified                                               |
+
+Author : Foez Ahmed (foez.official@gmail.com)
