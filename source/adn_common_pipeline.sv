@@ -55,7 +55,7 @@ module adn_common_pipeline #(
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
   // Input ready when pipeline not full, or when full and downstream is ready
-  always_comb data_in_ready_o = is_full ? data_out_ready_i : '1;
+  always_comb data_in_ready_o = is_full ? data_out_ready_i : arst_ni;
 
   // Output data comes from pipeline register
   always_comb data_out_o = data_reg;
@@ -86,5 +86,27 @@ module adn_common_pipeline #(
       data_reg <= data_in_i;
     end
   end
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+  // ASSERTIONS
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+
+  `include "assertion/valid_ready.svh"
+  `VALID_READY_ASSERTION_CHECKS(arst_ni, clk_i, data_in_i, data_in_valid_i, data_in_ready_o)
+  `VALID_READY_ASSERTION_CHECKS(arst_ni, clk_i, data_out_o, data_out_valid_o, data_out_ready_i)
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+  // INITIAL CHECKS
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+
+`ifdef SIMULATION
+  initial begin
+    $assertoff(1, adn_common_pipeline_tb);
+
+    if (DATA_WIDTH > 2) begin
+      $display("\033[1;33m%m DATA_WIDTH\033[0m");
+    end
+  end
+`endif  // SIMULATION
 
 endmodule

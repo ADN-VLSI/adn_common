@@ -17,7 +17,7 @@ module adn_common_pipeline_tb;
   logic                  data_out_valid_o;
   logic                  data_out_ready_i;
 
-  logic [DATA_WIDTH-1:0] expected_q[$];
+  logic [DATA_WIDTH-1:0] expected_q       [$];
 
   logic [DATA_WIDTH-1:0] rand_data;
   logic                  rand_valid;
@@ -75,26 +75,21 @@ pipeline_cov cov;
 
     data_out_ready_i <= 1'b1;
 
-    data_in_i       <= 32'hDEADBEEF;
-    data_in_valid_i <= 1'b1;
+    data_in_i        <= 32'hDEADBEEF;
+    data_in_valid_i  <= 1'b1;
 
     // Wait until input transfer occurs
-    do
-        @(posedge clk_i);
-    while (!(data_in_valid_i && data_in_ready_o));
+    do @(posedge clk_i); while (!(data_in_valid_i && data_in_ready_o));
 
     // Remove valid after handshake
     data_in_valid_i <= 1'b0;
 
     // Wait until output transfer occurs
-    do
-        @(posedge clk_i);
-    while (!(data_out_valid_o && data_out_ready_i));
+    do @(posedge clk_i); while (!(data_out_valid_o && data_out_ready_i));
 
     // Check received data
     assert (data_out_o == 32'hDEADBEEF)
-    else
-        $error("Test 1 failed: Expected 0xDEADBEEF, Got 0x%08h", data_out_o);
+    else $error("Test 1 failed: Expected 0xDEADBEEF, Got 0x%08h", data_out_o);
 
     $display("Test 1 passed");
 
@@ -110,42 +105,36 @@ pipeline_cov cov;
 
     fork
 
-        // Producer
-        begin
-            data_in_valid_i <= 1'b1;
+      // Producer
+      begin
+        data_in_valid_i <= 1'b1;
 
-            for (int i = 0; i < 5; i++) begin
+        for (int i = 0; i < 5; i++) begin
 
-                // Present next word
-                data_in_i <= i;
+          // Present next word
+          data_in_i <= i;
 
-                // Wait until this word is accepted
-                do
-                    @(posedge clk_i);
-                while (!(data_in_valid_i && data_in_ready_o));
+          // Wait until this word is accepted
+          do @(posedge clk_i); while (!(data_in_valid_i && data_in_ready_o));
 
-            end
-
-            // Deassert valid after the final transfer
-            data_in_valid_i <= 1'b0;
         end
 
-        // Consumer
-        begin
-            for (int i = 0; i < 5; i++) begin
+        // Deassert valid after the final transfer
+        data_in_valid_i <= 1'b0;
+      end
 
-                // Wait until output transfer occurs
-                do
-                    @(posedge clk_i);
-                while (!(data_out_valid_o && data_out_ready_i));
+      // Consumer
+      begin
+        for (int i = 0; i < 5; i++) begin
 
-                assert (data_out_o == i)
-                else
-                    $error("Test 2 failed: Expected %0d, Got %0d",
-                           i, data_out_o);
+          // Wait until output transfer occurs
+          do @(posedge clk_i); while (!(data_out_valid_o && data_out_ready_i));
 
-            end
+          assert (data_out_o == i)
+          else $error("Test 2 failed: Expected %0d, Got %0d", i, data_out_o);
+
         end
+      end
 
     join
 
@@ -163,45 +152,37 @@ pipeline_cov cov;
     data_out_ready_i <= 1'b0;
 
     // Send one word
-    data_in_i       <= 32'hCAFEBABE;
-    data_in_valid_i <= 1'b1;
+    data_in_i        <= 32'hCAFEBABE;
+    data_in_valid_i  <= 1'b1;
 
     // Wait until DUT accepts the input
-    do
-        @(posedge clk_i);
-    while (!(data_in_valid_i && data_in_ready_o));
+    do @(posedge clk_i); while (!(data_in_valid_i && data_in_ready_o));
 
     // Remove valid after handshake
     data_in_valid_i <= 1'b0;
 
     // Hold backpressure
-    repeat (3)
-        @(posedge clk_i);
+    repeat (3) @(posedge clk_i);
 
     // Data must remain available while stalled
     assert (data_out_valid_o)
-    else
-        $error("Test 3 failed: data_out_valid_o deasserted during backpressure");
+    else $error("Test 3 failed: data_out_valid_o deasserted during backpressure");
 
     assert (data_out_o == 32'hCAFEBABE)
-    else
-        $error("Test 3 failed: Expected 0xCAFEBABE, Got 0x%08h", data_out_o);
+    else $error("Test 3 failed: Expected 0xCAFEBABE, Got 0x%08h", data_out_o);
 
     // Release downstream
     data_out_ready_i <= 1'b1;
 
     // Wait until output transfer occurs
-    do
-        @(posedge clk_i);
-    while (!(data_out_valid_o && data_out_ready_i));
+    do @(posedge clk_i); while (!(data_out_valid_o && data_out_ready_i));
 
     // One more clock for the DUT to update its state
     @(posedge clk_i);
 
     // Pipeline should now be empty
     assert (!data_out_valid_o)
-    else
-        $error("Test 3 failed: Pipeline not emptied");
+    else $error("Test 3 failed: Pipeline not emptied");
 
     $display("Test 3 passed");
 
@@ -218,47 +199,45 @@ pipeline_cov cov;
     // Initialize interface
     data_in_i        <= '0;
     data_in_valid_i  <= 1'b0;
-    data_out_ready_i <= 1'b1;
+    data_out_ready_i <= 1'b0;
 
     repeat (2) @(posedge clk_i);
 
     // Generate random traffic
-    for (int i = 0; i <20; i++) begin
+    for (int i = 0; i < 20; i++) begin
 
-        // Generate random stimulus
-        rand_data  = $urandom;
-        rand_valid = $urandom_range(0,1);
-        rand_ready = $urandom_range(0,1);
+      // Generate random stimulus
+      rand_data  = $urandom;
+      rand_valid = $urandom_range(0, 1);
+      rand_ready = $urandom_range(0, 1);
 
-        // Drive DUT
-        data_in_i        <= rand_data;
-        data_in_valid_i  <= rand_valid;
-        data_out_ready_i <= rand_ready;
+      // Drive DUT
+      data_in_i        <= rand_data;
+      data_in_valid_i  <= rand_valid;
+      data_out_ready_i <= rand_ready;
 
-        @(posedge clk_i);
+      @(posedge clk_i);
 
-        // Input handshake
-        if (rand_valid && data_in_ready_o) begin
+      // Input handshake
+      if (rand_valid && data_in_ready_o) begin
         expected_q.push_back(rand_data);
-        $display("[%0t] Input Handshake: Accepted Data = 0x%08h, Queue Size = %0d",
-                 $time, rand_data, expected_q.size());
-    end
+        $display("[%0t] Input Handshake: Accepted Data = 0x%08h, Queue Size = %0d", $time,
+                 rand_data, expected_q.size());
+      end
 
-        // Output handshake
-        if (data_out_valid_o && rand_ready) begin
+      // Output handshake
+      if (data_out_valid_o && rand_ready) begin
 
-            logic [DATA_WIDTH-1:0] exp_data;
+        logic [DATA_WIDTH-1:0] exp_data;
 
-            assert(expected_q.size() > 0)
-                else $fatal(0, "Unexpected output from DUT");
+        assert (expected_q.size() > 0)
+        else $fatal(0, "Unexpected output from DUT");
 
-            exp_data = expected_q.pop_front();
+        exp_data = expected_q.pop_front();
 
-            assert(data_out_o == exp_data)
-                else
-                    $error("Random test mismatch: Expected = 0x%08h, Got = 0x%08h",
-                           exp_data, data_out_o);
-        end
+        assert (data_out_o == exp_data)
+        else $error("Random test mismatch: Expected = 0x%08h, Got = 0x%08h", exp_data, data_out_o);
+      end
     end
 
     // Stop sending data
@@ -268,26 +247,24 @@ pipeline_cov cov;
     // Drain remaining pipeline contents
     while (expected_q.size() > 0) begin
 
-        @(posedge clk_i);
+      @(posedge clk_i);
 
-        if (data_out_valid_o) begin
+      if (data_out_valid_o) begin
 
-            logic [DATA_WIDTH-1:0] exp_data;
+        logic [DATA_WIDTH-1:0] exp_data;
 
-            exp_data = expected_q.pop_front();
+        exp_data = expected_q.pop_front();
 
-            assert(data_out_o == exp_data)
-                else
-                    $error("Drain mismatch: Expected = 0x%08h, Got = 0x%08h",
-                           exp_data, data_out_o);
-        end
+        assert (data_out_o == exp_data)
+        else $error("Drain mismatch: Expected = 0x%08h, Got = 0x%08h", exp_data, data_out_o);
+      end
     end
 
     // Pipeline should now be empty
     @(posedge clk_i);
 
-    assert(!data_out_valid_o)
-        else $error("Pipeline not empty after drain");
+    assert (!data_out_valid_o)
+    else $error("Pipeline not empty after drain");
 
     $display("Test 4 passed");
     $finish;

@@ -28,6 +28,9 @@ See LICENSE file in the project root for full license information
 
 */
 
+`ifndef __GUARD_ASSERTION_VALID_READY_SVH__
+`define __GUARD_ASSERTION_VALID_READY_SVH__ 0
+
 // Arguments:
 // __ARST_N__ : Active-low asynchronous reset signal
 // __CLK__    : Clock signal
@@ -37,23 +40,26 @@ See LICENSE file in the project root for full license information
 `define VALID_READY_ASSERTION_CHECKS(__ARST_N__, __CLK__, __BUS__, __VALID__, __READY__)                                 \
                                                                                                                          \
   assert property                                                                                                        \
-    (@(posedge ``__CLK__``) disable iff (!``__ARST_N__)                                                                  \
+    (@(posedge ``__CLK__``) if (!``__ARST_N__)                                                                           \
     (``__VALID__`` && !``__READY__``) |=> $stable(``__BUS__``))                                                          \
   else                                                                                                                   \
     $error(`"ASSERTION FAILED: ``__BUS__`` should remain stable when ``__VALID__`` is high and ``__READY__`` is low`");  \
                                                                                                                          \
   assert property                                                                                                        \
-    (@(posedge ``__CLK__``) disable iff (!``__ARST_N__)                                                                  \
+    (@(posedge ``__CLK__``) if (!``__ARST_N__)                                                                           \
     ($past(``__VALID__``) && !``__VALID__``) |=> $past(``__READY__``,2))                                                 \
   else                                                                                                                   \
     $error(`"ASSERTION FAILED: ``__READY__`` should be high when ``__VALID__`` goes low`");                              \
                                                                                                                          \
-  assert property                                                                                                        \
-    (@(negedge ``__ARST_N__``) !``__VALID__``)                                                                           \
-  else                                                                                                                   \
-    $error(`"ASSERTION FAILED: ``__VALID__`` must be low when reset is asserted`");                                      \
-                                                                                                                         \
-  assert property                                                                                                        \
-    (@(negedge ``__ARST_N__``) !``__READY__``)                                                                           \
-  else                                                                                                                   \
-    $error(`"ASSERTION FAILED: ``__READY__`` must be low when reset is asserted`");                                      \
+  always @(negedge ``__ARST_N__``) begin                                                                                 \
+    #1step;                                                                                                              \
+    assert (!``__VALID__``)                                                                                              \
+    else                                                                                                                 \
+      $error(`"ASSERTION FAILED: ``__VALID__`` must be low when reset is asserted`");                                    \
+    assert (!``__READY__``)                                                                                              \
+    else                                                                                                                 \
+      $error(`"ASSERTION FAILED: ``__READY__`` must be low when reset is asserted`");                                    \
+  end                                                                                                                    \
+
+
+`endif
