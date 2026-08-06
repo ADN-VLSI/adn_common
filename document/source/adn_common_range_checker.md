@@ -2,7 +2,7 @@
 
 ### Author: Adnan Sami Anirban (adnananirban259@gmail.com)
 
-### Source: adn_common_address_range_compare.sv
+### Source: adn_common_range_checker.sv
 
 ## Top IO
 

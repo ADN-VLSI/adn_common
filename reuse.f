@@ -1,6 +1,5 @@
 ${ADN_COMMON}/interface/dummy_interface.sv
 ${ADN_COMMON}/source/adn_common_address_decoder.sv
-${ADN_COMMON}/source/adn_common_address_range_compare.sv
 ${ADN_COMMON}/source/adn_common_bin_to_gray.sv
 ${ADN_COMMON}/source/adn_common_cdc_fifo.sv
 ${ADN_COMMON}/source/adn_common_decoder.sv
@@ -13,10 +12,11 @@ ${ADN_COMMON}/source/adn_common_hs_combiner.sv
 ${ADN_COMMON}/source/adn_common_hs_counter.sv
 ${ADN_COMMON}/source/adn_common_jk_ff.sv
 ${ADN_COMMON}/source/adn_common_parity_generator.sv
+${ADN_COMMON}/source/adn_common_pipeline.sv
 ${ADN_COMMON}/source/adn_common_pipeline_join.sv
 ${ADN_COMMON}/source/adn_common_pipeline_split.sv
-${ADN_COMMON}/source/adn_common_pipeline.sv
 ${ADN_COMMON}/source/adn_common_priority_encoder.sv
+${ADN_COMMON}/source/adn_common_range_checker.sv
 ${ADN_COMMON}/source/adn_common_ring_counter.sv
 ${ADN_COMMON}/source/adn_common_rotating_xbar.sv
 ${ADN_COMMON}/source/adn_common_round_robin_arbiter.sv

@@ -6,8 +6,8 @@
 <text x="65" y="85" dominant-baseline="hanging" text-anchor="start" font-size="20" style="fill:black;stroke:black;stroke-width:0">req_i</text>
 <polygon points="10,145 10,135 30,135 40,145 60,145 40,145 30,155 10,155 10,145"/>
 <text x="65" y="135" dominant-baseline="hanging" text-anchor="start" font-size="20" style="fill:black;stroke:black;stroke-width:0">allow_req_i</text>
-<polygon points="292,245 312,245 312,235 332,235 342,245 332,255 312,255 312,245 292,245"/>
-<text x="287" y="235" dominant-baseline="hanging" text-anchor="end" font-size="20" style="fill:black;stroke:black;stroke-width:0">gnt_o</text>
+<polygon points="292,145 312,145 312,135 332,135 342,145 332,155 312,155 312,145 292,145"/>
+<text x="287" y="135" dominant-baseline="hanging" text-anchor="end" font-size="20" style="fill:black;stroke:black;stroke-width:0">gnt_o</text>
 <text x="176" y="300" dominant-baseline="hanging" text-anchor="middle" font-size="30" style="fill:black;stroke:black;stroke-width:0">adn_common_fixed_priority_arbiter</text>
 </g>
 </svg>

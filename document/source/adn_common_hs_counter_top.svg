@@ -1,21 +1,21 @@
-<svg height="340" width="539" xmlns="http://www.w3.org/2000/svg">
+<svg height="390" width="527" xmlns="http://www.w3.org/2000/svg">
 <rect width="100%" height="100%" x="0" y="0" style="fill:white;stroke:white;stroke-width:0"/>
 <g style="fill:white;stroke:black;stroke-width:1">
-<rect width="424" height="225" x="60" y="60"/>
+<rect width="412" height="275" x="60" y="60"/>
 <polygon points="10,95 10,85 30,85 40,95 60,95 40,95 30,105 10,105 10,95"/>
 <text x="65" y="85" dominant-baseline="hanging" text-anchor="start" font-size="20" style="fill:black;stroke:black;stroke-width:0">clk_i</text>
 <polygon points="10,145 10,135 30,135 40,145 60,145 40,145 30,155 10,155 10,145"/>
 <text x="65" y="135" dominant-baseline="hanging" text-anchor="start" font-size="20" style="fill:black;stroke:black;stroke-width:0">arst_ni</text>
-<polygon points="10,195 10,185 30,185 40,195 60,195 40,195 30,205 10,205 10,195"/>
-<text x="65" y="185" dominant-baseline="hanging" text-anchor="start" font-size="20" style="fill:black;stroke:black;stroke-width:0">data_in_valid_i</text>
 <polygon points="10,245 10,235 30,235 40,245 60,245 40,245 30,255 10,255 10,245"/>
-<text x="65" y="235" dominant-baseline="hanging" text-anchor="start" font-size="20" style="fill:black;stroke:black;stroke-width:0">data_out_ready_i</text>
-<polygon points="484,145 504,145 504,135 524,135 534,145 524,155 504,155 504,145 484,145"/>
-<text x="479" y="135" dominant-baseline="hanging" text-anchor="end" font-size="20" style="fill:black;stroke:black;stroke-width:0">data_in_ready_o</text>
-<polygon points="484,195 504,195 504,185 524,185 534,195 524,205 504,205 504,195 484,195"/>
-<text x="479" y="185" dominant-baseline="hanging" text-anchor="end" font-size="20" style="fill:black;stroke:black;stroke-width:0">data_out_valid_o</text>
-<polygon points="484,245 504,245 504,235 524,235 534,245 524,255 504,255 504,245 484,245"/>
-<text x="479" y="235" dominant-baseline="hanging" text-anchor="end" font-size="20" style="fill:black;stroke:black;stroke-width:0">count_o</text>
-<text x="272" y="300" dominant-baseline="hanging" text-anchor="middle" font-size="30" style="fill:black;stroke:black;stroke-width:0">adn_common_hs_counter</text>
+<text x="65" y="235" dominant-baseline="hanging" text-anchor="start" font-size="20" style="fill:black;stroke:black;stroke-width:0">data_in_valid_i</text>
+<polygon points="10,295 20,285 40,285 40,295 60,295 40,295 40,305 20,305 10,295"/>
+<text x="65" y="285" dominant-baseline="hanging" text-anchor="start" font-size="20" style="fill:black;stroke:black;stroke-width:0">data_in_ready_o</text>
+<polygon points="472,145 492,145 492,135 512,135 522,145 512,155 492,155 492,145 472,145"/>
+<text x="467" y="135" dominant-baseline="hanging" text-anchor="end" font-size="20" style="fill:black;stroke:black;stroke-width:0">data_out_valid_o</text>
+<polygon points="472,195 492,195 502,185 522,185 522,195 522,205 502,205 492,195 472,195"/>
+<text x="467" y="185" dominant-baseline="hanging" text-anchor="end" font-size="20" style="fill:black;stroke:black;stroke-width:0">data_out_ready_i</text>
+<polygon points="472,295 492,295 492,285 512,285 522,295 512,305 492,305 492,295 472,295"/>
+<text x="467" y="285" dominant-baseline="hanging" text-anchor="end" font-size="20" style="fill:black;stroke:black;stroke-width:0">count_o</text>
+<text x="266" y="350" dominant-baseline="hanging" text-anchor="middle" font-size="30" style="fill:black;stroke:black;stroke-width:0">adn_common_hs_counter</text>
 </g>
 </svg>

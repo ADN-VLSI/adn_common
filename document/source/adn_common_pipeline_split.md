@@ -24,12 +24,12 @@
 |data_in_i|input|logic [DATA_WIDTH-1:0]||Input data|
 |data_in_valid_i|input|logic||Input data valid|
 |data_in_ready_o|output|logic||Input ready|
-|data_out_primary_o|output|logic [DATA_WIDTH-1:0]||Output data|
-|data_out_primary_valid_o|output|logic||Output data valid|
-|data_out_primary_ready_i|input|logic||Output ready|
 |data_out_secondary_o|output|logic [DATA_WIDTH-1:0]||Output data|
 |data_out_secondary_valid_o|output|logic||Output data valid|
 |data_out_secondary_ready_i|input|logic||Output ready|
+|data_out_primary_o|output|logic [DATA_WIDTH-1:0]||Output data|
+|data_out_primary_valid_o|output|logic||Output data valid|
+|data_out_primary_ready_i|input|logic||Output ready|
 
 
 ## Description
