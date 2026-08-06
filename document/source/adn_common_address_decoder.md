@@ -21,10 +21,10 @@
 
 |Name|Direction|Type|Dimension|Description|
 |-|-|-|-|-|
-|addr_i|input|logic [ADDR_WIDTH-1:0]|||
-|min_addr_i|input|logic [ADDR_WIDTH-1:0]|[0:NUM_RULES-1]||
-|max_addr_i|input|logic [ADDR_WIDTH-1:0]|[0:NUM_RULES-1]||
-|slave_id_i|input|logic [SLAVE_ID_WIDTH-1:0]|[0:NUM_RULES-1]||
+|addr_i|input|logic [ ADDR_WIDTH-1:0]|||
+|min_addr_i|input|logic [ ADDR_WIDTH-1:0]|[NUM_RULES]||
+|max_addr_i|input|logic [ ADDR_WIDTH-1:0]|[NUM_RULES]||
+|slave_id_i|input|logic [SLAVE_ID_WIDTH-1:0]|[NUM_RULES]||
 |slave_index_o|output|logic [SLAVE_ID_WIDTH-1:0]|||
 |addr_found_o|output|logic|||
 
