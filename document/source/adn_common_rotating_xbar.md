@@ -1,24 +1,31 @@
 # adn_common_rotating_xbar (module)
 
-### Author : Foez Ahmed (foez.official@gmail.com)
+### Author: Foez Ahmed (foez.official@gmail.com)
 
-## TOP IO
+### Source: adn_common_rotating_xbar.sv
+
+## Top IO
+
 <img src="./adn_common_rotating_xbar_top.svg">
 
 ## Parameters
-|Name|Type|Dimension|Default Value|Description|
+
+|Name|Type|Dimension|Default|Description|
 |-|-|-|-|-|
-|DATA_WIDTH|int||2| Width of each individual data port in bits|
-|NUM_PORTS|int||2| Total number of input and output ports in the crossbar|
+|DATA_WIDTH|int||2|Width of each individual data port in bits|
+|NUM_PORTS|int||2|Total number of input and output ports in the crossbar|
+
 
 ## Ports
+
 |Name|Direction|Type|Dimension|Description|
 |-|-|-|-|-|
-|rotation_index_i|input|logic [$clog2(NUM_PORTS)-1:0]|| Control signal defining the cyclic shift offset|
-|in_i|input|logic [NUM_PORTS-1:0][DATA_WIDTH-1:0]|| Array of input data buses|
-|out_o|output|logic [NUM_PORTS-1:0][DATA_WIDTH-1:0]|| Array of output data buses after cyclic permutation|
-## Description
+|rotation_index_i|input|logic [$clog2(NUM_PORTS)-1:0]||Control signal defining the cyclic shift offset|
+|in_i|input|logic [NUM_PORTS-1:0][DATA_WIDTH-1:0]||Array of input data buses|
+|out_o|output|logic [NUM_PORTS-1:0][DATA_WIDTH-1:0]||Array of output data buses after cyclic permutation|
 
+
+## Description
 
 ### Purpose
 The `adn_common_rotating_xbar` module implements a circular crossbar (or barrel shifter) switch. It routes a set of input ports to a corresponding set of output ports based on a dynamic rotation index, effectively performing a cyclic shift of the input data bus array.
@@ -32,8 +39,4 @@ This module is primarily used in high-performance interconnects, packet switchin
 | 1.0      | 2026-08-01 | Foez Ahmed      | Stable release                                         |
 | 1.1      | 2026-08-01 | Foez Ahmed      | Ratified                                               |
 
-This file is part of ADN-VLSI/adn_common
-<br>**Copyright (c) 2026 ADN Semiconductors**
-<br>**Licensed under the MIT License**
-<br>**See LICENSE file in the project root for full license information**
-
+Author : Foez Ahmed (foez.official@gmail.com)

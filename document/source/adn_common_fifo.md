@@ -1,18 +1,24 @@
 # adn_common_fifo (module)
 
-### Author : Annim Jannat (jannatannim@gmail.com)
+### Author: Annim Jannat (jannatannim@gmail.com)
 
-## TOP IO
+### Source: adn_common_fifo.sv
+
+## Top IO
+
 <img src="./adn_common_fifo_top.svg">
 
 ## Parameters
-|Name|Type|Dimension|Default Value|Description|
+
+|Name|Type|Dimension|Default|Description|
 |-|-|-|-|-|
 |DATA_WIDTH|int||8|Width of the data bus in bits|
 |FIFO_SIZE|int||2|Log2 of the FIFO depth|
 |PIPELINED|bit||1|Enable pipelined mode for higher throughput|
 
+
 ## Ports
+
 |Name|Direction|Type|Dimension|Description|
 |-|-|-|-|-|
 |arst_ni|input|logic||Asynchronous reset, active low|
@@ -24,8 +30,9 @@
 |data_out_o|output|logic [DATA_WIDTH-1:0]||Output data bus|
 |data_out_valid_o|output|logic||Output data valid signal|
 |data_out_ready_i|input|logic||Output ready signal from consumer|
-## Description
 
+
+## Description
 
 ### Purpose
 This module implements a configurable, synchronous First-In-First-Out (FIFO) buffer. It provides a flexible mechanism for data buffering between modules with different throughput requirements, supporting both pipelined and non-pipelined modes to optimize for either latency or throughput.
@@ -42,8 +49,4 @@ This FIFO is ideal for:
 | 1.0      | 2026-07-28 | Annim Jannat    | Stable release                                         |
 | 1.1      | 2026-08-02 | Foez Ahmed      | Ratified                                               |
 
-This file is part of ADN-VLSI/adn_common
-<br>**Copyright (c) 2026 ADN Semiconductors**
-<br>**Licensed under the MIT License**
-<br>**See LICENSE file in the project root for full license information**
-
+Author : Annim Jannat (jannatannim@gmail.com)

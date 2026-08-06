@@ -1,27 +1,34 @@
 # adn_common_round_robin_arbiter (module)
 
-### Author : Motasim Faiyaz (motasimfaiyaz@gmail.com)
+### Author: Motasim Faiyaz (motasimfaiyaz@gmail.com)
 
-## TOP IO
+### Source: adn_common_round_robin_arbiter.sv
+
+## Top IO
+
 <img src="./adn_common_round_robin_arbiter_top.svg">
 
 ## Parameters
-|Name|Type|Dimension|Default Value|Description|
+
+|Name|Type|Dimension|Default|Description|
 |-|-|-|-|-|
-|NUM_REQ|int||8| Number of request channels to arbitrate|
+|NUM_REQ|int||8|Number of request channels to arbitrate|
+
 
 ## Ports
+
 |Name|Direction|Type|Dimension|Description|
 |-|-|-|-|-|
-|clk_i|input|logic|| Clock input|
-|arst_ni|input|logic|| Active-low asynchronous reset|
-|allow_req_i|input|logic|| High when the arbiter is permitted to grant a new request|
-|req_i|input|logic [NUM_REQ-1:0]|| High when the arbiter is permitted to grant a new request|
-|gnt_addr_valid_o|output|logic|| High when gnt_addr_o contains a valid grant|
-|gnt_addr_o|output|logic [$clog2(NUM_REQ)-1:0]|| Encoded grant address, original order|
-|gnt_o|output|logic [ NUM_REQ-1:0]|| One-hot grant output, original bit order|
-## Description
+|clk_i|input|logic||Clock input|
+|arst_ni|input|logic||Active-low asynchronous reset|
+|allow_req_i|input|logic||High when the arbiter is permitted to grant a new request|
+|req_i|input|logic [NUM_REQ-1:0]||Input request bus, one bit per channel|
+|gnt_addr_valid_o|output|logic||High when gnt_addr_o contains a valid grant|
+|gnt_addr_o|output|logic [$clog2(NUM_REQ)-1:0]||Encoded grant address, original order|
+|gnt_o|output|logic [ NUM_REQ-1:0]||One-hot grant output, original bit order|
 
+
+## Description
 
 # Purpose
 The `adn_common_round_robin_arbiter` module implements a fair, round-robin arbitration scheme to select a single requester from multiple input requests. It ensures that every requester is granted access in a rotating order, preventing starvation and ensuring equitable bandwidth distribution among all input channels.
@@ -39,8 +46,4 @@ This module is primarily used in high-performance interconnects, such as:
 | 1.1      | 2026-08-01 | Foez Ahmed      | Simplified Logic                                       |
 | 1.2      | 2026-08-01 | Foez Ahmed      | Ratified                                               |
 
-This file is part of ADN-VLSI/adn_common
-<br>**Copyright (c) 2026 ADN Semiconductors**
-<br>**Licensed under the MIT License**
-<br>**See LICENSE file in the project root for full license information**
-
+Author : Motasim Faiyaz (motasimfaiyaz@gmail.com)

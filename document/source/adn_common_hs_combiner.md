@@ -1,23 +1,31 @@
 # adn_common_hs_combiner (module)
 
-### Author : Foez Ahmed (foez.official@gmail.com)
+### Author: Foez Ahmed (foez.official@gmail.com)
 
-## TOP IO
+### Source: adn_common_hs_combiner.sv
+
+## Top IO
+
 <img src="./adn_common_hs_combiner_top.svg">
 
 ## Parameters
-|Name|Type|Dimension|Default Value|Description|
+
+|Name|Type|Dimension|Default|Description|
 |-|-|-|-|-|
 |NUM_TX|int||2|Number of input handshake channels|
 |NUM_RX|int||2|Number of output handshake channels|
 
+
 ## Ports
+
 |Name|Direction|Type|Dimension|Description|
 |-|-|-|-|-|
 |valid_i|input|logic [NUM_TX-1:0]||Input valid signals from source|
 |ready_o|output|logic [NUM_TX-1:0]||Output ready signals back to source|
 |valid_o|output|logic [NUM_RX-1:0]||Output valid signals to destination|
 |ready_i|input|logic [NUM_RX-1:0]||Input ready signals from destination|
+
+
 ## Description
 
 # Handshake Combiner Module
@@ -32,8 +40,4 @@ The `adn_common_hs_combiner` is primarily used in high-performance interconnects
 | 1.0      | 2026-07-22 | Foez Ahmed      | Stable release                                         |
 | 1.1      | 2026-08-01 | Foez Ahmed      | Ratified                                               |
 
-This file is part of ADN-VLSI/adn_common
-<br>**Copyright (c) 2026 ADN Semiconductors**
-<br>**Licensed under the MIT License**
-<br>**See LICENSE file in the project root for full license information**
-
+Author : Foez Ahmed (foez.official@gmail.com)

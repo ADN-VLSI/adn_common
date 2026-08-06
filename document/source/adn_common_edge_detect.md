@@ -1,26 +1,33 @@
 # adn_common_edge_detect (module)
 
-### Author : Md. Sakib Hasan Shawon (mdsakibhasanshawon20@gmail.com)
+### Author: Md. Sakib Hasan Shawon (mdsakibhasanshawon20@gmail.com)
 
-## TOP IO
+### Source: adn_common_edge_detect.sv
+
+## Top IO
+
 <img src="./adn_common_edge_detect_top.svg">
 
 <img src="./adn_common_edge_detect_des.svg">
 
 ## Parameters
-|Name|Type|Dimension|Default Value|Description|
+
+|Name|Type|Dimension|Default|Description|
 |-|-|-|-|-|
-|EDGE_TYPE|int||0| Edge detection mode: 0=Falling, 1=Rising, 2=Dual|
+|EDGE_TYPE|int||0|Edge detection mode: 0=Falling, 1=Rising, 2=Dual|
+
 
 ## Ports
+
 |Name|Direction|Type|Dimension|Description|
 |-|-|-|-|-|
-|clk_i|input|logic|| System clock input|
-|arst_ni|input|logic|| Active-low asynchronous reset|
-|signal_i|input|logic|| Input signal to be monitored for edges|
-|edge_pulse_o|output|logic|| Output pulse indicating edge detection|
-## Description
+|clk_i|input|logic|||
+|arst_ni|input|logic|||
+|signal_i|input|logic|||
+|edge_pulse_o|output|logic|||
 
+
+## Description
 
 ### Purpose
 This module provides a configurable edge detection mechanism for a single-bit input signal. It supports rising edge, falling edge, and dual-edge detection, generating a single-clock-cycle pulse whenever the specified transition occurs on the input signal relative to the system clock.
@@ -41,8 +48,4 @@ Connect the system clock (`clk_i`), active-low reset (`arst_ni`), and the target
 | 1.2      | 2026-08-01 | Foez Ahmed             | Cycle fix                                              |
 | 1.3      | 2026-08-01 | Foez Ahmed             | Ratified                                               |
 
-This file is part of ADN-VLSI/adn_common
-<br>**Copyright (c) 2026 ADN Semiconductors**
-<br>**Licensed under the MIT License**
-<br>**See LICENSE file in the project root for full license information**
-
+Author : Md. Sakib Hasan Shawon (mdsakibhasanshawon20@gmail.com)

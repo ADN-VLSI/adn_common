@@ -1,24 +1,31 @@
 # adn_common_address_range_compare (module)
 
-### Author : Adnan Sami Anirban (adnananirban259@gmail.com)
+### Author: Adnan Sami Anirban (adnananirban259@gmail.com)
 
-## TOP IO
+### Source: adn_common_address_range_compare.sv
+
+## Top IO
+
 <img src="./adn_common_address_range_compare_top.svg">
 
 ## Parameters
-|Name|Type|Dimension|Default Value|Description|
+
+|Name|Type|Dimension|Default|Description|
 |-|-|-|-|-|
-|ADDR_WIDTH|int||32| Parameter defining the bit-width of the address signals|
+|ADDR_WIDTH|int||32||
+
 
 ## Ports
+
 |Name|Direction|Type|Dimension|Description|
 |-|-|-|-|-|
-|min_addr_i|input|logic [ADDR_WIDTH-1:0]|| Inclusive lower bound of the address range|
-|max_addr_i|input|logic [ADDR_WIDTH-1:0]|| Exclusive upper bound of the address range|
-|addr_i|input|logic [ADDR_WIDTH-1:0]|| Inclusive lower bound of the address range|
-|match_o|output|logic|| Output signal: High if addr_i is within [min_addr_i, max_addr_i)|
-## Description
+|min_addr_i|input|logic [ADDR_WIDTH-1:0]|||
+|max_addr_i|input|logic [ADDR_WIDTH-1:0]|||
+|addr_i|input|logic [ADDR_WIDTH-1:0]|||
+|match_o|output|logic|||
 
+
+## Description
 
 ### Purpose
 This module performs a range comparison to determine if a given address falls within a specified inclusive-minimum and exclusive-maximum range. It is designed to be used in memory-mapped systems or address decoding logic to validate address access.
@@ -30,8 +37,4 @@ To use this module, instantiate it by specifying the `ADDR_WIDTH` parameter to m
 |----------|------------|-----------------|--------------------------------------------------------|
 | 1.0      | 2026-07-30 | Adnan Sami Anirban | Stable release                                         |
 
-This file is part of ADN-VLSI/adn_common
-<br>**Copyright (c) 2026 ADN Semiconductors**
-<br>**Licensed under the MIT License**
-<br>**See LICENSE file in the project root for full license information**
-
+Author : Adnan Sami Anirban (adnananirban259@gmail.com)

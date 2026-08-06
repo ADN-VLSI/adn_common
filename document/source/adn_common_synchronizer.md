@@ -1,18 +1,24 @@
 # adn_common_synchronizer (module)
 
-### Author : Ahasan Ullah Khalid (aukhalid02@gmail.com)
+### Author: Ahasan Ullah Khalid (aukhalid02@gmail.com)
 
-## TOP IO
+### Source: adn_common_synchronizer.sv
+
+## Top IO
+
 <img src="./adn_common_synchronizer_top.svg">
 
 ## Parameters
-|Name|Type|Dimension|Default Value|Description|
+
+|Name|Type|Dimension|Default|Description|
 |-|-|-|-|-|
 |WIDTH|int||1|Bit width of the data bus|
 |STAGES|int||2|Number of synchronization stages (min 2 recommended)|
 |RESET_VALUE|logic [WIDTH-1:0]||'0|Value to load during reset|
 
+
 ## Ports
+
 |Name|Direction|Type|Dimension|Description|
 |-|-|-|-|-|
 |clk_i|input|logic||Destination clock domain|
@@ -20,8 +26,9 @@
 |en_i|input|logic||Enable signal for synchronization stages|
 |data_i|input|logic [WIDTH-1:0]||Asynchronous input data|
 |data_o|output|logic [WIDTH-1:0]||Synchronized output data|
-## Description
 
+
+## Description
 
 ### Purpose
 The `adn_common_synchronizer` module is a generic multi-stage flip-flop synchronizer designed to safely transfer asynchronous signals between different clock domains. It mitigates metastability issues by passing the input data through a configurable number of sequential stages before outputting the synchronized signal.
@@ -35,8 +42,4 @@ This module is primarily used when a signal originates in one clock domain and m
 | 1.0      | 2026-07-28 | Ahasan Ullah Khalid | Stable release                                     |
 | 1.1      | 2026-08-01 | Foez Ahmed          | Ratified                                           |
 
-This file is part of ADN-VLSI/adn_common
-<br>**Copyright (c) 2026 ADN Semiconductors**
-<br>**Licensed under the MIT License**
-<br>**See LICENSE file in the project root for full license information**
-
+Author : Ahasan Ullah Khalid (aukhalid02@gmail.com)

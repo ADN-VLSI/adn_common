@@ -1,16 +1,22 @@
 # adn_common_hs_counter (module)
 
-### Author : Annim Jannat (jannatannim@gmail.com)
+### Author: Annim Jannat (jannatannim@gmail.com)
 
-## TOP IO
+### Source: adn_common_hs_counter.sv
+
+## Top IO
+
 <img src="./adn_common_hs_counter_top.svg">
 
 ## Parameters
-|Name|Type|Dimension|Default Value|Description|
+
+|Name|Type|Dimension|Default|Description|
 |-|-|-|-|-|
-|DEPTH|int||8|Maximum capacity of the buffer/pipeline|
+|DEPTH|int||8||
+
 
 ## Ports
+
 |Name|Direction|Type|Dimension|Description|
 |-|-|-|-|-|
 |clk_i|input|logic||System clock|
@@ -20,8 +26,9 @@
 |data_out_valid_o|output|logic||Output data valid signal|
 |data_out_ready_i|input|logic||Output data ready signal|
 |count_o|output|logic [$clog2(DEPTH+1)-1:0]||Current occupancy count|
-## Description
 
+
+## Description
 
 ### Purpose
 This module implements a handshake-based counter designed to track the number of active data elements within a buffer or pipeline stage. It monitors input and output handshakes to increment or decrement the internal count, ensuring the counter remains within the bounds of the specified `DEPTH`.
@@ -38,8 +45,4 @@ This module is primarily used in streaming architectures to manage flow control 
 | 1.0      | 2026-07-29 | Annim Jannat    | Stable release                                         |
 | 1.1      | 2026-08-01 | Foez Ahmed      | Ratified                                               |
 
-This file is part of ADN-VLSI/adn_common
-<br>**Copyright (c) 2026 ADN Semiconductors**
-<br>**Licensed under the MIT License**
-<br>**See LICENSE file in the project root for full license information**
-
+Author : Annim Jannat (jannatannim@gmail.com)
