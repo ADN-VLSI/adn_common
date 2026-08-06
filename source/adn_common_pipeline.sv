@@ -101,7 +101,7 @@ module adn_common_pipeline #(
 
 `ifdef SIMULATION
   initial begin
-    $assertoff(1, adn_common_pipeline_tb);
+    // $assertoff(1, adn_common_pipeline_tb);
 
     if (DATA_WIDTH > 2) begin
       $display("\033[1;33m%m DATA_WIDTH\033[0m");
