@@ -1,22 +1,5 @@
-<<<<<<< Updated upstream
-ci_simulate adn_common_hs_counter_tb reset         0
-ci_simulate adn_common_hs_counter_tb single_push   0
-ci_simulate adn_common_hs_counter_tb multiple_push 0
-ci_simulate adn_common_hs_counter_tb single_pop    0
-ci_simulate adn_common_hs_counter_tb multiple_pop  0
-ci_simulate adn_common_hs_counter_tb full          0
-ci_simulate adn_common_hs_counter_tb empty         0
-ci_simulate adn_common_hs_counter_tb overflow      0
-ci_simulate adn_common_hs_counter_tb underflow     0
-ci_simulate adn_common_hs_counter_tb simultaneous  0
-ci_simulate adn_common_hs_counter_tb boundary      0
-ci_simulate adn_common_hs_counter_tb random        0
-=======
 ci_simulate adn_common_address_decoder_tb TC_001 1000
 ci_simulate adn_common_address_decoder_tb TC_002 1000
 ci_simulate adn_common_address_decoder_tb TC_003 1000
 ci_simulate adn_common_address_decoder_tb TC_004 1000
 ci_simulate adn_common_address_decoder_tb TC_005 1000
-
-
->>>>>>> Stashed changes
