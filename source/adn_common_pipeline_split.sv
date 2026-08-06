@@ -1,8 +1,13 @@
 /*
 
-@foez-bhai, write the purpose of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+### Purpose
+This module implements a pipeline splitter that takes a single upstream data stream and broadcasts it to two downstream interfaces. It manages flow control by asserting readiness when either downstream interface is ready, ensuring data is distributed according to the handshake logic of the connected consumers.
 
-@foez-bhai, describe the use case of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+### Use Case
+The `adn_common_pipeline_split` module is primarily used in high-performance data path architectures where a single data source needs to be replicated to multiple processing units or monitoring interfaces simultaneously. Common scenarios include:
+- **Data Mirroring:** Sending a copy of the data stream to a debug/trace unit while the primary stream continues to the main processing logic.
+- **Parallel Processing:** Distributing the same input data to two different functional blocks that operate on the data concurrently.
+- **Redundancy:** Feeding identical data to two identical hardware modules to implement fault-tolerant or lock-step checking mechanisms.
 
 | REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
 |----------|------------|-----------------|--------------------------------------------------------|
@@ -40,32 +45,34 @@ module adn_common_pipeline_split #(
     input  logic                  data_out_secondary_ready_i   // Output ready
 );
 
-  // @foez-bhai, add comments to the functional blocks, signals, and submodules
-
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // SIGNALS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  logic [DATA_WIDTH-1:0] pl_data;
-  logic                  pl_valid;
-  logic                  pl_ready;
+  logic [DATA_WIDTH-1:0] pl_data;  // Internal pipeline data bus
+  logic                  pl_valid; // Internal pipeline valid signal
+  logic                  pl_ready; // Internal pipeline ready signal
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // ASSIGNMENTS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
+  // Broadcast pipeline data to both primary and secondary outputs
   always_comb data_out_primary_o = pl_data;
   always_comb data_out_secondary_o = pl_data;
 
+  // Primary valid is direct; secondary valid is gated by primary ready status
   always_comb data_out_primary_valid_o = pl_valid;
   always_comb data_out_secondary_valid_o = pl_valid & ~data_out_primary_ready_i;
 
+  // Pipeline is ready if either downstream interface can accept data
   always_comb pl_ready = data_out_primary_ready_i | data_out_secondary_ready_i;
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // SUBMODULES
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
+  // Pipeline stage to buffer and synchronize upstream data
   adn_common_pipeline #(
       .DATA_WIDTH(DATA_WIDTH)
   ) u_pl (
@@ -80,4 +87,3 @@ module adn_common_pipeline_split #(
   );
 
 endmodule
-

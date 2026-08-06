@@ -34,9 +34,14 @@
 
 ## Description
 
-@foez---bhai, write the purpose of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+### Purpose
+This module implements a priority-based joiner for two input streams (primary and secondary). It multiplexes the input data into a single pipeline, prioritizing the primary stream while ensuring that secondary data is only processed when the primary stream is idle. The combined stream is then passed through a standard pipeline stage to maintain timing and flow control.
 
-@foez---bhai, describe the use case of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+### Use Case
+This module is ideal for scenarios where a high-priority control or data stream must be merged with a lower-priority background stream without stalling the primary path. Common applications include:
+- **Interrupt Handling:** Merging asynchronous interrupt requests into a main processing pipeline.
+- **Telemetry/Logging:** Injecting background diagnostic data into a primary data bus only when the bus is not actively transmitting high-priority payload.
+- **Resource Sharing:** Allowing multiple masters to share a single downstream interface where one master is latency-sensitive and the other is throughput-oriented.
 
 | REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
 |----------|------------|-----------------|--------------------------------------------------------|
