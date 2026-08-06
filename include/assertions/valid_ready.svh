@@ -28,7 +28,12 @@ See LICENSE file in the project root for full license information
 
 */
 
-// @foez-bhai, add description of the arguments of the following macro
+// Arguments:
+// __ARST_N__ : Active-low asynchronous reset signal
+// __CLK__    : Clock signal
+// __BUS__    : Data bus signal to be checked for stability
+// __VALID__  : Valid signal of the handshake
+// __READY__  : Ready signal of the handshake
 `define VALID_READY_ASSERTION_CHECKS(__ARST_N__, __CLK__, __BUS__, __VALID__, __READY__)                                 \
                                                                                                                          \
   assert property                                                                                                        \
@@ -52,4 +57,3 @@ See LICENSE file in the project root for full license information
     (@(negedge ``__ARST_N__``) !``__READY__``)                                                                           \
   else                                                                                                                   \
     $error(`"ASSERTION FAILED: ``__READY__`` must be low when reset is asserted`");                                      \
-
