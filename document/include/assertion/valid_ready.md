@@ -1,4 +1,4 @@
-# assertions/valid_ready.svh  (include)
+# assertion/valid_ready.svh  (include)
 
 ### Author: Foez Ahmed (foez.official@gmail.com)
 
@@ -7,6 +7,11 @@
 ## Parameters
 
 _None_
+
+
+## Include Guard
+
+__GUARD_ASSERTION_VALID_READY_SVH__
 
 
 ## Macros
