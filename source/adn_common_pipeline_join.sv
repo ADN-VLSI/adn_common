@@ -30,14 +30,14 @@ module adn_common_pipeline_join #(
     input logic clk_i,    // Rising-edge clock
 
     // Input (Upstream) Interface
-    input  logic [DATA_WIDTH-1:0] data_in_primary_i,        // Input data
-    input  logic                  data_in_primary_valid_i,  // Input data valid
-    output logic                  data_in_primary_ready_o,  // Input ready
-
-    // Input (Upstream) Interface
     input  logic [DATA_WIDTH-1:0] data_in_secondary_i,        // Input data
     input  logic                  data_in_secondary_valid_i,  // Input data valid
     output logic                  data_in_secondary_ready_o,  // Input ready
+
+    // Input (Upstream) Interface
+    input  logic [DATA_WIDTH-1:0] data_in_primary_i,        // Input data
+    input  logic                  data_in_primary_valid_i,  // Input data valid
+    output logic                  data_in_primary_ready_o,  // Input ready
 
     // Output (Downstream) Interface
     output logic [DATA_WIDTH-1:0] data_out_o,        // Output data

@@ -35,14 +35,14 @@ module adn_common_pipeline_split #(
     output logic                  data_in_ready_o,  // Input ready
 
     // Output (Downstream) Interface
-    output logic [DATA_WIDTH-1:0] data_out_primary_o,        // Output data
-    output logic                  data_out_primary_valid_o,  // Output data valid
-    input  logic                  data_out_primary_ready_i,  // Output ready
-
-    // Output (Downstream) Interface
     output logic [DATA_WIDTH-1:0] data_out_secondary_o,        // Output data
     output logic                  data_out_secondary_valid_o,  // Output data valid
-    input  logic                  data_out_secondary_ready_i   // Output ready
+    input  logic                  data_out_secondary_ready_i,  // Output ready
+
+    // Output (Downstream) Interface
+    output logic [DATA_WIDTH-1:0] data_out_primary_o,        // Output data
+    output logic                  data_out_primary_valid_o,  // Output data valid
+    input  logic                  data_out_primary_ready_i   // Output ready
 );
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -50,8 +50,8 @@ module adn_common_pipeline_split #(
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
   logic [DATA_WIDTH-1:0] pl_data;  // Internal pipeline data bus
-  logic                  pl_valid; // Internal pipeline valid signal
-  logic                  pl_ready; // Internal pipeline ready signal
+  logic                  pl_valid;  // Internal pipeline valid signal
+  logic                  pl_ready;  // Internal pipeline ready signal
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // ASSIGNMENTS
