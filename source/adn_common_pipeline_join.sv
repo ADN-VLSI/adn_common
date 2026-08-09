@@ -11,8 +11,8 @@ This module is ideal for scenarios where a high-priority control or data stream 
 
 | REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
 |----------|------------|-----------------|--------------------------------------------------------|
-| 0.1      | 2026-08-06 | Foez Ahmed | Initial version                                        |
-| 1.0      | 2026-08-06 | Foez Ahmed | Stable release                                         |
+| 0.1      | 2026-08-06 | Foez Ahmed      | Initial version                                        |
+| 1.0      | 2026-08-06 | Foez Ahmed      | Stable release                                         |
 
 Author : Foez Ahmed (foez.official@gmail.com)
 This file is part of ADN-VLSI/adn_common
@@ -49,9 +49,9 @@ module adn_common_pipeline_join #(
   // SIGNALS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  logic [DATA_WIDTH-1:0] pl_data; // Multiplexed data before pipeline
-  logic                  pl_valid; // Combined valid signal for pipeline
-  logic                  pl_ready; // Backpressure signal from pipeline
+  logic [DATA_WIDTH-1:0] pl_data;  // Multiplexed data before pipeline
+  logic                  pl_valid;  // Combined valid signal for pipeline
+  logic                  pl_ready;  // Backpressure signal from pipeline
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // ASSIGNMENTS

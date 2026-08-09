@@ -23,56 +23,77 @@ See LICENSE file in the project root for full license information
 
 */
 
+// @foez-bhai, add comments to the parameters
 module adn_common_valid_ready_checker #(
-    parameter DATA_WIDTH = 8 // Width of the data bus being monitored
+    parameter int DATA_WIDTH = 8,  // Width of the data bus being monitored
+    parameter bit IGNORE_RULE_0 = 0,
+    parameter bit IGNORE_RULE_1 = 0,
+    parameter bit IGNORE_RULE_2 = 0,
+    parameter bit IGNORE_RULE_3 = 0,
+    parameter bit IGNORE_RULE_4 = 0,
+    parameter bit IGNORE_RULE_5 = 0,
+    parameter bit IGNORE_RULE_6 = 0,
+    parameter bit IGNORE_RULE_7 = 0
 ) (
-    input logic arst_ni,     // Asynchronous active-low reset
-    input logic rst_ni,      // Synchronous active-low reset
+    input logic arst_ni,  // Asynchronous active-low reset
+    input logic rst_ni,   // Synchronous active-low reset
 
-    input logic clk_i,       // System clock
+    input logic clk_i,  // System clock
 
-    input logic [DATA_WIDTH-1:0] data_i, // Data payload to monitor for stability
-    input logic                  valid_i, // Valid signal from the source
-    input logic                  ready_i  // Ready signal from the destination
+    input logic [DATA_WIDTH-1:0] data_i,   // Data payload to monitor for stability
+    input logic                  valid_i,  // Valid signal from the source
+    input logic                  ready_i   // Ready signal from the destination
 );
 
   /* verilog_format: off*/
 
   // Assertion: Ensure data stability during stall (Valid high, Ready low)
-  assert property (@(posedge clk_i) if (arst_ni && rst_ni)
-    (valid_i && !ready_i) |=> $stable(data_i))
-  else
-    $error("ASSERTION FAILED: BUS should remain stable when VALID is high and READY is low");
+  if (IGNORE_RULE_0 == 0) begin
+    assert property (@(posedge clk_i) if (arst_ni && rst_ni)
+      (valid_i && !ready_i) |=> $stable(data_i))
+    else
+      $error("ASSERTION FAILED: BUS should remain stable when VALID is high and READY is low");
+  end
 
   // Assertion: Check handshake protocol timing
-  assert property (@(posedge clk_i) if (arst_ni && rst_ni)
-    ($past(valid_i) && !valid_i) |=> $past(ready_i, 2))
-  else
-    $error("ASSERTION FAILED: READY should be high when VALID goes low");
+  if (IGNORE_RULE_1 == 0) begin
+    assert property (@(posedge clk_i) if (arst_ni && rst_ni)
+      ($past(valid_i) && !valid_i) |=> $past(ready_i, 2))
+    else
+      $error("ASSERTION FAILED: READY should be high when VALID goes low");
+  end
 
   // Assertion: Validate synchronous reset behavior for VALID
-  assert property (@(posedge clk_i)
-    !rst_ni |=> !valid_i)
-  else
-    $error("ASSERTION FAILED: VALID must be low when reset is asserted");
+  if (IGNORE_RULE_2 == 0) begin
+    assert property (@(posedge clk_i)
+      !rst_ni |=> !valid_i)
+    else
+      $error("ASSERTION FAILED: VALID must be low when reset is asserted");
+  end
 
   // Assertion: Validate synchronous reset behavior for READY
-  assert property (@(posedge clk_i)
-    !rst_ni |=> !ready_i)
-  else
-    $error("ASSERTION FAILED: READY must be low when reset is asserted");
+  if (IGNORE_RULE_3 == 0) begin
+    assert property (@(posedge clk_i)
+      !rst_ni |=> !ready_i)
+    else
+      $error("ASSERTION FAILED: READY must be low when reset is asserted");
+  end
 
   // Assertion: Validate asynchronous reset behavior for VALID
-  assert property (@(posedge clk_i) // PROBABLY JHAMELA
-    !arst_ni |-> !valid_i)
-  else
-    $error("ASSERTION FAILED: VALID must be low when reset is asserted");
+  if (IGNORE_RULE_4 == 0) begin
+    assert property (@(posedge clk_i) // PROBABLY JHAMELA
+      !arst_ni |-> !valid_i)
+    else
+      $error("ASSERTION FAILED: VALID must be low when reset is asserted");
+  end
 
   // Assertion: Validate asynchronous reset behavior for READY
+  if (IGNORE_RULE_5 == 0) begin
   assert property (@(posedge clk_i) // PROBABLY JHAMELA
     !arst_ni |-> !ready_i)
   else
     $error("ASSERTION FAILED: READY must be low when reset is asserted");
+  end
 
   /* verilog_format: on*/
 
@@ -80,10 +101,16 @@ module adn_common_valid_ready_checker #(
   always @(negedge arst_ni) begin
     #1step;
     // Verify signals are de-asserted immediately upon async reset
-    assert (!valid_i)
-    else $error("ASSERTION FAILED: VALID must be low when reset is asserted");
-    assert (!ready_i)
-    else $error("ASSERTION FAILED: READY must be low when reset is asserted");
+
+    if (IGNORE_RULE_6 == 0) begin
+      assert (!valid_i)
+      else $error("ASSERTION FAILED: VALID must be low when reset is asserted");
+    end
+
+    if (IGNORE_RULE_7 == 0) begin
+      assert (!ready_i)
+      else $error("ASSERTION FAILED: READY must be low when reset is asserted");
+    end
   end
 
 endmodule
