@@ -7,6 +7,7 @@
 | TC_003    | 2026-08-06 | Shuparna Haque | Maximum bounds                                          |
 | TC_004    | 2026-08-06 | Shuparna Haque | Out of bound                                            |
 | TC_005    | 2026-08-06 | Shuparna Haque | Random                                                  |
+| TC_ALL    | 2026-08-06 | Shuparna Haque | All                                                     |
 
 | REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
 |----------|------------|-----------------|--------------------------------------------------------|
@@ -106,7 +107,8 @@ module adn_common_address_decoder_tb;
   endfunction
 
   task automatic exp_gen(input logic [ADDR_WIDTH-1:0] addr_i,
-               output logic [SLAVE_ID_WIDTH-1:0] expected_index, output logic expected_found);
+                         output logic [SLAVE_ID_WIDTH-1:0] expected_index,
+                         output logic expected_found);
     expected_found = '0;
     foreach (min_addr_i[i]) begin
       if (addr_i >= min_addr_i[i] && addr_i < max_addr_i[i]) begin
@@ -194,6 +196,21 @@ module adn_common_address_decoder_tb;
       "TC_005":
       repeat (test_count) begin
         check_address($urandom);
+      end
+
+      "TC_ALL": begin
+        test_count = 1000;
+        foreach (min_addr_i[i]) begin
+          check_address(min_addr_i[i]);
+          check_address($urandom_range(min_addr_i[i] + 1, max_addr_i[i] - 2));
+          check_address(max_addr_i[i] - 1);
+        end
+        foreach (out_of_bound_addr[i]) begin
+          check_address(out_of_bound_addr[i]);
+        end
+        repeat (test_count) begin
+          check_address($urandom);
+        end
       end
 
       default: begin
