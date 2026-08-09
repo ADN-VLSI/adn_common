@@ -1,8 +1,10 @@
 /*
 
-@foez-bhai, write the purpose of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+### Purpose
+This module provides a standardized set of assertions for pipeline interfaces. It utilizes `adn_common_valid_ready_checker` to verify that data, valid, and ready signals adhere to standard handshake protocols at both the upstream input and downstream output boundaries of a pipeline stage.
 
-@foez-bhai, describe the use case of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+### Use Case
+This module is primarily used in digital design verification to ensure that pipeline stages maintain data integrity and handshake protocol compliance. By instantiating this module at the boundaries of a pipeline stage, designers can automatically detect protocol violations—such as data changing while valid is high without a ready signal—thereby reducing debug time and ensuring robust communication between upstream producers and downstream consumers.
 
 | REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
 |----------|------------|-----------------|--------------------------------------------------------|
@@ -17,31 +19,29 @@ See LICENSE file in the project root for full license information
 
 */
 
-// @foez-bhai, add comments to the parameters, ports
 module adn_common_pipeline_assertion #(
-    parameter int DATA_WIDTH = 32  // Data bus width
+    parameter int DATA_WIDTH = 32  // Width of the data bus in bits
 ) (
     // Clock and Reset
-    input logic arst_ni,  // Active-low asynchronous reset
-    input logic clk_i,    // Rising-edge clock
+    input logic arst_ni,  // Active-low asynchronous reset, must be stable
+    input logic clk_i,    // System clock, rising-edge triggered
 
     // Input (Upstream) Interface
-    input logic [DATA_WIDTH-1:0] data_in_i,        // Input data
-    input logic                  data_in_valid_i,  // Input data valid
-    input logic                  data_in_ready_o,  // Input ready (backpressure to upstream)
+    input logic [DATA_WIDTH-1:0] data_in_i,        // Data payload from upstream producer
+    input logic                  data_in_valid_i,  // Valid signal indicating data_in_i is stable
+    input logic                  data_in_ready_o,  // Ready signal indicating upstream can accept data
 
     // Output (Downstream) Interface
-    input logic [DATA_WIDTH-1:0] data_out_o,        // Output data
-    input logic                  data_out_valid_o,  // Output data valid
-    input logic                  data_out_ready_i   // Output ready (backpressure from downstream)
+    input logic [DATA_WIDTH-1:0] data_out_o,        // Data payload to downstream consumer
+    input logic                  data_out_valid_o,  // Valid signal indicating data_out_o is stable
+    input logic                  data_out_ready_i   // Ready signal indicating downstream can accept data
 );
-
-  // @foez-bhai, add comments to the functional blocks, signals, and submodules
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // ASSERTIONS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
+  // Upstream interface protocol checker instance
   adn_common_valid_ready_checker #(
       .DATA_WIDTH(DATA_WIDTH)
   ) a_in (
@@ -53,6 +53,7 @@ module adn_common_pipeline_assertion #(
       .ready_i(data_in_ready_o)
   );
 
+  // Downstream interface protocol checker instance
   adn_common_valid_ready_checker #(
       .DATA_WIDTH(DATA_WIDTH)
   ) a_out (
@@ -65,4 +66,3 @@ module adn_common_pipeline_assertion #(
   );
 
 endmodule
-

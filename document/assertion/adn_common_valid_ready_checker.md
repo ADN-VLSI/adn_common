@@ -12,7 +12,15 @@
 
 |Name|Type|Dimension|Default|Description|
 |-|-|-|-|-|
-|DATA_WIDTH|||8|Width of the data bus being monitored|
+|DATA_WIDTH|int||8|Width of the data bus being monitored|
+|IGNORE_RULE_0|bit||0|Disable rule 0: Data stability check|
+|IGNORE_RULE_1|bit||0|Disable rule 1: Handshake timing check|
+|IGNORE_RULE_2|bit||0|Disable rule 2: Sync reset check for VALID|
+|IGNORE_RULE_3|bit||0|Disable rule 3: Sync reset check for READY|
+|IGNORE_RULE_4|bit||0|Disable rule 4: Async reset check for VALID|
+|IGNORE_RULE_5|bit||0|Disable rule 5: Async reset check for READY|
+|IGNORE_RULE_6|bit||0|Disable rule 6: Async reset de-assertion check for VALID|
+|IGNORE_RULE_7|bit||0|Disable rule 7: Async reset de-assertion check for READY|
 
 
 ## Ports
