@@ -1,3 +1,4 @@
+${ADN_COMMON}/assertion/adn_common_valid_ready_checker.sv
 ${ADN_COMMON}/assertion/dummy_checker.sv
 ${ADN_COMMON}/interface/dummy_interface.sv
 ${ADN_COMMON}/source/adn_common_address_decoder.sv
@@ -13,9 +14,9 @@ ${ADN_COMMON}/source/adn_common_hs_combiner.sv
 ${ADN_COMMON}/source/adn_common_hs_counter.sv
 ${ADN_COMMON}/source/adn_common_jk_ff.sv
 ${ADN_COMMON}/source/adn_common_parity_generator.sv
+${ADN_COMMON}/source/adn_common_pipeline.sv
 ${ADN_COMMON}/source/adn_common_pipeline_join.sv
 ${ADN_COMMON}/source/adn_common_pipeline_split.sv
-${ADN_COMMON}/source/adn_common_pipeline.sv
 ${ADN_COMMON}/source/adn_common_priority_encoder.sv
 ${ADN_COMMON}/source/adn_common_range_checker.sv
 ${ADN_COMMON}/source/adn_common_ring_counter.sv
