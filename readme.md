@@ -33,6 +33,7 @@ This Repo is a collection of common modules used in ADN designs. The modules are
 
 
 ## ASSERTION
+[`adn_common_valid_ready_checker`](document/assertion/adn_common_valid_ready_checker.md)
 [`dummy_checker`](document/assertion/dummy_checker.md)
 
 
@@ -42,7 +43,6 @@ This Repo is a collection of common modules used in ADN designs. The modules are
 
 ## INCLUDE
 [`adn_common_synth_directives.svh`](document/include/adn_common_synth_directives.md)
-[`document/include/assertion/valid_ready.md)
 [`pmi/assign.svh`](document/include/pmi/assign.md)
 [`pmi/typedef.svh`](document/include/pmi/typedef.md)
 [`vip/adn_common_tb_headers.sv`](document/include/vip/adn_common_tb_headers.md)
