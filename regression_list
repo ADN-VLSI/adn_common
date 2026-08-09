@@ -3,3 +3,4 @@ ci_simulate adn_common_address_decoder_tb TC_002 1000
 ci_simulate adn_common_address_decoder_tb TC_003 1000
 ci_simulate adn_common_address_decoder_tb TC_004 1000
 ci_simulate adn_common_address_decoder_tb TC_005 1000
+ci_simulate adn_common_ring_counter_tb TC_ALL 1000

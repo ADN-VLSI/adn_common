@@ -203,7 +203,7 @@ module adn_common_ring_counter_tb;
       "TC_ROT_01": run_tc_rot_01();
       "TC_ENA_01": run_tc_ena_01();
       "TC_ENA_02": run_tc_ena_02();
-      "TC_ALL   ": begin
+      "TC_ALL": begin
         run_tc_rst_01();
         run_tc_rst_02();
         run_tc_rot_01();
