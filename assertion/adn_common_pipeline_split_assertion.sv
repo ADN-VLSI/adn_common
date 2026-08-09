@@ -17,36 +17,34 @@ See LICENSE file in the project root for full license information
 
 */
 
-// @foez-bhai, add comments to the parameters, ports
 module adn_common_pipeline_split_assertion #(
-    parameter int DATA_WIDTH = 32  // Data bus width
+    parameter int DATA_WIDTH = 32  // Width of the data bus in bits
 ) (
     // Clock and Reset
     input logic arst_ni,  // Active-low asynchronous reset
     input logic clk_i,    // Rising-edge clock
 
     // Input (Upstream) Interface
-    input  logic [DATA_WIDTH-1:0] data_in_i,        // Input data
-    input  logic                  data_in_valid_i,  // Input data valid
-    output logic                  data_in_ready_o,  // Input ready
+    input  logic [DATA_WIDTH-1:0] data_in_i,        // Data payload from upstream
+    input  logic                  data_in_valid_i,  // Valid signal for upstream data
+    output logic                  data_in_ready_o,  // Ready signal to upstream
 
-    // Output (Downstream) Interface
-    output logic [DATA_WIDTH-1:0] data_out_secondary_o,        // Output data
-    output logic                  data_out_secondary_valid_o,  // Output data valid
-    input  logic                  data_out_secondary_ready_i,  // Output ready
+    // Output (Downstream) Interface - Secondary Path
+    output logic [DATA_WIDTH-1:0] data_out_secondary_o,        // Secondary data payload
+    output logic                  data_out_secondary_valid_o,  // Secondary valid signal
+    input  logic                  data_out_secondary_ready_i,  // Secondary ready signal
 
-    // Output (Downstream) Interface
-    output logic [DATA_WIDTH-1:0] data_out_primary_o,        // Output data
-    output logic                  data_out_primary_valid_o,  // Output data valid
-    input  logic                  data_out_primary_ready_i   // Output ready
+    // Output (Downstream) Interface - Primary Path
+    output logic [DATA_WIDTH-1:0] data_out_primary_o,        // Primary data payload
+    output logic                  data_out_primary_valid_o,  // Primary valid signal
+    input  logic                  data_out_primary_ready_i   // Primary ready signal
 );
-
-  // @foez-bhai, add comments to the functional blocks, signals, and submodules
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // ASSERTIONS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
+  // Checker for the upstream input interface to ensure protocol compliance
   adn_common_valid_ready_checker #(
       .DATA_WIDTH(DATA_WIDTH)
   ) a_in (
@@ -58,6 +56,7 @@ module adn_common_pipeline_split_assertion #(
       .ready_i(data_in_ready_o)
   );
 
+  // Checker for the primary downstream interface
   adn_common_valid_ready_checker #(
       .DATA_WIDTH(DATA_WIDTH)
   ) a_out_p (
@@ -69,6 +68,7 @@ module adn_common_pipeline_split_assertion #(
       .ready_i(data_out_primary_ready_i)
   );
 
+  // Checker for the secondary downstream interface with specific rule exclusions
   adn_common_valid_ready_checker #(
       .DATA_WIDTH(DATA_WIDTH),
       .IGNORE_RULE_0(1),
@@ -83,4 +83,3 @@ module adn_common_pipeline_split_assertion #(
   );
 
 endmodule
-

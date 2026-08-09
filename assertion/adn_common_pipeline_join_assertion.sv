@@ -1,8 +1,10 @@
 /*
 
-@foez-bhai, write the purpose of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+### Purpose
+This module serves as a verification wrapper that integrates `adn_common_valid_ready_checker` instances across all primary, secondary, and output interfaces. Its primary function is to enforce and monitor handshake protocol compliance (valid/ready) within a pipeline join structure, ensuring data integrity and flow control correctness during simulation.
 
-@foez-bhai, describe the use case of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+### Use Case
+This module is utilized in pipeline join architectures where multiple upstream data streams (primary and secondary) are merged into a single downstream interface. By instantiating this module, designers can automatically verify that the handshake logic at each interface adheres to the AXI-style valid/ready protocol, preventing common bugs such as data loss, protocol deadlocks, or illegal state transitions during high-speed data movement.
 
 | REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
 |----------|------------|-----------------|--------------------------------------------------------|
@@ -17,36 +19,34 @@ See LICENSE file in the project root for full license information
 
 */
 
-// @foez-bhai, add comments to the parameters, ports
 module adn_common_pipeline_join_assertion #(
-    parameter int DATA_WIDTH = 32  // Data bus width
+    parameter int DATA_WIDTH = 32  // Width of the data bus in bits
 ) (
     // Clock and Reset
     input logic arst_ni,  // Active-low asynchronous reset
-    input logic clk_i,    // Rising-edge clock
+    input logic clk_i,    // Rising-edge clock signal
 
-    // Input (Upstream) Interface
-    input  logic [DATA_WIDTH-1:0] data_in_secondary_i,        // Input data
-    input  logic                  data_in_secondary_valid_i,  // Input data valid
-    output logic                  data_in_secondary_ready_o,  // Input ready
+    // Input (Upstream) Secondary Interface
+    input  logic [DATA_WIDTH-1:0] data_in_secondary_i,        // Secondary input data bus
+    input  logic                  data_in_secondary_valid_i,  // Secondary input valid signal
+    output logic                  data_in_secondary_ready_o,  // Secondary input ready signal
 
-    // Input (Upstream) Interface
-    input  logic [DATA_WIDTH-1:0] data_in_primary_i,        // Input data
-    input  logic                  data_in_primary_valid_i,  // Input data valid
-    output logic                  data_in_primary_ready_o,  // Input ready
+    // Input (Upstream) Primary Interface
+    input  logic [DATA_WIDTH-1:0] data_in_primary_i,        // Primary input data bus
+    input  logic                  data_in_primary_valid_i,  // Primary input valid signal
+    output logic                  data_in_primary_ready_o,  // Primary input ready signal
 
     // Output (Downstream) Interface
-    output logic [DATA_WIDTH-1:0] data_out_o,        // Output data
-    output logic                  data_out_valid_o,  // Output data valid
-    input  logic                  data_out_ready_i   // Output ready
+    output logic [DATA_WIDTH-1:0] data_out_o,        // Downstream output data bus
+    output logic                  data_out_valid_o,  // Downstream output valid signal
+    input  logic                  data_out_ready_i   // Downstream output ready signal
 );
-
-  // @foez-bhai, add comments to the functional blocks, signals, and submodules
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // ASSERTIONS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
+  // Checker for the downstream output interface
   adn_common_valid_ready_checker #(
       .DATA_WIDTH(DATA_WIDTH)
   ) a_out (
@@ -58,6 +58,7 @@ module adn_common_pipeline_join_assertion #(
       .ready_i(data_out_ready_i)
   );
 
+  // Checker for the primary upstream interface
   adn_common_valid_ready_checker #(
       .DATA_WIDTH(DATA_WIDTH)
   ) a_in_p (
@@ -69,6 +70,7 @@ module adn_common_pipeline_join_assertion #(
       .ready_i(data_in_primary_ready_o)
   );
 
+  // Checker for the secondary upstream interface
   adn_common_valid_ready_checker #(
       .DATA_WIDTH(DATA_WIDTH)
   ) a_in_s (
@@ -81,4 +83,3 @@ module adn_common_pipeline_join_assertion #(
   );
 
 endmodule
-

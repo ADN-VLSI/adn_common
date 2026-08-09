@@ -32,10 +32,16 @@
 ## Description
 
 ### Purpose
-This module provides a standardized set of assertions for pipeline interfaces. It utilizes `adn_common_valid_ready_checker` to verify that data, valid, and ready signals adhere to standard handshake protocols at both the upstream input and downstream output boundaries of a pipeline stage.
+This module provides a standardized set of assertions for pipeline interfaces. It utilizes
+`adn_common_valid_ready_checker` to verify that data, valid, and ready signals adhere to standard
+handshake protocols at both the upstream input and downstream output boundaries of a pipeline stage.
 
 ### Use Case
-This module is primarily used in digital design verification to ensure that pipeline stages maintain data integrity and handshake protocol compliance. By instantiating this module at the boundaries of a pipeline stage, designers can automatically detect protocol violations—such as data changing while valid is high without a ready signal—thereby reducing debug time and ensuring robust communication between upstream producers and downstream consumers.
+This module is primarily used in digital design verification to ensure that pipeline stages maintain
+data integrity and handshake protocol compliance. By instantiating this module at the boundaries of
+a pipeline stage, designers can automatically detect protocol violations—such as data changing while
+valid is high without a ready signal—thereby reducing debug time and ensuring robust communication
+between upstream producers and downstream consumers.
 
 | REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
 |----------|------------|-----------------|--------------------------------------------------------|

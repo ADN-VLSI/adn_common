@@ -12,7 +12,7 @@
 
 |Name|Type|Dimension|Default|Description|
 |-|-|-|-|-|
-|DATA_WIDTH|int||32|Data bus width|
+|DATA_WIDTH|int||32|Width of the data bus in bits|
 
 
 ## Ports
@@ -21,15 +21,15 @@
 |-|-|-|-|-|
 |arst_ni|input|logic||Active-low asynchronous reset|
 |clk_i|input|logic||Rising-edge clock|
-|data_in_i|input|logic [DATA_WIDTH-1:0]||Input data|
-|data_in_valid_i|input|logic||Input data valid|
-|data_in_ready_o|output|logic||Input ready|
-|data_out_secondary_o|output|logic [DATA_WIDTH-1:0]||Output data|
-|data_out_secondary_valid_o|output|logic||Output data valid|
-|data_out_secondary_ready_i|input|logic||Output ready|
-|data_out_primary_o|output|logic [DATA_WIDTH-1:0]||Output data|
-|data_out_primary_valid_o|output|logic||Output data valid|
-|data_out_primary_ready_i|input|logic||Output ready|
+|data_in_i|input|logic [DATA_WIDTH-1:0]||Data payload from upstream|
+|data_in_valid_i|input|logic||Valid signal for upstream data|
+|data_in_ready_o|output|logic||Ready signal to upstream|
+|data_out_secondary_o|output|logic [DATA_WIDTH-1:0]||Secondary data payload|
+|data_out_secondary_valid_o|output|logic||Secondary valid signal|
+|data_out_secondary_ready_i|input|logic||Secondary ready signal|
+|data_out_primary_o|output|logic [DATA_WIDTH-1:0]||Primary data payload|
+|data_out_primary_valid_o|output|logic||Primary valid signal|
+|data_out_primary_ready_i|input|logic||Primary ready signal|
 
 
 ## Description

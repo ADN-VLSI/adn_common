@@ -37,7 +37,7 @@ This Repo is a collection of common modules used in ADN designs. The modules are
 [`adn_common_pipeline_join_assertion`](document/assertion/adn_common_pipeline_join_assertion.md)
 [`adn_common_pipeline_split_assertion`](document/assertion/adn_common_pipeline_split_assertion.md)
 [`adn_common_valid_ready_checker`](document/assertion/adn_common_valid_ready_checker.md)
-[`dummy_checker`](document/assertion/dummy_checker.md)
+[`document/assertion/dummy_checker.md)
 
 
 ## INTERFACE
