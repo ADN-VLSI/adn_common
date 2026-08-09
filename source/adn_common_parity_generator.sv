@@ -9,7 +9,7 @@ This module is primarily used in communication interfaces and memory controllers
 | REVISION | DATE       | AUTHOR              | DESCRIPTION                                        |
 |----------|------------|---------------------|----------------------------------------------------|
 | 0.1      | 2026-08-02 | Ahasan Ullah Khalid | Initial version                                    |
-| 1.0      | 2026-08-02 | Ahasan Ullah Khalid | Stable release                                     |
+| 1.1      | 2026-08-09 | Ahasan Ullah Khalid | Stable release                                     |
 
 Author : Ahasan Ullah Khalid (aukhalid02@gmail.com)
 This file is part of ADN-VLSI/adn_common
@@ -20,21 +20,21 @@ See LICENSE file in the project root for full license information
 */
 
 module adn_common_parity_generator #(
-    parameter int DATA_WIDTH = 8 // Width of the input data vector
+    parameter int DATA_WIDTH = 8  // Width of the input data vector
 ) (
-    input  logic [        DATA_WIDTH-1:0] data_i,              // Input data to calculate parity for
-    input  logic [$clog2(DATA_WIDTH)-1:0] parity_valid_bits_i, // Number of bits to consider for parity
-    input  logic                          parity_type_i,       // 1 for even parity, 0 for odd parity
-    output logic                          parity_o             // Calculated parity bit
+    input  logic [$clog2(DATA_WIDTH):0] parity_valid_bits_i,  // Number of bits to consider
+    input  logic [      DATA_WIDTH-1:0] data_i,               // Input data to calculate parity for
+    input  logic                        parity_type_i,        // 1 for even parity, 0 for odd
+    output logic                        parity_o              // Calculated parity bit
 );
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // SIGNALS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  logic [DATA_WIDTH-1:0] mask;        // Bitmask to isolate valid data bits
-  logic [DATA_WIDTH-1:0] masked_data; // Data after applying the bitmask
-  logic                  even_parity; // Intermediate even parity result
+  logic [DATA_WIDTH-1:0] mask;  // Bitmask to isolate valid data bits
+  logic [DATA_WIDTH-1:0] masked_data;  // Data after applying the bitmask
+  logic                  even_parity;  // Intermediate even parity result
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // ASSIGNMENTS
@@ -44,15 +44,18 @@ module adn_common_parity_generator #(
   always_comb begin
     mask = '0;
     for (int i = 0; i < parity_valid_bits_i; i++) begin
-      mask[i] = '1;
+      mask[i] = 1'b1;
     end
   end
 
   // Apply mask to input data
   assign masked_data = data_i & mask;
 
-  // Calculate even parity using XOR reduction
+  // Calculate parity bit:
+  // - ^masked_data outputs 1 for odd number of 1s, 0 for even.
+  // - Even Parity (parity_type_i = 1): parity bit matches ^masked_data to make total 1s even.
+  // - Odd Parity  (parity_type_i = 0): parity bit inverts ^masked_data to make total 1s odd.
   assign even_parity = ^masked_data;
-  assign parity_o    = parity_type_i ? ~even_parity : even_parity;
+  assign parity_o    = parity_type_i ? even_parity : ~even_parity;
 
 endmodule
