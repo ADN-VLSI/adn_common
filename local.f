@@ -1,15 +1,16 @@
 -i ${ADN_COMMON}/testbench
-<<<<<<< Updated upstream
 ${ADN_COMMON}/testbench/adn_common_fifo_tb.sv
 ${ADN_COMMON}/testbench/adn_common_address_decoder_tb.sv
+${ADN_COMMON}/testbench/adn_common_edge_detect_tb.sv
+${ADN_COMMON}/testbench/adn_common_fifo_tb.sv
+${ADN_COMMON}/testbench/adn_common_fixed_priority_arbiter_tb.sv
 ${ADN_COMMON}/testbench/adn_common_hs_counter_tb.sv
+${ADN_COMMON}/testbench/adn_common_jk_ff_tb.sv
 ${ADN_COMMON}/testbench/adn_common_pipeline_tb.sv
-${ADN_COMMON}/testbench/adn_common_round_robin_arbiter_tb.sv
 ${ADN_COMMON}/testbench/adn_common_ring_counter_tb.sv
 ${ADN_COMMON}/testbench/adn_common_fixed_priority_arbiter_tb.sv
 ${ADN_COMMON}/testbench/adn_common_edge_detect_tb.sv
 ${ADN_COMMON}/testbench/adn_common_jk_ff_tb.sv
-=======
 ${ADN_COMMON}/testbench/adn_common_pipeline_tb.sv
 ${ADN_COMMON}/testbench/adn_common_edge_detect_tb.sv
 ${ADN_COMMON}/testbench/adn_common_address_decoder_tb.sv
@@ -17,4 +18,4 @@ ${ADN_COMMON}/testbench/adn_common_fixed_priority_arbiter_tb.sv
 ${ADN_COMMON}/testbench/adn_common_jk_ff_tb.sv
 ${ADN_COMMON}/testbench/adn_common_round_robin_arbiter_tb.sv
 ${ADN_COMMON}/testbench/adn_PMI_tb.sv
->>>>>>> Stashed changes
+${ADN_COMMON}/testbench/adn_common_round_robin_arbiter_tb.sv

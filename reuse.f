@@ -1,3 +1,7 @@
+${ADN_COMMON}/assertion/adn_common_pipeline_assertion.sv
+${ADN_COMMON}/assertion/adn_common_pipeline_join_assertion.sv
+${ADN_COMMON}/assertion/adn_common_pipeline_split_assertion.sv
+${ADN_COMMON}/assertion/adn_common_valid_ready_checker.sv
 ${ADN_COMMON}/assertion/dummy_checker.sv
 ${ADN_COMMON}/interface/adn_PMI.sv
 ${ADN_COMMON}/interface/dummy_interface.sv

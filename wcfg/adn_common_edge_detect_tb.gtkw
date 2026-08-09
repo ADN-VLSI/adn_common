@@ -2,10 +2,10 @@
 [*] GTKWave Analyzer v3.3.100 (w)1999-2019 BSI
 [*] Sun Aug 02 06:39:34 2026
 [*]
-[dumpfile] "C:\Users\foeza\Documents\ADN-MASTER\adn_common\build\adn_common_edge_detect_tb.vcd"
+[dumpfile] "build/adn_common_edge_detect_tb.vcd"
 [dumpfile_mtime] "Sun Aug 02 06:39:17 2026"
 [dumpfile_size] 5934
-[savefile] "C:\Users\foeza\Documents\ADN-MASTER\adn_common\wcfg\adn_common_edge_detect_tb.gtkw"
+[savefile] "wcfg/adn_common_edge_detect_tb.gtkw"
 [timestart] 543100
 [size] 1536 793
 [pos] -1 -1
