@@ -1,8 +1,5 @@
-<<<<<<< Updated upstream
 ${ADN_COMMON}/assertion/dummy_checker.sv
-=======
 ${ADN_COMMON}/interface/adn_PMI.sv
->>>>>>> Stashed changes
 ${ADN_COMMON}/interface/dummy_interface.sv
 ${ADN_COMMON}/source/adn_common_address_decoder.sv
 ${ADN_COMMON}/source/adn_common_bin_to_gray.sv
