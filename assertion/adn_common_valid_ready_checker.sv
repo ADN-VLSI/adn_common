@@ -24,15 +24,24 @@ See LICENSE file in the project root for full license information
 */
 
 module adn_common_valid_ready_checker #(
-    parameter int DATA_WIDTH = 8,  // Width of the data bus being monitored
-    parameter bit IGNORE_RULE_0 = 0, // Disable rule 0: Data stability check
-    parameter bit IGNORE_RULE_1 = 0, // Disable rule 1: Handshake timing check
-    parameter bit IGNORE_RULE_2 = 0, // Disable rule 2: Sync reset check for VALID
-    parameter bit IGNORE_RULE_3 = 0, // Disable rule 3: Sync reset check for READY
-    parameter bit IGNORE_RULE_4 = 0, // Disable rule 4: Async reset check for VALID
-    parameter bit IGNORE_RULE_5 = 0, // Disable rule 5: Async reset check for READY
-    parameter bit IGNORE_RULE_6 = 0, // Disable rule 6: Async reset de-assertion check for VALID
-    parameter bit IGNORE_RULE_7 = 0  // Disable rule 7: Async reset de-assertion check for READY
+    // Width of the data bus being monitored
+    parameter int DATA_WIDTH = 8,
+    // Disable rule 0: Data stability check
+    parameter bit IGNORE_RULE_0 = 0,
+    // Disable rule 1: Handshake timing check
+    parameter bit IGNORE_RULE_1 = 0,
+    // Disable rule 2: Sync reset check for VALID
+    parameter bit IGNORE_RULE_2 = 0,
+    // Disable rule 3: Sync reset check for READY
+    parameter bit IGNORE_RULE_3 = 0,
+    // Disable rule 4: Async reset check for VALID
+    parameter bit IGNORE_RULE_4 = 0,
+    // Disable rule 5: Async reset check for READY
+    parameter bit IGNORE_RULE_5 = 0,
+    // Disable rule 6: Async reset de-assertion check for VALID
+    parameter bit IGNORE_RULE_6 = 0,
+    // Disable rule 7: Async reset de-assertion check for READY
+    parameter bit IGNORE_RULE_7 = 0
 ) (
     input logic arst_ni,  // Asynchronous active-low reset
     input logic rst_ni,   // Synchronous active-low reset

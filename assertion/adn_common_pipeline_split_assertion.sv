@@ -17,7 +17,7 @@ See LICENSE file in the project root for full license information
 
 */
 
-// @foez---bhai, add comments to the parameters, ports
+// @foez-bhai, add comments to the parameters, ports
 module adn_common_pipeline_split_assertion #(
     parameter int DATA_WIDTH = 32  // Data bus width
 ) (
@@ -41,7 +41,7 @@ module adn_common_pipeline_split_assertion #(
     input  logic                  data_out_primary_ready_i   // Output ready
 );
 
-  // @foez---bhai, add comments to the functional blocks, signals, and submodules
+  // @foez-bhai, add comments to the functional blocks, signals, and submodules
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // ASSERTIONS
