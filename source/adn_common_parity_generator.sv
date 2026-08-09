@@ -39,15 +39,15 @@ module adn_common_parity_generator #(
   // ASSIGNMENTS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  // @foez-bhai, add comments describing the logic behind the parity calculation and how the mask is applied to the input data. This will help future developers understand the purpose of each signal and the overall functionality of the module.
+  // The mask logic performs a cumulative XOR operation across the input data vector.
+  // By iteratively XORing each bit with the previous result, we effectively compute 
+  // the parity of the subset of bits defined by num_bits_i.
   always_comb begin
     mask[0] = data_i[0];
     for (int i = 1; i < num_bits_i; i++) begin
       mask[i] = data_i[i] ^ mask[i-1];
     end
   end
-
-  // @foez-bhai, add comments describing the logic behind the parity calculation and how the mask is applied to the input data. This will help future developers understand the purpose of each signal and the overall functionality of the module.
   always_comb begin
     if (parity_type_i) begin
       parity_o = ~mask[num_bits_i-1];  // Even parity: invert the final mask bit
