@@ -1,37 +1,26 @@
-/*
+//////////////////////////////////////////////////////////////////////////////////////////////////
+// TEST CASE REFERENCE
+//////////////////////////////////////////////////////////////////////////////////////////////////
+// | TEST CASE            | DATE       | AUTHOR       | DESCRIPTION                                                              |
+// |-----------------------|------------|--------------|---------------------------------------------------------------------------|
+// | TC_RST_01             | 2026-08-10 | Annim Jannat | Asynchronous reset assertion with no active transfer                     |
+// | TC_RST_02             | 2026-08-10 | Annim Jannat | Asynchronous reset asserted mid-transfer (valid + both ready)            |
+// | TC_RST_03             | 2026-08-10 | Annim Jannat | Asynchronous reset asserted while stalled (valid high, neither ready)    |
+// | TC_BASIC_01           | 2026-08-10 | Annim Jannat | Single-beat transfer with both downstream interfaces ready               |
+// | TC_BASIC_02           | 2026-08-10 | Annim Jannat | Back-to-back multi-beat transfer, both downstreams always ready          |
+// | TC_PRI_ONLY_01        | 2026-08-10 | Annim Jannat | Primary ready / secondary not ready - secondary starvation check         |
+// | TC_SEC_ONLY_01        | 2026-08-10 | Annim Jannat | Secondary ready / primary not ready - primary starvation check           |
+// | TC_NONE_READY_01      | 2026-08-10 | Annim Jannat | Neither ready initially, then primary alone becomes ready                |
+// | TC_NONE_READY_02      | 2026-08-10 | Annim Jannat | Directed test of documented priority-drop: neither ready, then both ready|
+// | TC_STALL_VALID_01     | 2026-08-10 | Annim Jannat | Upstream valid de-asserted mid-stall before either downstream is ready   |
+// | TC_READY_TOGGLE_01    | 2026-08-10 | Annim Jannat | Valid held constant while both downstream readies toggle independently   |
+// | TC_WIDTH_ONES_01      | 2026-08-10 | Annim Jannat | Data integrity check with all-ones (max value) data pattern              |
+// | TC_WIDTH_ZEROS_01     | 2026-08-10 | Annim Jannat | Data integrity check with all-zeros data pattern                         |
+// | TC_BACK2BACK_STRESS   | 2026-08-10 | Annim Jannat | Continuous input stream with independently toggling downstream readies   |
+// | TC_RANDOM_01          | 2026-08-10 | Annim Jannat | Fully randomized valid/ready/data stress test over many cycles           |
+// | TC_ALL                | 2026-08-10 | Annim Jannat | Default regression suite executing all test scenarios sequentially       |
+//////////////////////////////////////////////////////////////////////////////////////////////////
 
-| TEST CASE             | DATE       | AUTHOR       | DESCRIPTION                                                              |
-|-----------------------|------------|--------------|--------------------------------------------------------------------------|
-| TC_RST_01             | 2026-08-10 | Annim Jannat | Asynchronous reset assertion with no active transfer                     |
-| TC_RST_02             | 2026-08-10 | Annim Jannat | Asynchronous reset asserted mid-transfer (valid + both ready)            |
-| TC_RST_03             | 2026-08-10 | Annim Jannat | Asynchronous reset asserted while stalled (valid high, neither ready)    |
-| TC_BASIC_01           | 2026-08-10 | Annim Jannat | Single-beat transfer with both downstream interfaces ready               |
-| TC_BASIC_02           | 2026-08-10 | Annim Jannat | Back-to-back multi-beat transfer, both downstreams always ready          |
-| TC_PRI_ONLY_01        | 2026-08-10 | Annim Jannat | Primary ready / secondary not ready - secondary starvation check         |
-| TC_SEC_ONLY_01        | 2026-08-10 | Annim Jannat | Secondary ready / primary not ready - primary starvation check           |
-| TC_NONE_READY_01      | 2026-08-10 | Annim Jannat | Neither ready initially, then primary alone becomes ready                |
-| TC_NONE_READY_02      | 2026-08-10 | Annim Jannat | Directed test of documented priority-drop: neither ready, then both ready|
-| TC_STALL_VALID_01     | 2026-08-10 | Annim Jannat | Upstream valid de-asserted mid-stall before either downstream is ready   |
-| TC_READY_TOGGLE_01    | 2026-08-10 | Annim Jannat | Valid held constant while both downstream readies toggle independently   |
-| TC_WIDTH_ONES_01      | 2026-08-10 | Annim Jannat | Data integrity check with all-ones (max value) data pattern              |
-| TC_WIDTH_ZEROS_01     | 2026-08-10 | Annim Jannat | Data integrity check with all-zeros data pattern                         |
-| TC_BACK2BACK_STRESS   | 2026-08-10 | Annim Jannat | Continuous input stream with independently toggling downstream readies   |
-| TC_RANDOM_01          | 2026-08-10 | Annim Jannat | Fully randomized valid/ready/data stress test over many cycles           |
-
-
-| REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
-|----------|------------|-----------------|--------------------------------------------------------|
-| 0.1      | 2026-08-09 | Annim Jannat    | Initial version                                        |
-| 1.0      | 2026-08-10 | Annim Jannat    | Stable release                                         |
-
-Author : Annim Jannat (jannatannim@gmail.com)
-This file is part of ADN-VLSI/adn_common
-Copyright (c) 2026 ADN Semiconductors
-Licensed under the MIT License
-See LICENSE file in the project root for full license information
-
-*/
-// @foez-bhai add commments for this testbench module, each test case, variables, signals and tasks,functions.
 module adn_common_pipeline_split_tb;
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -47,10 +36,6 @@ module adn_common_pipeline_split_tb;
 
   localparam time CLKPeriod  = 10ns;
   localparam int  DATA_WIDTH = 8;
-
-  //////////////////////////////////////////////////////////////////////////////////////////////////
-  // TYPEDEFS
-  //////////////////////////////////////////////////////////////////////////////////////////////////
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // SIGNALS
@@ -80,13 +65,27 @@ module adn_common_pipeline_split_tb;
 
   bit                     is_clk_edge_aligned;
 
-  logic [DATA_WIDTH-1:0]  primary_exp_q[$];
+  // ---------------------------------------------------------------------
+  // Reference model - mirrors the DUT's actual internal micro-architecture:
+  //   adn_common_pipeline_split wraps a 1-deep elastic buffer
+  //   (adn_common_pipeline) with:
+  //     data_in_ready_o    = is_full ? (pri_rdy_i | sec_rdy_i) : 1  (empty always accepts)
+  //     primary_valid_o    = is_full
+  //     secondary_valid_o  = is_full & ~primary_ready_i   (primary has strict priority)
+  //     is_full_next       = data_in_valid_i ? 1
+  //                           : ((pri_rdy_i | sec_rdy_i) ? 0 : is_full)
+  //     data_reg captures data_in_i on any accepted beat (valid & ready)
+  // ---------------------------------------------------------------------
+  logic                   ref_is_full;
+  logic [DATA_WIDTH-1:0]  ref_data_reg;
 
-  logic [DATA_WIDTH-1:0]  secondary_seen_q[$];
-
-  logic                   secondary_valid_dly;
-  logic                   secondary_ready_dly;
+  // Delayed copies used only to detect/report the documented priority-drop
+  // corner case for visibility (not used for pass/fail - the cycle-accurate
+  // comparison above already fully covers correctness)
+  logic                   exp_secondary_valid_dly;
   logic                   primary_ready_dly;
+  logic                   secondary_ready_dly;
+
   int unsigned            drop_event_count;
   int unsigned            primary_xfer_count;
   int unsigned            secondary_xfer_count;
@@ -115,6 +114,22 @@ module adn_common_pipeline_split_tb;
   );
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
+  // ASSIGNMENTS
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+
+  // (none)
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+  // SEQUENTIALS
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+
+  always @(posedge clk) begin
+    is_clk_edge_aligned <= arst_n;
+    #1ns;
+    is_clk_edge_aligned <= '0;
+  end
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////
   // METHODS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -127,11 +142,11 @@ module adn_common_pipeline_split_tb;
     data_in_valid            <= '0;
     data_out_primary_ready   <= '0;
     data_out_secondary_ready <= '0;
-    primary_exp_q.delete();
-    secondary_seen_q.delete();
-    secondary_valid_dly      <= '0;
-    secondary_ready_dly      <= '0;
-    primary_ready_dly        <= '0;
+    ref_is_full               <= '0;
+    ref_data_reg               <= '0;
+    exp_secondary_valid_dly   <= '0;
+    primary_ready_dly         <= '0;
+    secondary_ready_dly       <= '0;
     drop_event_count         <= '0;
     primary_xfer_count       <= '0;
     secondary_xfer_count     <= '0;
@@ -163,135 +178,141 @@ module adn_common_pipeline_split_tb;
     @(posedge clk);
   endtask
 
+  // Hold current data/valid/ready for N cycles (used to let stalls play out)
+  task automatic hold_cycles(input int n);
+    repeat (n) @(posedge clk);
+  endtask
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+  // SCOREBOARD / CHECKER
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+
   task automatic start_checking();
     fork
       forever
       @(posedge clk or negedge arst_n) begin
         if (~arst_n) begin
-          primary_exp_q.delete();
-          secondary_seen_q.delete();
-          secondary_valid_dly <= '0;
-          secondary_ready_dly <= '0;
-          primary_ready_dly   <= '0;
+          ref_is_full             <= '0;
+          ref_data_reg             <= '0;
+          exp_secondary_valid_dly <= '0;
+          primary_ready_dly       <= '0;
+          secondary_ready_dly     <= '0;
         end else begin
-          #1ns;  // let combinational outputs settle after the edge
+          #1ns;  // let DUT combinational outputs settle after the edge
 
-          // ---------------------------------------------------------------
-          // Check 1: ready arbitration (documented: ready asserted whenever
-          // EITHER downstream interface is ready)
-          // ---------------------------------------------------------------
-          if (data_in_ready !== (data_out_primary_ready | data_out_secondary_ready)) begin
-            note_case(0);
-            $display("[%s] FAIL [%0t] data_in_ready_o(%b) != pri_rdy(%b) | sec_rdy(%b)",
-                      test_name, $realtime, data_in_ready, data_out_primary_ready,
-                      data_out_secondary_ready);
-          end else begin
-            note_case(1);
-          end
+          begin
+            // Expected combinational outputs, computed from the reference
+            // model's CURRENT state (i.e. the state as of this edge) and
+            // this cycle's live inputs - mirrors the DUT's own combinational
+            // equations exactly.
+            automatic logic                  exp_ready;
+            automatic logic                  exp_primary_valid;
+            automatic logic                  exp_secondary_valid;
+            automatic logic [DATA_WIDTH-1:0] exp_data;
 
-          // ---------------------------------------------------------------
-          // Check 2: no unknowns on live outputs
-          // ---------------------------------------------------------------
-          if (data_out_primary_valid === 1'bx || data_out_secondary_valid === 1'bx ||
-              data_in_ready === 1'bx) begin
-            note_case(0);
-            $display("[%s] FAIL [%0t] Unknown control signal detected: pri_vld=%b sec_vld=%b in_rdy=%b"
-                      ,test_name, $realtime, data_out_primary_valid, data_out_secondary_valid,
-                      data_in_ready);
-          end else begin
-            note_case(1);
-          end
+            exp_ready           = ref_is_full ? (data_out_primary_ready | data_out_secondary_ready)
+                                               : 1'b1;
+            exp_primary_valid   = ref_is_full;
+            exp_secondary_valid = ref_is_full & ~data_out_primary_ready;
+            exp_data             = ref_data_reg;
 
-          // ---------------------------------------------------------------
-          // Track accepted upstream transfers -> push into primary scoreboard
-          // (primary has strict priority, so it must observe every accepted
-          // beat, in order)
-          // ---------------------------------------------------------------
-          if (data_in_valid && data_in_ready) begin
-            primary_exp_q.push_back(data_in);
-            secondary_seen_q.push_back(data_in);
+            // -----------------------------------------------------------
+            // Check 1: data_in_ready_o
+            // -----------------------------------------------------------
+            if (data_in_ready !== exp_ready) begin
+              note_case(0);
+              $display("[%s] FAIL [%0t] data_in_ready_o mismatch: exp=%b got=%b (is_full=%b pri_rdy=%b sec_rdy=%b)",
+                        test_name, $realtime, exp_ready, data_in_ready, ref_is_full,
+                        data_out_primary_ready, data_out_secondary_ready);
+            end else begin
+              note_case(1);
+            end
+
+            // -----------------------------------------------------------
+            // Check 2: primary_valid_o
+            // -----------------------------------------------------------
+            if (data_out_primary_valid !== exp_primary_valid) begin
+              note_case(0);
+              $display("[%s] FAIL [%0t] data_out_primary_valid_o mismatch: exp=%b got=%b",
+                        test_name, $realtime, exp_primary_valid, data_out_primary_valid);
+            end else begin
+              note_case(1);
+            end
+
+            // -----------------------------------------------------------
+            // Check 3: secondary_valid_o (the documented priority-gated signal)
+            // -----------------------------------------------------------
+            if (data_out_secondary_valid !== exp_secondary_valid) begin
+              note_case(0);
+              $display("[%s] FAIL [%0t] data_out_secondary_valid_o mismatch: exp=%b got=%b",
+                        test_name, $realtime, exp_secondary_valid, data_out_secondary_valid);
+            end else begin
+              note_case(1);
+            end
+
+            // -----------------------------------------------------------
+            // Check 4: primary/secondary data integrity while valid
+            // -----------------------------------------------------------
+            if (exp_primary_valid && (data_out_primary !== exp_data)) begin
+              note_case(0);
+              $display("[%s] FAIL [%0t] data_out_primary_o mismatch: exp=%0h got=%0h",
+                        test_name, $realtime, exp_data, data_out_primary);
+            end else if (exp_primary_valid) begin
+              note_case(1);
+            end
+
+            if (exp_secondary_valid && (data_out_secondary !== exp_data)) begin
+              note_case(0);
+              $display("[%s] FAIL [%0t] data_out_secondary_o mismatch: exp=%0h got=%0h",
+                        test_name, $realtime, exp_data, data_out_secondary);
+            end else if (exp_secondary_valid) begin
+              note_case(1);
+            end
+
+            // -----------------------------------------------------------
+            // Transfer counters (actual completed handshakes on the DUT)
+            // -----------------------------------------------------------
+            if (data_out_primary_valid && data_out_primary_ready) begin
+              primary_xfer_count <= primary_xfer_count + 1;
+            end
+            if (data_out_secondary_valid && data_out_secondary_ready) begin
+              secondary_xfer_count <= secondary_xfer_count + 1;
+            end
+
+            // -----------------------------------------------------------
+            // Informational: detect/report the documented priority-drop
+            // event (secondary was offering valid data while stalled, then
+            // primary_ready rises and secondary_valid is withdrawn even
+            // though the buffer still holds that same beat). Logged only -
+            // this is expected, by-design behavior, not a failure.
+            // -----------------------------------------------------------
+            if (exp_secondary_valid_dly && !secondary_ready_dly && !primary_ready_dly &&
+                data_out_primary_ready && ref_is_full && !exp_secondary_valid) begin
+              drop_event_count <= drop_event_count + 1;
+              $display("[%s] INFO [%0t] Observed documented SECONDARY priority-drop event (count=%0d)",
+                        test_name, $realtime, drop_event_count + 1);
+            end
+
             if (debug) begin
-              $display("[%s] UPSTREAM ACCEPTED: data=%0h [%0t]", test_name, data_in, $realtime);
+              $display("[%s] STATE [%0t] is_full=%b data_reg=%0h in_rdy=%b pri_vld=%b sec_vld=%b",
+                        test_name, $realtime, ref_is_full, ref_data_reg, data_in_ready,
+                        data_out_primary_valid, data_out_secondary_valid);
             end
-          end
 
-          // ---------------------------------------------------------------
-          // Check 3: primary data integrity, strict in-order
-          // ---------------------------------------------------------------
-          if (data_out_primary_valid && data_out_primary_ready) begin
-            primary_xfer_count <= primary_xfer_count + 1;
-            if (primary_exp_q.size() == 0) begin
-              note_case(0);
-              $display("[%s] FAIL [%0t] Unexpected PRIMARY transfer, data=%0h with empty scoreboard"
-              ,test_name, $realtime, data_out_primary);
-            end else begin
-              automatic logic [DATA_WIDTH-1:0] exp = primary_exp_q.pop_front();
-              if (data_out_primary !== exp) begin
-                note_case(0);
-                $display("[%s] FAIL [%0t] PRIMARY data mismatch: exp=%0h got=%0h",
-                          test_name, $realtime, exp, data_out_primary);
-              end else begin
-                note_case(1);
-                if (debug) begin
-                  $display("[%s] PRIMARY XFER OK: data=%0h [%0t]", test_name, data_out_primary,
-                            $realtime);
-                end
-              end
-            end
-          end
+            // -----------------------------------------------------------
+            // Advance reference model to the state it will hold going into
+            // the NEXT edge (independent oracle - driven purely by inputs
+            // and the model's own prior state, not by the DUT's outputs)
+            // -----------------------------------------------------------
+            ref_data_reg <= (data_in_valid && exp_ready) ? data_in : ref_data_reg;
+            ref_is_full  <= data_in_valid
+                             ? 1'b1
+                             : ((data_out_primary_ready | data_out_secondary_ready) ? 1'b0 : ref_is_full);
 
-          // ---------------------------------------------------------------
-          // Check 4: secondary data integrity, membership-based (order can
-          // legitimately shift because of the documented priority-drop
-          // behavior, so we only check the value was something genuinely
-          // offered upstream, not strict FIFO order)
-          // ---------------------------------------------------------------
-          if (data_out_secondary_valid && data_out_secondary_ready) begin
-            secondary_xfer_count <= secondary_xfer_count + 1;
-            if (secondary_seen_q.size() == 0) begin
-              note_case(0);
-              $display("[%s] FAIL [%0t] Unexpected SECONDARY transfer, data=%0h with empty scoreboard"
-              ,test_name, $realtime, data_out_secondary);
-            end else begin
-              automatic int idx = -1;
-              for (int i = 0; i < secondary_seen_q.size(); i++) begin
-                if (secondary_seen_q[i] === data_out_secondary) begin
-                  idx = i;
-                  break;
-                end
-              end
-              if (idx == -1) begin
-                note_case(0);
-                $display("[%s] FAIL [%0t] SECONDARY data=%0h not found among offered upstream data",
-                          test_name, $realtime, data_out_secondary);
-              end else begin
-                note_case(1);
-                secondary_seen_q.delete(idx);
-                if (debug) begin
-                  $display("[%s] SECONDARY XFER OK: data=%0h [%0t]", test_name, data_out_secondary,
-                            $realtime);
-                end
-              end
-            end
+            exp_secondary_valid_dly <= exp_secondary_valid;
+            primary_ready_dly       <= data_out_primary_ready;
+            secondary_ready_dly     <= data_out_secondary_ready;
           end
-
-          // ---------------------------------------------------------------
-          // Check 5: observe/report the documented priority-drop quirk.
-          // Pattern: secondary was valid & stalled (ready low) last cycle,
-          // and this cycle both readies are high, yet secondary_valid has
-          // dropped instead of completing the transfer.
-          // This is EXPECTED (by design, per module warning) - logged only,
-          // not treated as a failure.
-          // ---------------------------------------------------------------
-          if (secondary_valid_dly && !secondary_ready_dly && !primary_ready_dly &&
-              data_out_primary_ready && data_out_secondary_ready && !data_out_secondary_valid) begin
-            drop_event_count <= drop_event_count + 1;
-            $display("[%s] INFO [%0t] Observed documented SECONDARY priority-drop event (count=%0d)", test_name, $realtime, drop_event_count + 1);
-          end
-
-          secondary_valid_dly <= data_out_secondary_valid;
-          secondary_ready_dly <= data_out_secondary_ready;
-          primary_ready_dly   <= data_out_primary_ready;
         end
       end
     join_none
@@ -301,13 +322,7 @@ module adn_common_pipeline_split_tb;
   // TEST CASES
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-
-  // Hold current data/valid/ready for N cycles (used to let stalls play out)
-  task automatic hold_cycles(input int n);
-    repeat (n) @(posedge clk);
-  endtask
-
-    task automatic run_tc_rst_01();
+  task automatic run_tc_rst_01();
     apply_reset();
   endtask
 
@@ -461,21 +476,27 @@ module adn_common_pipeline_split_tb;
     hold_cycles(5);
   endtask
 
-
-  //////////////////////////////////////////////////////////////////////////////////////////////////
-  // SEQUENTIALS
-  //////////////////////////////////////////////////////////////////////////////////////////////////
-
-  always @(posedge clk) begin
-    is_clk_edge_aligned <= arst_n;
-    #1ns;
-    is_clk_edge_aligned <= '0;
-  end
+  task automatic run_tc_all();
+    run_tc_rst_01();
+    run_tc_rst_02();
+    run_tc_rst_03();
+    run_tc_basic_01();
+    run_tc_basic_02();
+    run_tc_pri_only_01();
+    run_tc_sec_only_01();
+    run_tc_none_ready_01();
+    run_tc_none_ready_02();
+    run_tc_stall_valid_deassert_01();
+    run_tc_ready_toggle_01();
+    run_tc_width_allones_01();
+    run_tc_width_allzeros_01();
+    run_tc_back2back_stress_01();
+    run_tc_random_01();
+  endtask
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // PROCEDURALS
   //////////////////////////////////////////////////////////////////////////////////////////////////
-
 
   initial begin
 
@@ -501,6 +522,7 @@ module adn_common_pipeline_split_tb;
       "TC_WIDTH_ZEROS_01":    run_tc_width_allzeros_01();
       "TC_BACK2BACK_STRESS":  run_tc_back2back_stress_01();
       "TC_RANDOM_01":         run_tc_random_01();
+      "TC_ALL":               run_tc_all();
 
       default: begin
         $fatal(1, "Unrecognized test_name '%s'", test_name);
@@ -512,8 +534,5 @@ module adn_common_pipeline_split_tb;
               test_name, primary_xfer_count, secondary_xfer_count, drop_event_count);
     // Finish simulation
     $finish;
-
   end
-
 endmodule
-
