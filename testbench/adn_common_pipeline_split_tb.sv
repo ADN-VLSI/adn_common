@@ -1,26 +1,36 @@
-//////////////////////////////////////////////////////////////////////////////////////////////////
-// TEST CASE REFERENCE
-//////////////////////////////////////////////////////////////////////////////////////////////////
-// | TEST CASE            | DATE       | AUTHOR       | DESCRIPTION                                                              |
-// |-----------------------|------------|--------------|---------------------------------------------------------------------------|
-// | TC_RST_01             | 2026-08-10 | Annim Jannat | Asynchronous reset assertion with no active transfer                     |
-// | TC_RST_02             | 2026-08-10 | Annim Jannat | Asynchronous reset asserted mid-transfer (valid + both ready)            |
-// | TC_RST_03             | 2026-08-10 | Annim Jannat | Asynchronous reset asserted while stalled (valid high, neither ready)    |
-// | TC_BASIC_01           | 2026-08-10 | Annim Jannat | Single-beat transfer with both downstream interfaces ready               |
-// | TC_BASIC_02           | 2026-08-10 | Annim Jannat | Back-to-back multi-beat transfer, both downstreams always ready          |
-// | TC_PRI_ONLY_01        | 2026-08-10 | Annim Jannat | Primary ready / secondary not ready - secondary starvation check         |
-// | TC_SEC_ONLY_01        | 2026-08-10 | Annim Jannat | Secondary ready / primary not ready - primary starvation check           |
-// | TC_NONE_READY_01      | 2026-08-10 | Annim Jannat | Neither ready initially, then primary alone becomes ready                |
-// | TC_NONE_READY_02      | 2026-08-10 | Annim Jannat | Directed test of documented priority-drop: neither ready, then both ready|
-// | TC_STALL_VALID_01     | 2026-08-10 | Annim Jannat | Upstream valid de-asserted mid-stall before either downstream is ready   |
-// | TC_READY_TOGGLE_01    | 2026-08-10 | Annim Jannat | Valid held constant while both downstream readies toggle independently   |
-// | TC_WIDTH_ONES_01      | 2026-08-10 | Annim Jannat | Data integrity check with all-ones (max value) data pattern              |
-// | TC_WIDTH_ZEROS_01     | 2026-08-10 | Annim Jannat | Data integrity check with all-zeros data pattern                         |
-// | TC_BACK2BACK_STRESS   | 2026-08-10 | Annim Jannat | Continuous input stream with independently toggling downstream readies   |
-// | TC_RANDOM_01          | 2026-08-10 | Annim Jannat | Fully randomized valid/ready/data stress test over many cycles           |
-// | TC_ALL                | 2026-08-10 | Annim Jannat | Default regression suite executing all test scenarios sequentially       |
-//////////////////////////////////////////////////////////////////////////////////////////////////
+/*
+| TEST CASE             | DATE       | AUTHOR       | DESCRIPTION                                                              |
+|-----------------------|------------|--------------|--------------------------------------------------------------------------|
+| TC_RST_01             | 2026-08-10 | Annim Jannat | Asynchronous reset assertion with no active transfer                     |
+| TC_RST_02             | 2026-08-10 | Annim Jannat | Asynchronous reset asserted mid-transfer (valid + both ready)            |
+| TC_RST_03             | 2026-08-10 | Annim Jannat | Asynchronous reset asserted while stalled (valid high, neither ready)    |
+| TC_BASIC_01           | 2026-08-10 | Annim Jannat | Single-beat transfer with both downstream interfaces ready               |
+| TC_BASIC_02           | 2026-08-10 | Annim Jannat | Back-to-back multi-beat transfer, both downstreams always ready          |
+| TC_PRI_ONLY_01        | 2026-08-10 | Annim Jannat | Primary ready / secondary not ready - secondary starvation check         |
+| TC_SEC_ONLY_01        | 2026-08-10 | Annim Jannat | Secondary ready / primary not ready - primary starvation check           |
+| TC_NONE_READY_01      | 2026-08-10 | Annim Jannat | Neither ready initially, then primary alone becomes ready                |
+| TC_NONE_READY_02      | 2026-08-10 | Annim Jannat | Directed test of documented priority-drop: neither ready, then both ready|
+| TC_STALL_VALID_01     | 2026-08-10 | Annim Jannat | Upstream valid de-asserted mid-stall before either downstream is ready   |
+| TC_READY_TOGGLE_01    | 2026-08-10 | Annim Jannat | Valid held constant while both downstream readies toggle independently   |
+| TC_WIDTH_ONES_01      | 2026-08-10 | Annim Jannat | Data integrity check with all-ones (max value) data pattern              |
+| TC_WIDTH_ZEROS_01     | 2026-08-10 | Annim Jannat | Data integrity check with all-zeros data pattern                         |
+| TC_BACK2BACK_STRESS   | 2026-08-10 | Annim Jannat | Continuous input stream with independently toggling downstream readies   |
+| TC_RANDOM_01          | 2026-08-10 | Annim Jannat | Fully randomized valid/ready/data stress test over many cycles           |
+| TC_ALL                | 2026-08-10 | Annim Jannat | Default regression suite executing all test scenarios sequentially       |
 
+| REVISION   | DATE       | AUTHOR              | DESCRIPTION                                                                  |
+|------------|------------|---------------------|------------------------------------------------------------------------------|
+| 0.1        | 2026-08-10 | Annim Jannat | Initial version                                                                     |
+| 1.0        | 2026-08-11 | Annim Jannat | Stable release                                                                      |
+
+Author : Annim Jannat (jannatannim@gmail.com)
+This file is part of ADN-VLSI/adn_common
+Copyright (c) 2026 ADN Semiconductors
+Licensed under the MIT License
+See LICENSE file in the project root for full license information
+
+*/
+//@foez-bhai add single line comments on the variables, methods
 module adn_common_pipeline_split_tb;
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -65,23 +75,9 @@ module adn_common_pipeline_split_tb;
 
   bit                     is_clk_edge_aligned;
 
-  // ---------------------------------------------------------------------
-  // Reference model - mirrors the DUT's actual internal micro-architecture:
-  //   adn_common_pipeline_split wraps a 1-deep elastic buffer
-  //   (adn_common_pipeline) with:
-  //     data_in_ready_o    = is_full ? (pri_rdy_i | sec_rdy_i) : 1  (empty always accepts)
-  //     primary_valid_o    = is_full
-  //     secondary_valid_o  = is_full & ~primary_ready_i   (primary has strict priority)
-  //     is_full_next       = data_in_valid_i ? 1
-  //                           : ((pri_rdy_i | sec_rdy_i) ? 0 : is_full)
-  //     data_reg captures data_in_i on any accepted beat (valid & ready)
-  // ---------------------------------------------------------------------
   logic                   ref_is_full;
   logic [DATA_WIDTH-1:0]  ref_data_reg;
 
-  // Delayed copies used only to detect/report the documented priority-drop
-  // corner case for visibility (not used for pass/fail - the cycle-accurate
-  // comparison above already fully covers correctness)
   logic                   exp_secondary_valid_dly;
   logic                   primary_ready_dly;
   logic                   secondary_ready_dly;
@@ -114,12 +110,6 @@ module adn_common_pipeline_split_tb;
   );
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
-  // ASSIGNMENTS
-  //////////////////////////////////////////////////////////////////////////////////////////////////
-
-  // (none)
-
-  //////////////////////////////////////////////////////////////////////////////////////////////////
   // SEQUENTIALS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -133,25 +123,32 @@ module adn_common_pipeline_split_tb;
   // METHODS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  // Task to Apply Reset
+  // Assert/deassert arst_n mid-test WITHOUT re-driving clk (clk is owned
+  // exclusively by start_clock()'s free-running process)
+  task automatic pulse_reset(input time low_time);
+    arst_n <= '0;
+    #(low_time);
+    arst_n <= '1;
+  endtask
+
+  // Task to Apply Reset (does NOT drive clk)
   task automatic apply_reset();
     #100ns;
-    clk                      <= '0;
-    arst_n                   <= '0;
-    data_in                  <= '0;
-    data_in_valid            <= '0;
-    data_out_primary_ready   <= '0;
-    data_out_secondary_ready <= '0;
-    ref_is_full               <= '0;
-    ref_data_reg               <= '0;
-    exp_secondary_valid_dly   <= '0;
-    primary_ready_dly         <= '0;
-    secondary_ready_dly       <= '0;
-    drop_event_count         <= '0;
-    primary_xfer_count       <= '0;
-    secondary_xfer_count     <= '0;
+    arst_n                      <= '0;
+    data_in                     <= '0;
+    data_in_valid               <= '0;
+    data_out_primary_ready      <= '0;
+    data_out_secondary_ready    <= '0;
+    ref_is_full                 <= '0;
+    ref_data_reg                <= '0;
+    exp_secondary_valid_dly     <= '0;
+    primary_ready_dly           <= '0;
+    secondary_ready_dly         <= '0;
+    drop_event_count            <= '0;
+    primary_xfer_count          <= '0;
+    secondary_xfer_count        <= '0;
     #100ns;
-    arst_n <= '1;
+    arst_n                      <= '1;
     #100ns;
   endtask
 
@@ -183,39 +180,61 @@ module adn_common_pipeline_split_tb;
     repeat (n) @(posedge clk);
   endtask
 
-  //////////////////////////////////////////////////////////////////////////////////////////////////
-  // SCOREBOARD / CHECKER
-  //////////////////////////////////////////////////////////////////////////////////////////////////
-
+ 
   task automatic start_checking();
+    // -----------------------------------------------------------------
+    // LOOP A - reference model state update. Pure NBA, NO time-consuming
+    // delay inside, so it can never "sleep through" an overlapping edge
+    // (unlike a forever loop with a blocking #delay in its body). This
+    // mirrors the DUT's own always_ff exactly: it reacts to posedge clk
+    // or negedge arst_n immediately, every single time, with no way to
+    // miss a second edge that lands close to the first.
+    // -----------------------------------------------------------------
     fork
       forever
       @(posedge clk or negedge arst_n) begin
         if (~arst_n) begin
-          ref_is_full             <= '0;
-          ref_data_reg             <= '0;
-          exp_secondary_valid_dly <= '0;
-          primary_ready_dly       <= '0;
-          secondary_ready_dly     <= '0;
+          ref_is_full  <= '0;
+          ref_data_reg <= '0;
         end else begin
-          #1ns;  // let DUT combinational outputs settle after the edge
-
+          automatic logic exp_ready_now = ref_is_full
+                                            ? (data_out_primary_ready | data_out_secondary_ready)
+                                            : 1'b1;
+          ref_data_reg <= (data_in_valid && exp_ready_now) ? data_in : ref_data_reg;
+          ref_is_full  <= data_in_valid
+                           ? 1'b1
+                           : ((data_out_primary_ready | data_out_secondary_ready) ? 1'b0 : ref_is_full);
+        end
+      end
+    join_none
+ 
+    // -----------------------------------------------------------------
+    // LOOP B - comparison/checking. Single edge type only (posedge clk),
+    // so a short settle delay here is safe: there is no second edge type
+    // it could miss while asleep. By the time this wakes and settles,
+    // LOOP A has already advanced ref_is_full/ref_data_reg to reflect
+    // this same edge - exactly matching the DUT's own is_full register,
+    // which transitions (and is fully settled downstream) essentially
+    // instantly at the edge, well before this 1ns window elapses.
+    // -----------------------------------------------------------------
+    fork
+      forever
+      @(posedge clk) begin
+        #1ns;  // let DUT combinational outputs settle after the edge
+ 
+        if (arst_n) begin
           begin
-            // Expected combinational outputs, computed from the reference
-            // model's CURRENT state (i.e. the state as of this edge) and
-            // this cycle's live inputs - mirrors the DUT's own combinational
-            // equations exactly.
             automatic logic                  exp_ready;
             automatic logic                  exp_primary_valid;
             automatic logic                  exp_secondary_valid;
             automatic logic [DATA_WIDTH-1:0] exp_data;
-
+ 
             exp_ready           = ref_is_full ? (data_out_primary_ready | data_out_secondary_ready)
                                                : 1'b1;
             exp_primary_valid   = ref_is_full;
             exp_secondary_valid = ref_is_full & ~data_out_primary_ready;
             exp_data             = ref_data_reg;
-
+ 
             // -----------------------------------------------------------
             // Check 1: data_in_ready_o
             // -----------------------------------------------------------
@@ -227,7 +246,7 @@ module adn_common_pipeline_split_tb;
             end else begin
               note_case(1);
             end
-
+ 
             // -----------------------------------------------------------
             // Check 2: primary_valid_o
             // -----------------------------------------------------------
@@ -238,7 +257,7 @@ module adn_common_pipeline_split_tb;
             end else begin
               note_case(1);
             end
-
+ 
             // -----------------------------------------------------------
             // Check 3: secondary_valid_o (the documented priority-gated signal)
             // -----------------------------------------------------------
@@ -249,7 +268,7 @@ module adn_common_pipeline_split_tb;
             end else begin
               note_case(1);
             end
-
+ 
             // -----------------------------------------------------------
             // Check 4: primary/secondary data integrity while valid
             // -----------------------------------------------------------
@@ -260,7 +279,7 @@ module adn_common_pipeline_split_tb;
             end else if (exp_primary_valid) begin
               note_case(1);
             end
-
+ 
             if (exp_secondary_valid && (data_out_secondary !== exp_data)) begin
               note_case(0);
               $display("[%s] FAIL [%0t] data_out_secondary_o mismatch: exp=%0h got=%0h",
@@ -268,7 +287,7 @@ module adn_common_pipeline_split_tb;
             end else if (exp_secondary_valid) begin
               note_case(1);
             end
-
+ 
             // -----------------------------------------------------------
             // Transfer counters (actual completed handshakes on the DUT)
             // -----------------------------------------------------------
@@ -278,7 +297,7 @@ module adn_common_pipeline_split_tb;
             if (data_out_secondary_valid && data_out_secondary_ready) begin
               secondary_xfer_count <= secondary_xfer_count + 1;
             end
-
+ 
             // -----------------------------------------------------------
             // Informational: detect/report the documented priority-drop
             // event (secondary was offering valid data while stalled, then
@@ -298,16 +317,6 @@ module adn_common_pipeline_split_tb;
                         test_name, $realtime, ref_is_full, ref_data_reg, data_in_ready,
                         data_out_primary_valid, data_out_secondary_valid);
             end
-
-            // -----------------------------------------------------------
-            // Advance reference model to the state it will hold going into
-            // the NEXT edge (independent oracle - driven purely by inputs
-            // and the model's own prior state, not by the DUT's outputs)
-            // -----------------------------------------------------------
-            ref_data_reg <= (data_in_valid && exp_ready) ? data_in : ref_data_reg;
-            ref_is_full  <= data_in_valid
-                             ? 1'b1
-                             : ((data_out_primary_ready | data_out_secondary_ready) ? 1'b0 : ref_is_full);
 
             exp_secondary_valid_dly <= exp_secondary_valid;
             primary_ready_dly       <= data_out_primary_ready;
@@ -330,9 +339,8 @@ module adn_common_pipeline_split_tb;
     apply_reset();
     set_ready(1, 1);
     drive_input(8'hA5, 1);
-    arst_n <= '0;
-    #(CLKPeriod / 2);
-    apply_reset();
+    pulse_reset(CLKPeriod);
+    hold_cycles(3);
   endtask
 
   task automatic run_tc_rst_03();
@@ -341,9 +349,8 @@ module adn_common_pipeline_split_tb;
     set_ready(0, 0);
     drive_input(8'h3C, 1);
     hold_cycles(3);
-    arst_n <= '0;
-    #(CLKPeriod / 2);
-    apply_reset();
+    pulse_reset(CLKPeriod);
+    hold_cycles(3);
   endtask
 
   task automatic run_tc_basic_01();
@@ -499,6 +506,10 @@ module adn_common_pipeline_split_tb;
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
   initial begin
+
+    // Initialize clk exactly once here - never assigned anywhere else.
+    // start_clock()'s free-running process takes over from this point on.
+    clk = '0;
 
     apply_reset();
 
