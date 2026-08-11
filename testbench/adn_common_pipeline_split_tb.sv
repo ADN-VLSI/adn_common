@@ -30,7 +30,7 @@ Licensed under the MIT License
 See LICENSE file in the project root for full license information
 
 */
-//@foez-bhai add single line comments on the variables, methods
+
 module adn_common_pipeline_split_tb;
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
