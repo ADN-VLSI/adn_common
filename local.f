@@ -6,6 +6,9 @@ ${ADN_COMMON}/testbench/adn_common_ring_counter_tb.sv
 ${ADN_COMMON}/testbench/adn_common_round_robin_arbiter_tb.sv
 ${ADN_COMMON}/testbench/adn_common_fifo_tb.sv
 ${ADN_COMMON}/testbench/adn_common_fixed_priority_arbiter_tb.sv
+${ADN_COMMON}/testbench/adn_common_pipeline_split_tb.sv
+${ADN_COMMON}/testbench/adn_common_address_decoder_tb.sv
+${ADN_COMMON}/testbench/adn_common_pipeline_tb.sv
 ${ADN_COMMON}/testbench/adn_common_address_decoder_tb.sv
 ${ADN_COMMON}/testbench/adn_common_pipeline_tb.sv
 ${ADN_COMMON}/testbench/adn_common_pipeline_join_tb.sv
