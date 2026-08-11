@@ -36,7 +36,6 @@ See LICENSE file in the project root for full license information
     logic [``__DW__``-1:0]   mwdata;             \
     logic [``__DW__``/8-1:0] mstrb;              \
     logic                    mreq;               \
-    logic                    mgnt;               \
   } ``__NM__``_req_t;                            \
 
 
@@ -45,6 +44,7 @@ See LICENSE file in the project root for full license information
 // Usecase: Use this to define the slave-to-master response signals with configurable data width.
 `define PMI_RESP_T(__NM__, __DW__)               \
   typedef struct packed {                        \
+    logic                    mgnt;               \
     logic                    mack;               \
     logic [``__DW__``-1:0]   mrdata;             \
     logic                    mresp;              \
