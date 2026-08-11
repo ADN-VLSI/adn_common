@@ -27,13 +27,13 @@
 |data_in_valid_i|input|logic||Valid signal for input data|
 |data_in_ready_o|output|logic||Ready signal for input data|
 |data_in_arst_ni|input|logic||Asynchronous reset, active low (input domain)|
-|data_in_clk_i|input|logic [DATA_WIDTH-1:0]||Clock signal for the input domain|
+|data_in_clk_i|input|logic||Clock signal for the input domain|
 |data_in_count_o|output|logic [ FIFO_SIZE:0]||Current occupancy count (input domain)|
 |data_out_o|output|logic [DATA_WIDTH-1:0]||Data output bus|
 |data_out_valid_o|output|logic||Valid signal for output data|
 |data_out_ready_i|input|logic||Ready signal for output data|
 |data_out_arst_ni|input|logic||Asynchronous reset, active low (output domain)|
-|data_out_clk_i|output|logic [DATA_WIDTH-1:0]||Clock signal for the output domain|
+|data_out_clk_i|output|logic||Clock signal for the output domain|
 |data_out_count_o|output|logic [ FIFO_SIZE:0]||Current occupancy count (output domain)|
 
 
