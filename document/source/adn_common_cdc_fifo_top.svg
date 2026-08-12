@@ -22,7 +22,7 @@
 <text x="467" y="185" dominant-baseline="hanging" text-anchor="end" font-size="20" style="fill:black;stroke:black;stroke-width:0">data_out_ready_i</text>
 <polygon points="472,245 492,245 502,235 522,235 522,245 522,255 502,255 492,245 472,245"/>
 <text x="467" y="235" dominant-baseline="hanging" text-anchor="end" font-size="20" style="fill:black;stroke:black;stroke-width:0">data_out_arst_ni</text>
-<polygon points="472,295 492,295 492,285 512,285 522,295 512,305 492,305 492,295 472,295"/>
+<polygon points="472,295 492,295 502,285 522,285 522,295 522,305 502,305 492,295 472,295"/>
 <text x="467" y="285" dominant-baseline="hanging" text-anchor="end" font-size="20" style="fill:black;stroke:black;stroke-width:0">data_out_clk_i</text>
 <polygon points="472,345 492,345 492,335 512,335 522,345 512,355 492,355 492,345 472,345"/>
 <text x="467" y="335" dominant-baseline="hanging" text-anchor="end" font-size="20" style="fill:black;stroke:black;stroke-width:0">data_out_count_o</text>

@@ -33,7 +33,7 @@
 |data_out_valid_o|output|logic||Valid signal for output data|
 |data_out_ready_i|input|logic||Ready signal for output data|
 |data_out_arst_ni|input|logic||Asynchronous reset, active low (output domain)|
-|data_out_clk_i|output|logic||Clock signal for the output domain|
+|data_out_clk_i|input|logic||Clock signal for the output domain|
 |data_out_count_o|output|logic [ FIFO_SIZE:0]||Current occupancy count (output domain)|
 
 

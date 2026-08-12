@@ -47,7 +47,7 @@ module adn_common_cdc_fifo #(
     // Asynchronous reset, active low (output domain)
     input  logic                  data_out_arst_ni,
     // Clock signal for the output domain
-    output logic                  data_out_clk_i,
+    input  logic                  data_out_clk_i,
     // Current occupancy count (output domain)
     output logic [   FIFO_SIZE:0] data_out_count_o
 );
@@ -88,7 +88,7 @@ module adn_common_cdc_fifo #(
     full_ic = (wr_addr[FIFO_SIZE-1:0] == rd_addr_[FIFO_SIZE-1:0])
                     & (wr_addr[FIFO_SIZE] != rd_addr_[FIFO_SIZE]);
 
-  always_comb empty_oc = (wr_addr_[FIFO_SIZE-1:0] == rd_addr[FIFO_SIZE-1:0]);
+  always_comb empty_oc = (wr_addr_ == rd_addr);
 
   always_comb data_in_ready_o = ~full_ic;
   always_comb data_out_valid_o = ~empty_oc;
