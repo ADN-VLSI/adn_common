@@ -47,7 +47,7 @@ module adn_common_cdc_fifo #(
     // Asynchronous reset, active low (output domain)
     input  logic                  data_out_arst_ni,
     // Clock signal for the output domain
-    output logic                  data_out_clk_i,
+    input  logic                  data_out_clk_i,
     // Current occupancy count (output domain)
     output logic [   FIFO_SIZE:0] data_out_count_o
 );
