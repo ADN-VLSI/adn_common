@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="snap_adn_common_pmi_if_tb.wdb" id="1">
+         <top_modules>
+            <top_module name="adn_common_pmi_if_tb" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <zoom_setting>
+      <ZoomStartTime time="179.400 ns"></ZoomStartTime>
+      <ZoomEndTime time="331.401 ns"></ZoomEndTime>
+      <Cursor1Time time="370.600 ns"></Cursor1Time>
+   </zoom_setting>
+   <column_width_setting>
+      <NameColumnWidth column_width="231"></NameColumnWidth>
+      <ValueColumnWidth column_width="131"></ValueColumnWidth>
+   </column_width_setting>
+   <WVObjectSize size="4" />
+   <wvobject fp_name="/adn_common_pmi_if_tb/vif/arst_ni" type="logic">
+      <obj_property name="ElementShortName">arst_ni</obj_property>
+      <obj_property name="ObjectShortName">arst_ni</obj_property>
+   </wvobject>
+   <wvobject fp_name="/adn_common_pmi_if_tb/vif/clk_i" type="logic">
+      <obj_property name="ElementShortName">clk_i</obj_property>
+      <obj_property name="ObjectShortName">clk_i</obj_property>
+   </wvobject>
+   <wvobject fp_name="group32" type="group">
+      <obj_property name="label">REQUEST</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="isExpanded"></obj_property>
+      <wvobject fp_name="/adn_common_pmi_if_tb/vif/req.maddr" type="array">
+         <obj_property name="ElementShortName">.maddr[15:0]</obj_property>
+         <obj_property name="ObjectShortName">.maddr[15:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/adn_common_pmi_if_tb/vif/req.mwe" type="logic">
+         <obj_property name="ElementShortName">.mwe</obj_property>
+         <obj_property name="ObjectShortName">.mwe</obj_property>
+      </wvobject>
+      <wvobject fp_name="/adn_common_pmi_if_tb/vif/req.mwdata" type="array">
+         <obj_property name="ElementShortName">.mwdata[31:0]</obj_property>
+         <obj_property name="ObjectShortName">.mwdata[31:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/adn_common_pmi_if_tb/vif/req.mstrb" type="array">
+         <obj_property name="ElementShortName">.mstrb[3:0]</obj_property>
+         <obj_property name="ObjectShortName">.mstrb[3:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/adn_common_pmi_if_tb/vif/req.mreq" type="logic">
+         <obj_property name="ElementShortName">.mreq</obj_property>
+         <obj_property name="ObjectShortName">.mreq</obj_property>
+      </wvobject>
+      <wvobject fp_name="/adn_common_pmi_if_tb/vif/rsp.mgnt" type="logic">
+         <obj_property name="ElementShortName">.mgnt</obj_property>
+         <obj_property name="ObjectShortName">.mgnt</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject fp_name="group31" type="group">
+      <obj_property name="label">RESPONSE</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="isExpanded"></obj_property>
+      <wvobject fp_name="/adn_common_pmi_if_tb/vif/rsp.mack" type="logic">
+         <obj_property name="ElementShortName">.mack</obj_property>
+         <obj_property name="ObjectShortName">.mack</obj_property>
+      </wvobject>
+      <wvobject fp_name="/adn_common_pmi_if_tb/vif/rsp.mrdata" type="array">
+         <obj_property name="ElementShortName">.mrdata[31:0]</obj_property>
+         <obj_property name="ObjectShortName">.mrdata[31:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/adn_common_pmi_if_tb/vif/rsp.mresp" type="logic">
+         <obj_property name="ElementShortName">.mresp</obj_property>
+         <obj_property name="ObjectShortName">.mresp</obj_property>
+      </wvobject>
+   </wvobject>
+</wave_config>
