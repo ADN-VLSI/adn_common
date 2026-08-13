@@ -40,8 +40,7 @@ This Repo is a collection of common modules used in ADN designs. The modules are
 
 
 ## INTERFACE
-[`document/interface/adn_PMI.md)
-[`document/interface/dummy_interface.md)
+[`adn_common_pmi_if`](document/interface/adn_common_pmi_if.md)
 
 
 ## INCLUDE
