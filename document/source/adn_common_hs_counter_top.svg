@@ -11,11 +11,11 @@
 <polygon points="10,295 20,285 40,285 40,295 60,295 40,295 40,305 20,305 10,295"/>
 <text x="65" y="285" dominant-baseline="hanging" text-anchor="start" font-size="20" style="fill:black;stroke:black;stroke-width:0">data_in_ready_o</text>
 <polygon points="472,145 492,145 492,135 512,135 522,145 512,155 492,155 492,145 472,145"/>
-<text x="467" y="135" dominant-baseline="hanging" text-anchor="end" font-size="20" style="fill:black;stroke:black;stroke-width:0">data_out_valid_o</text>
-<polygon points="472,195 492,195 502,185 522,185 522,195 522,205 502,205 492,195 472,195"/>
-<text x="467" y="185" dominant-baseline="hanging" text-anchor="end" font-size="20" style="fill:black;stroke:black;stroke-width:0">data_out_ready_i</text>
-<polygon points="472,295 492,295 492,285 512,285 522,295 512,305 492,305 492,295 472,295"/>
-<text x="467" y="285" dominant-baseline="hanging" text-anchor="end" font-size="20" style="fill:black;stroke:black;stroke-width:0">count_o</text>
+<text x="467" y="135" dominant-baseline="hanging" text-anchor="end" font-size="20" style="fill:black;stroke:black;stroke-width:0">count_o</text>
+<polygon points="472,245 492,245 492,235 512,235 522,245 512,255 492,255 492,245 472,245"/>
+<text x="467" y="235" dominant-baseline="hanging" text-anchor="end" font-size="20" style="fill:black;stroke:black;stroke-width:0">data_out_valid_o</text>
+<polygon points="472,295 492,295 502,285 522,285 522,295 522,305 502,305 492,295 472,295"/>
+<text x="467" y="285" dominant-baseline="hanging" text-anchor="end" font-size="20" style="fill:black;stroke:black;stroke-width:0">data_out_ready_i</text>
 <text x="266" y="350" dominant-baseline="hanging" text-anchor="middle" font-size="30" style="fill:black;stroke:black;stroke-width:0">adn_common_hs_counter</text>
 </g>
 </svg>

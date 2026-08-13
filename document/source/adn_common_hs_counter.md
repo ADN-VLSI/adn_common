@@ -23,9 +23,9 @@
 |arst_ni|input|logic||Active-low asynchronous reset|
 |data_in_valid_i|input|logic||Input data valid signal|
 |data_in_ready_o|output|logic||Input data ready signal (backpressure)|
+|count_o|output|logic [$clog2(DEPTH+1)-1:0]||Current occupancy count|
 |data_out_valid_o|output|logic||Output data valid signal|
 |data_out_ready_i|input|logic||Output data ready signal|
-|count_o|output|logic [$clog2(DEPTH+1)-1:0]||Current occupancy count|
 
 
 ## Description
