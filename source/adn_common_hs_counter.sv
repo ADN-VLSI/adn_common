@@ -1,19 +1,26 @@
 /*
 
 ### Purpose
-This module implements a handshake-based counter designed to track the number of active data elements within a buffer or pipeline stage. It monitors input and output handshakes to increment or decrement the internal count, ensuring the counter remains within the bounds of the specified `DEPTH`.
+This module implements a handshake-based counter designed to track the number of active data
+elements within a buffer or pipeline stage. It monitors input and output handshakes to increment or
+decrement the internal count, ensuring the counter remains within the bounds of the specified
+`DEPTH`.
 
 ### Use Case
-This module is primarily used in streaming architectures to manage flow control and occupancy tracking. It is ideal for:
+This module is primarily used in streaming architectures to manage flow control and occupancy
+tracking. It is ideal for:
 - **FIFO Depth Monitoring:** Tracking how many slots are currently occupied in a buffer.
-- **Backpressure Management:** Generating `ready` signals based on current occupancy to prevent buffer overflows.
-- **Pipeline Monitoring:** Providing visibility into the number of valid data packets currently traversing a multi-stage pipeline.
+- **Backpressure Management:** Generating `ready` signals based on current occupancy to prevent
+buffer overflows.
+- **Pipeline Monitoring:** Providing visibility into the number of valid data packets currently
+traversing a multi-stage pipeline.
 
 | REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
 |----------|------------|-----------------|--------------------------------------------------------|
 | 0.1      | 2026-07-27 | Annim Jannat    | Initial version                                        |
 | 1.0      | 2026-07-29 | Annim Jannat    | Stable release                                         |
 | 1.1      | 2026-08-01 | Foez Ahmed      | Ratified                                               |
+| 1.2      | 2026-08-13 | Foez Ahmed      | Simplification                                         |
 
 Author : Annim Jannat (jannatannim@gmail.com)
 This file is part of ADN-VLSI/adn_common
@@ -76,13 +83,7 @@ module adn_common_hs_counter #(
     if (~arst_ni) begin
       count_o <= '0; // Reset counter to zero
     end else begin
-      case ({
-        in_hs, out_hs
-      })
-        2'b10:   count_o <= (count_o == DEPTH) ? count_o : count_o + 1'b1;  // in only: increment
-        2'b01:   count_o <= (count_o == '0) ? count_o : count_o - 1'b1;  // out only: decrement
-        default: count_o <= count_o;  // no change or both in and out: no change
-      endcase
+      count_o <= count_o + in_hs - out_hs;
     end
   end
 
