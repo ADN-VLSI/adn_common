@@ -1,8 +1,13 @@
 /*
 
-@foez-bhai, write the purpose of this interface in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+### Purpose
+The `adn_common_pmi_if` interface provides a standardized, transaction-level communication protocol for memory-mapped interactions within the ADN-VLSI ecosystem. It abstracts the underlying signal handshaking between masters and slaves, facilitating modular verification and design reuse through parameterized request and response structures.
 
-@foez-bhai, describe the use case of this interface in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+### Use Case
+This interface is primarily used to decouple the physical signal-level implementation of memory-mapped buses from the verification components (like UVM drivers/monitors) and RTL modules. By utilizing `msend`, `mrecv`, `ssend`, and `srecv` tasks, users can perform high-level read/write transactions without manually managing clock-cycle-accurate handshaking signals. It is ideal for:
+- **Verification Environments:** Implementing bus functional models (BFMs) that interact with memory-mapped peripherals.
+- **System-on-Chip (SoC) Integration:** Connecting IP blocks that require a standardized, lightweight interface for register access or memory-mapped communication.
+- **Modular Design:** Allowing RTL designers to swap underlying bus protocols while keeping the transaction-level testbench code unchanged.
 
 | REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
 |----------|------------|-----------------|--------------------------------------------------------|
@@ -17,38 +22,38 @@ See LICENSE file in the project root for full license information
 
 */
 
-// @foez-bhai, add comments to the parameters, ports
 interface adn_common_pmi_if #(
-    parameter type req_t = logic,
-    parameter type rsp_t = logic
+    parameter type req_t = logic, // Request structure type definition
+    parameter type rsp_t = logic  // Response structure type definition
 ) (
-    input logic arst_ni,
-    input logic clk_i
+    input logic arst_ni,          // Active-low asynchronous reset
+    input logic clk_i             // System clock input
 );
-
-  // @foez-bhai, add comments to the functional blocks, signals, and modports
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // SIGNALS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  req_t req;
-  rsp_t rsp;
+  req_t req; // Request payload structure
+  rsp_t rsp; // Response payload structure
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // VARIABLES
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  bit   is_aligned;
+  bit   is_aligned; // Synchronization flag for transaction alignment
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // MODPORTS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
+  // Master interface: Drives requests and samples responses
   modport master(input arst_ni, input clk_i, output req, input rsp);
 
+  // Slave interface: Samples requests and drives responses
   modport slave(input arst_ni, input clk_i, input req, output rsp);
 
+  // Monitor interface: Passive observation of both request and response channels
   modport monitor(input arst_ni, input clk_i, input req, input rsp);
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -186,4 +191,3 @@ interface adn_common_pmi_if #(
   endtask
 
 endinterface
-
