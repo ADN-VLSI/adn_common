@@ -52,15 +52,21 @@ module adn_common_fifo #(
   // SIGNALS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  logic [(2**FIFO_SIZE)-1:0] wr_ptr;  // Write pointer tracking the head of the queue
-  logic [(2**FIFO_SIZE)-1:0] rd_ptr;  // Read pointer tracking the tail of the queue
+  // Write pointer: Tracks the next write address in the circular buffer
+  logic [(2**FIFO_SIZE)-1:0] wr_ptr;  
+  // Read pointer: Tracks the next read address in the circular buffer
+  logic [(2**FIFO_SIZE)-1:0] rd_ptr;  
 
-  logic in_hs;  // Handshake signal for input interface
-  logic out_hs;  // Handshake signal for output interface
+  // Input handshake: Valid and Ready are both high
+  logic in_hs;  
+  // Output handshake: Valid and Ready are both high
+  logic out_hs;  
 
-  logic [DATA_WIDTH-1:0] mem_out;  // Data read from the internal RAM
+  // RAM output: Data retrieved from the internal memory array
+  logic [DATA_WIDTH-1:0] mem_out;  
 
-  logic passing_through;  // Status flag: FIFO contains no data
+  // Bypass flag: High when FIFO is empty and data passes directly to output
+  logic passing_through;  
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // ASSIGNMENTS
@@ -90,7 +96,7 @@ module adn_common_fifo #(
       .rd_data_o(mem_out)
   );
 
-  // @foez-bhai, add comments to the functional blocks, signals, and submodules
+  // Handshake counter: Manages FIFO occupancy, pointers, and flow control logic
   adn_common_hs_counter #(
       .DEPTH    (FIFO_DEPTH),
       .PIPELINED(PIPELINED)
