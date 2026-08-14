@@ -48,18 +48,10 @@ module adn_common_hs_counter #(
 );
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
-  // LOCALPARAMS GENERATED
-  //////////////////////////////////////////////////////////////////////////////////////////////////
-
-  //////////////////////////////////////////////////////////////////////////////////////////////////
-  // TYPEDEFS
-  //////////////////////////////////////////////////////////////////////////////////////////////////
-
-  //////////////////////////////////////////////////////////////////////////////////////////////////
   // SIGNALS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  // Handshake detection signals
+  // Handshake detection signals for input and output interfaces
   logic in_hs, out_hs;
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -70,10 +62,10 @@ module adn_common_hs_counter #(
   always_comb data_in_ready_o = ((count_o != DEPTH) ? '1 : data_out_ready_i) & arst_ni;
 
   if (PIPELINED) begin
-    // valid if not empty
+    // Pipelined mode: output valid is high only if counter is non-zero
     always_comb data_out_valid_o = (count_o != '0) & arst_ni;
   end else begin
-    // valid when not empty or input valid
+    // Non-pipelined mode: output valid is high if counter is non-zero or input is valid
     always_comb data_out_valid_o = ((count_o != '0) ? '1 : data_in_valid_i) & arst_ni;
   end
 
@@ -82,18 +74,25 @@ module adn_common_hs_counter #(
   // handshake occurs when both valid and ready are asserted
   always_comb out_hs = data_out_valid_o && data_out_ready_i;
 
+  // Signal indicating data is bypassing the buffer when empty
   always_comb passing_through_o = data_out_valid_o & (count_o == '0);
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // SEQUENTIALS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  // Counter logic: updates occupancy based on input/output handshake events
+  // Counter logic: increments on input handshake, decrements on output handshake
   always_ff @(posedge clk_i or negedge arst_ni) begin
     if (~arst_ni) begin
       count_o <= '0;  // Reset counter to zero
     end else begin
-      count_o <= count_o + in_hs - out_hs;
+      case ({
+        in_hs, out_hs
+      })
+        'b01: count_o <= count_o - 1;
+        'b10: count_o <= count_o + 1;
+        default count_o <= count_o;
+      endcase
     end
   end
 
