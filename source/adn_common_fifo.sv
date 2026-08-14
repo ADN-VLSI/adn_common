@@ -52,16 +52,15 @@ module adn_common_fifo #(
   // SIGNALS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  logic [(2**FIFO_SIZE):0] wr_ptr;  // Write pointer tracking the head of the queue
-  logic [(2**FIFO_SIZE):0] rd_ptr;  // Read pointer tracking the tail of the queue
+  logic [(2**FIFO_SIZE)-1:0] wr_ptr;  // Write pointer tracking the head of the queue
+  logic [(2**FIFO_SIZE)-1:0] rd_ptr;  // Read pointer tracking the tail of the queue
 
   logic in_hs;  // Handshake signal for input interface
   logic out_hs;  // Handshake signal for output interface
 
-  logic full;  // Status flag: FIFO is at maximum capacity
-  logic empty;  // Status flag: FIFO contains no data
-
   logic [DATA_WIDTH-1:0] mem_out;  // Data read from the internal RAM
+
+  logic passing_through;  // Status flag: FIFO contains no data
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // ASSIGNMENTS
@@ -71,24 +70,8 @@ module adn_common_fifo #(
   always_comb in_hs = data_in_valid_i & data_in_ready_o;
   always_comb out_hs = data_out_valid_o & data_out_ready_i;
 
-  // Status flag generation based on current count
-  always_comb full = (count_o == FIFO_DEPTH);
-  always_comb empty = (count_o == 0);
-
-  // Backpressure logic: ready is low when full, unless consumer is ready to accept
-  always_comb data_in_ready_o = full ? data_out_ready_i : 1'b1;
-
   // Output selection logic based on pipeline configuration
-  if (PIPELINED) begin
-    always_comb data_out_o = mem_out;
-    always_comb data_out_valid_o = ~empty;
-  end else begin
-    always_comb data_out_o = empty ? data_in_i : mem_out;
-    always_comb data_out_valid_o = empty ? data_in_valid_i : '1;
-  end
-
-  // Calculate current occupancy
-  always_comb count_o = wr_ptr - rd_ptr;
+  always_comb data_out_o = passing_through ? data_in_i : mem_out;
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // SUBMODULES
@@ -101,10 +84,25 @@ module adn_common_fifo #(
   ) u_mem (
       .clk_i(clk_i),
       .wr_en_i(in_hs),
-      .wr_addr_i(wr_ptr[FIFO_SIZE-1:0]),
+      .wr_addr_i(wr_ptr),
       .wr_data_i(data_in_i),
-      .rd_addr_i(rd_ptr[FIFO_SIZE-1:0]),
+      .rd_addr_i(rd_ptr),
       .rd_data_o(mem_out)
+  );
+
+  // @foez---bhai, add comments to the functional blocks, signals, and submodules
+  adn_common_hs_counter #(
+      .DEPTH    (FIFO_DEPTH),
+      .PIPELINED(PIPELINED)
+  ) u_hs_cntr (
+      .clk_i            (clk_i),
+      .arst_ni          (arst_ni),
+      .data_in_valid_i  (data_in_valid_i),
+      .data_in_ready_o  (data_in_ready_o),
+      .count_o          (count_o),
+      .passing_through_o(passing_through),
+      .data_out_valid_o (data_out_valid_o),
+      .data_out_ready_i (data_out_ready_i)
   );
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
