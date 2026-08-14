@@ -30,8 +30,6 @@ See LICENSE file in the project root for full license information
 
 */
 
-// @foez-bhai, add missing comments to the ports
-
 module adn_common_hs_counter #(
     parameter int DEPTH     = 8,  // Maximum capacity of the buffer/pipeline
     parameter bit PIPELINED = 1   // Enable pipelined mode for higher throughput
@@ -43,7 +41,7 @@ module adn_common_hs_counter #(
     output logic data_in_ready_o,  // Input data ready signal (backpressure)
 
     output logic [$clog2(DEPTH+1)-1:0] count_o,           // Current occupancy count
-    output logic                       passing_through_o,
+    output logic                       passing_through_o, // Indicates data is passing through without buffering
 
     output logic data_out_valid_o,  // Output data valid signal
     input  logic data_out_ready_i   // Output data ready signal
