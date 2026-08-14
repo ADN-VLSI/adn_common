@@ -31,18 +31,20 @@ See LICENSE file in the project root for full license information
 */
 
 module adn_common_hs_counter #(
-    parameter int DEPTH = 8 // Maximum capacity of the buffer/pipeline
+    parameter int DEPTH     = 8,  // Maximum capacity of the buffer/pipeline
+    parameter bit PIPELINED = 1   // Enable pipelined mode for higher throughput
 ) (
-    input logic clk_i,      // System clock
-    input logic arst_ni,    // Active-low asynchronous reset
+    input logic clk_i,   // System clock
+    input logic arst_ni, // Active-low asynchronous reset
 
-    input  logic data_in_valid_i, // Input data valid signal
-    output logic data_in_ready_o, // Input data ready signal (backpressure)
+    input  logic data_in_valid_i,  // Input data valid signal
+    output logic data_in_ready_o,  // Input data ready signal (backpressure)
 
-    output logic [$clog2(DEPTH+1)-1:0] count_o, // Current occupancy count
+    output logic [$clog2(DEPTH+1)-1:0] count_o,           // Current occupancy count
+    output logic                       passing_through_o, // @foez-bhai, add comments
 
-    output logic data_out_valid_o, // Output data valid signal
-    input  logic data_out_ready_i // Output data ready signal
+    output logic data_out_valid_o,  // Output data valid signal
+    input  logic data_out_ready_i   // Output data ready signal
 );
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -65,14 +67,22 @@ module adn_common_hs_counter #(
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
   // ready unless count is full
-  always_comb data_in_ready_o = (count_o != DEPTH) & arst_ni;
-  // valid if not empty
-  always_comb data_out_valid_o = (count_o != '0) & arst_ni;
+  always_comb data_in_ready_o = ((count_o != DEPTH) ? '1 : data_out_ready_i) & arst_ni;
+
+  if (PIPELINED) begin
+    // valid if not empty
+    always_comb data_out_valid_o = (count_o != '0) & arst_ni;
+  end else begin
+    // valid when not empty or input valid
+    always_comb data_out_valid_o = ((count_o != '0) ? '1 : data_in_valid_i) & arst_ni;
+  end
 
   // handshake occurs when both valid and ready are asserted
   always_comb in_hs = data_in_valid_i && data_in_ready_o;
   // handshake occurs when both valid and ready are asserted
   always_comb out_hs = data_out_valid_o && data_out_ready_i;
+
+  always_comb passing_through_o = data_out_valid_o & (count_o == '0);
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // SEQUENTIALS
@@ -81,7 +91,7 @@ module adn_common_hs_counter #(
   // Counter logic: updates occupancy based on input/output handshake events
   always_ff @(posedge clk_i or negedge arst_ni) begin
     if (~arst_ni) begin
-      count_o <= '0; // Reset counter to zero
+      count_o <= '0;  // Reset counter to zero
     end else begin
       count_o <= count_o + in_hs - out_hs;
     end

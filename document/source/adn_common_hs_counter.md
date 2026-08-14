@@ -13,6 +13,7 @@
 |Name|Type|Dimension|Default|Description|
 |-|-|-|-|-|
 |DEPTH|int||8||
+|PIPELINED|bit||1|Enable pipelined mode for higher throughput|
 
 
 ## Ports
@@ -24,6 +25,7 @@
 |data_in_valid_i|input|logic||Input data valid signal|
 |data_in_ready_o|output|logic||Input data ready signal (backpressure)|
 |count_o|output|logic [$clog2(DEPTH+1)-1:0]||Current occupancy count|
+|passing_through_o|output|logic||@foez-bhai, add comments|
 |data_out_valid_o|output|logic||Output data valid signal|
 |data_out_ready_i|input|logic||Output data ready signal|
 
