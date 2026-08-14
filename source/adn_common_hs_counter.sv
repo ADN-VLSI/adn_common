@@ -40,8 +40,8 @@ module adn_common_hs_counter #(
     input  logic data_in_valid_i,  // Input data valid signal
     output logic data_in_ready_o,  // Input data ready signal (backpressure)
 
-    output logic [$clog2(DEPTH+1)-1:0] count_o,           // Current occupancy count
-    output logic                       passing_through_o, // Indicates data is passing through without buffering
+    output logic [$clog2(DEPTH+1)-1:0] count_o,  // Current occupancy count
+    output logic passing_through_o,  // Indicates data is passing through without buffering
 
     output logic data_out_valid_o,  // Output data valid signal
     input  logic data_out_ready_i   // Output data ready signal
