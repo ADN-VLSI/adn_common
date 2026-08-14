@@ -90,7 +90,7 @@ module adn_common_fifo #(
       .rd_data_o(mem_out)
   );
 
-  // @foez---bhai, add comments to the functional blocks, signals, and submodules
+  // @foez-bhai, add comments to the functional blocks, signals, and submodules
   adn_common_hs_counter #(
       .DEPTH    (FIFO_DEPTH),
       .PIPELINED(PIPELINED)

@@ -62,10 +62,10 @@ module adn_common_hs_counter #(
   always_comb data_in_ready_o = ((count_o != DEPTH) ? '1 : data_out_ready_i) & arst_ni;
 
   if (PIPELINED) begin
-    // @foez---bhai, add comments to the functional blocks, signals, and submodules
+    // @foez-bhai, add comments to the functional blocks, signals, and submodules
     always_comb data_out_valid_o = (count_o != '0) & arst_ni;
   end else begin
-    // @foez---bhai, add comments to the functional blocks, signals, and submodules
+    // @foez-bhai, add comments to the functional blocks, signals, and submodules
     always_comb data_out_valid_o = ((count_o != '0) ? '1 : data_in_valid_i) & arst_ni;
   end
 
@@ -74,14 +74,14 @@ module adn_common_hs_counter #(
   // handshake occurs when both valid and ready are asserted
   always_comb out_hs = data_out_valid_o && data_out_ready_i;
 
-  // @foez---bhai, add comments to the functional blocks, signals, and submodules
+  // @foez-bhai, add comments to the functional blocks, signals, and submodules
   always_comb passing_through_o = data_out_valid_o & (count_o == '0);
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // SEQUENTIALS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  // @foez---bhai, add comments to the functional blocks, signals, and submodules
+  // @foez-bhai, add comments to the functional blocks, signals, and submodules
   always_ff @(posedge clk_i or negedge arst_ni) begin
     if (~arst_ni) begin
       count_o <= '0;  // Reset counter to zero
