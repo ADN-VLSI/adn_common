@@ -1,12 +1,10 @@
 /*
 
-@foez-bhai, recheck the comments. Update the purpose and use-case
-
 ### Purpose
-This module generates a parity bit for a given input data vector. It supports configurable data widths and allows for dynamic selection between even and odd parity modes based on a specified number of valid bits.
+This module computes a parity bit for a variable-length subset of an input data vector. It supports configurable data widths and provides dynamic selection between even and odd parity modes, allowing for flexible error detection across different data packet lengths.
 
 ### Use Case
-This module is primarily used in communication interfaces and memory controllers where data integrity verification is required. By allowing dynamic selection of the number of valid bits and parity type (even/odd), it provides a flexible solution for error detection in systems handling variable-length data packets or protocols requiring specific parity schemes.
+This module is intended for use in communication interfaces, bus protocols, and memory controllers that require robust data integrity verification. It is particularly useful in systems where the number of active data bits changes dynamically, enabling a single hardware instance to handle various protocol-specific parity requirements.
 
 | REVISION | DATE       | AUTHOR              | DESCRIPTION                                        |
 |----------|------------|---------------------|----------------------------------------------------|
