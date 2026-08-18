@@ -114,10 +114,10 @@ endtask
 
 task automatic check(input logic [ADDR_WIDTH - 1:0] raddr, input logic [DATA_WIDTH - 1:0] rdata);
   if(rdata === model_mem[raddr]) begin
-    $display("[PASS]: At WADDR: %h, EXPECTED: %h, GOT: %h", raddr, model_mem[raddr], rdata);
+    $display("[PASS]: At RADDR: %h, EXPECTED: %h, GOT: %h", raddr, model_mem[raddr], rdata);
     note_case(1);
   end else begin 
-    $error("[FAIL]: At WADDR: %h, EXPECTED: %h, but GOT: %h", raddr, model_mem[raddr], rdata);
+    $error("[FAIL]: At RADDR: %h, EXPECTED: %h, but GOT: %h", raddr, model_mem[raddr], rdata);
     note_case(0);
   end
 endtask
@@ -207,10 +207,14 @@ endtask
       start_clk();   
     join_none
 
+case(test_name)
+  "TC_ALL": begin
     simple_wr_rd();
     multiple_wr_rd();
     simul_wr_and_rd();
     wen_test();
+  end
+endcase
 
 
 

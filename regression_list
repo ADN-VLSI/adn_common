@@ -2,3 +2,4 @@ ci_simulate adn_common_address_decoder_tb TC_ALL 1000
 ci_simulate adn_common_ring_counter_tb TC_ALL 1000
 ci_simulate adn_common_pipeline_split_tb TC_ALL 1000
 ci_simulate adn_common_pipeline_join_tb TC_ALL 1000
+ci_simulate adn_common_dual_port_ram_tb TC_ALL 100
