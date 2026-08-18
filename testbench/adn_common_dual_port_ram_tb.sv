@@ -205,7 +205,7 @@ case(test_name)
   end
   "TC_001": simple_wr_rd();
   "TC_002": multiple_wr_rd();
-  "TC_003": ssimul_wr_and_rd();
+  "TC_003": simul_wr_and_rd();
   "TC_004": wen_test();
 
 endcase
