@@ -53,9 +53,9 @@ module adn_common_fifo #(
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
   // Write pointer: Tracks the next write address in the circular buffer
-  logic [(2**FIFO_SIZE)-1:0] wr_ptr;  
+  logic [FIFO_SIZE-1:0] wr_ptr;  
   // Read pointer: Tracks the next read address in the circular buffer
-  logic [(2**FIFO_SIZE)-1:0] rd_ptr;  
+  logic [FIFO_SIZE-1:0] rd_ptr;  
 
   // Input handshake: Valid and Ready are both high
   logic in_hs;  
