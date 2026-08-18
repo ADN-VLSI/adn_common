@@ -2,13 +2,15 @@
 
 | TEST CASE | DATE       | AUTHOR          | DESCRIPTION                                           |
 |-----------|------------|-----------------|-------------------------------------------------------|
-| TC_001    | 2026-08-18 | Adnan Sami Anirban | Test case description goes here                       |
-| TC_002    | 2026-08-18 | Adnan Sami Anirban | Test case description goes here                       |
+| TC_001    | 2026-08-19 | Adnan Sami Anirban | Simple Read Write                                  |
+| TC_001    | 2026-08-19 | Adnan Sami Anirban | Multiple random write and read                     |
+| TC_001    | 2026-08-19 | Adnan Sami Anirban | Simultanious read and write                        |
+| TC_002    | 2026-08-19 | Adnan Sami Anirban | Write enable test                                  |
 
 | REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
 |----------|------------|-----------------|--------------------------------------------------------|
-| 0.1      | 2026-08-18 | Adnan Sami Anirban | Initial version                                        |
-| 1.0      | 2026-08-18 | Adnan Sami Anirban | Stable release                                         |
+| 0.1      | 2026-08-18 | Adnan Sami Anirban | Initial version                                     |
+| 1.0      | 2026-08-18 | Adnan Sami Anirban | Stable release                                      |
 
 Author : Adnan Sami Anirban (adnananirban259@gmail.com)
 This file is part of ADN-VLSI/adn_common
@@ -47,19 +49,6 @@ module adn_common_dual_port_ram_tb;
     logic [DATA_WIDTH-1:0] model_mem [int unsigned];
     logic [DATA_WIDTH-1:0] rdata;
     logic [ADDR_WIDTH:0] waddr_en[$];
-
-
-  //////////////////////////////////////////////////////////////////////////////////////////////////
-  // VARIABLES
-  //////////////////////////////////////////////////////////////////////////////////////////////////
-
-  //////////////////////////////////////////////////////////////////////////////////////////////////
-  // INTERFACES
-  //////////////////////////////////////////////////////////////////////////////////////////////////
-
-  //////////////////////////////////////////////////////////////////////////////////////////////////
-  // CLASSES
-  //////////////////////////////////////////////////////////////////////////////////////////////////
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // ASSIGNMENTS
@@ -214,14 +203,12 @@ case(test_name)
     simul_wr_and_rd();
     wen_test();
   end
+  "TC_001": simple_wr_rd();
+  "TC_002": multiple_wr_rd();
+  "TC_003": ssimul_wr_and_rd();
+  "TC_004": wen_test();
+
 endcase
-
-
-
-
-
-
-
 
     repeat(5) @(posedge clk_i);
     $finish;
