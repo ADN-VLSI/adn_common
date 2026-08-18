@@ -46,7 +46,7 @@ module adn_common_dual_port_ram_tb;
     // Model Memory
     logic [DATA_WIDTH-1:0] model_mem [int unsigned];
     logic [DATA_WIDTH-1:0] rdata;
-    logic [ADDR_WIDTH-1:0] waddr_q[$];
+    logic [ADDR_WIDTH:0] waddr_en[$];
 
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -100,6 +100,7 @@ task automatic write(input logic [DATA_WIDTH - 1:0] wdata, input logic [ADDR_WID
   wr_addr_i        <= waddr;
   wr_data_i        <= wdata;
   wr_en_i          <= wen;
+  #1step;
   if (wen) model_mem[waddr] =  wdata;
 endtask
 
@@ -111,12 +112,12 @@ task automatic read(output logic [DATA_WIDTH - 1:0] rdata, input logic [ADDR_WID
 
 endtask
 
-task automatic check(input logic [ADDR_WIDTH - 1:0] waddr, input logic [DATA_WIDTH - 1:0] rdata);
-  if(rdata === model_mem[waddr]) begin
-    $display("[PASS]: At WADDR: %h, EXPECTED: %h, GOT: %h", waddr, model_mem[waddr], rdata);
+task automatic check(input logic [ADDR_WIDTH - 1:0] raddr, input logic [DATA_WIDTH - 1:0] rdata);
+  if(rdata === model_mem[raddr]) begin
+    $display("[PASS]: At WADDR: %h, EXPECTED: %h, GOT: %h", raddr, model_mem[raddr], rdata);
     note_case(1);
   end else begin 
-    $error("[FAIL]: At WADDR: %h, EXPECTED: %h, but GOT: %h", waddr, model_mem[waddr], rdata);
+    $error("[FAIL]: At WADDR: %h, EXPECTED: %h, but GOT: %h", raddr, model_mem[raddr], rdata);
     note_case(0);
   end
 endtask
@@ -128,15 +129,67 @@ task automatic simple_wr_rd;
 endtask
 
 task automatic multiple_wr();
-    logic [ADDR_WIDTH - 1:0] rand_waddr = $urand();
-    logic [DATA_WIDTH - 1:0] rand_wdata = $urand();
-    logic                    rand_wen   = $urand();
-    for (int i = 0; i<20; i++) begin 
-      write(rand_waddr, rand_wdata, rand_wen);
+    logic [ADDR_WIDTH - 1:0] rand_waddr;
+    logic [DATA_WIDTH - 1:0] rand_wdata;
+    logic                    rand_wen  ;
+    for (int i = 0; i<20; i++) begin
+      rand_waddr = $urandom_range(1,1000);
+      rand_wdata = $urandom_range(1,200);
+      rand_wen   = $urandom_range(0,1);
+      #1step;
+      write(rand_wdata, rand_waddr, rand_wen);
+      waddr_en.push_back({rand_wen, rand_waddr});
+    end
+endtask
+
+task automatic multiple_rd();
+    logic [ADDR_WIDTH:0] wr_en_q;
+    for (int i = 0; i < 20; i++) begin
+      wr_en_q = waddr_en.pop_front();
+
+      if(wr_en_q[ADDR_WIDTH]) begin
+        read(rdata, wr_en_q[ADDR_WIDTH -1:0]);
+        check(wr_en_q[ADDR_WIDTH -1:0], rdata);   
+      end
     end
 
-
 endtask
+
+task automatic multiple_wr_rd();
+    multiple_wr();
+    multiple_rd();
+endtask
+
+// at a time write and read;
+task automatic simul_wr_and_rd();
+    write('hBEEF, 'hFE, 1);
+    fork
+      write('hDEAD, 'hAD, 1);
+      read (rdata, 'hFE);
+    join
+    check('hFE, rdata);
+    read(rdata, 'hAD);
+    check('hAD, rdata);
+endtask
+
+
+task automatic wen_test();
+      write('hEAAD, 'hAD, 0);
+      read (rdata, 'hAD);
+      if(rdata !== 'hEAAD) begin 
+        $display("[PASS]: AS wen = 0, no write happen");
+        note_case(1);
+      end
+      else begin $error("[FAIL]: wen = 0, but write happen"); note_case(0); end
+      write('hEAAD, 'hAD, 1);
+      read (rdata, 'hAD);
+      if(rdata === 'hEAAD) begin $display("[PASS]: AS wen = 1, write happen"); note_case(1); end
+      else begin $error("[FAIL]: AS wen = 0, no write happen"); note_case(0);end
+endtask
+
+
+
+
 
 
 
@@ -155,6 +208,12 @@ endtask
     join_none
 
     simple_wr_rd();
+    multiple_wr_rd();
+    simul_wr_and_rd();
+    wen_test();
+
+
+
 
 
 
