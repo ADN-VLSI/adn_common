@@ -11,6 +11,7 @@ The `adn_common_cdc_fifo` is primarily used in digital systems where data must b
 | 0.1      | 2026-07-27 | Ahasan Ullah Khalid | Initial version                                    |
 | 1.0      | 2026-07-29 | Ahasan Ullah Khalid | Stable release                                     |
 | 1.1      | 2026-08-02 | Foez Ahmed          | Ratified                                           |
+| 1.2      | 2026-08-19 | Ahasan Ullah Khalid | Stable release                                     |
 
 Author : Ahasan Ullah Khalid (aukhalid02@gmail.com)
 This file is part of ADN-VLSI/adn_common
@@ -120,14 +121,14 @@ module adn_common_cdc_fifo #(
   adn_common_bin_to_gray #(
       .WIDTH(FIFO_SIZE + 1)
   ) b2g_w (
-      .bin_i (wr_addr + 1),
+      .bin_i (wr_addr + 1'b1),
       .gray_o(wpgi)
   );
 
   adn_common_bin_to_gray #(
       .WIDTH(FIFO_SIZE + 1)
   ) b2g_r (
-      .bin_i (rd_addr + 1),
+      .bin_i (rd_addr + 1'b1),
       .gray_o(rpgi)
   );
 
