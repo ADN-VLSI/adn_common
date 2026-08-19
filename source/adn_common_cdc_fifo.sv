@@ -121,14 +121,14 @@ module adn_common_cdc_fifo #(
   adn_common_bin_to_gray #(
       .WIDTH(FIFO_SIZE + 1)
   ) b2g_w (
-      .bin_i (wr_addr + 1'b1),
+      .bin_i (wr_addr + 'b01),
       .gray_o(wpgi)
   );
 
   adn_common_bin_to_gray #(
       .WIDTH(FIFO_SIZE + 1)
   ) b2g_r (
-      .bin_i (rd_addr + 1'b1),
+      .bin_i (rd_addr + 'b01),
       .gray_o(rpgi)
   );
 
