@@ -1,4 +1,7 @@
 -i ${ADN_COMMON}/testbench
+${ADN_COMMON}/testbench/adn_common_address_decoder_tb.sv
+${ADN_COMMON}/testbench/adn_common_dual_port_ram_tb.sv
+${ADN_COMMON}/testbench/adn_common_edge_detect_tb.sv
 ${ADN_COMMON}/testbench/adn_common_fifo_tb.sv
 ${ADN_COMMON}/testbench/adn_common_address_decoder_tb.sv
 ${ADN_COMMON}/testbench/adn_common_hs_counter_tb.sv
