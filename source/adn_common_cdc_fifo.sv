@@ -11,6 +11,7 @@ The `adn_common_cdc_fifo` is primarily used in digital systems where data must b
 | 0.1      | 2026-07-27 | Ahasan Ullah Khalid | Initial version                                    |
 | 1.0      | 2026-07-29 | Ahasan Ullah Khalid | Stable release                                     |
 | 1.1      | 2026-08-02 | Foez Ahmed          | Ratified                                           |
+| 1.2      | 2026-08-19 | Ahasan Ullah Khalid | Stable release                                     |
 
 Author : Ahasan Ullah Khalid (aukhalid02@gmail.com)
 This file is part of ADN-VLSI/adn_common
@@ -61,6 +62,9 @@ module adn_common_cdc_fifo #(
   logic [FIFO_SIZE:0] wr_addr;  // Write pointer (binary)
   logic [FIFO_SIZE:0] rd_addr;  // Read pointer (binary)
 
+  logic [FIFO_SIZE:0] wr_addr_next;  // Write pointer next (binary)
+  logic [FIFO_SIZE:0] rd_addr_next;  // Read pointer next (binary)
+
   logic [FIFO_SIZE:0] wr_addr_;  // Synchronized write pointer (binary, output domain)
   logic [FIFO_SIZE:0] rd_addr_;  // Synchronized read pointer (binary, input domain)
 
@@ -99,6 +103,9 @@ module adn_common_cdc_fifo #(
   always_comb data_in_count_o = wr_addr - rd_addr_;
   always_comb data_out_count_o = wr_addr_ - rd_addr;
 
+  always_comb wr_addr_next = wr_addr + 1;
+  always_comb rd_addr_next = rd_addr + 1;
+
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // SUBMODULES
   //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -120,14 +127,14 @@ module adn_common_cdc_fifo #(
   adn_common_bin_to_gray #(
       .WIDTH(FIFO_SIZE + 1)
   ) b2g_w (
-      .bin_i (wr_addr + 1),
+      .bin_i (wr_addr_next),
       .gray_o(wpgi)
   );
 
   adn_common_bin_to_gray #(
       .WIDTH(FIFO_SIZE + 1)
   ) b2g_r (
-      .bin_i (rd_addr + 1),
+      .bin_i (rd_addr_next),
       .gray_o(rpgi)
   );
 
