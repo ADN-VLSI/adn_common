@@ -6,4 +6,5 @@ ci_simulate adn_common_rotating_xbar_tb TC_ALL 1000
 ci_simulate adn_common_dual_port_ram_tb TC_ALL 100
 ci_simulate adn_common_range_checker_tb TC_ALL 1000
 ci_simulate adn_common_synchronizer_tb TC_ALL 100
+ci_simulate adn_common_parity_generator_tb TC_ALL 0
 ci_simulate adn_common_decoder_tb TC_ALL 1000
