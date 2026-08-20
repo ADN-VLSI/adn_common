@@ -49,12 +49,14 @@ module adn_common_parity_generator #(
     end
   end
 
-  // @foez-bhai, add comments
+  // Determine final parity output based on the selected parity type and the calculated mask.
   always_comb begin
     if (parity_type_i) begin
-      parity_o = (num_bits_i == '0) ? '1 : ~mask[num_bits_i-1];  // Odd parity: invert the final mask bit
+      // Odd parity: If no bits are selected, default to 1; otherwise, invert the cumulative XOR result.
+      parity_o = (num_bits_i == '0) ? '1 : ~mask[num_bits_i-1];
     end else begin
-      parity_o = (num_bits_i == '0) ? '0 : mask[num_bits_i-1];  // Even parity: use the final mask bit directly
+      // Even parity: If no bits are selected, default to 0; otherwise, use the cumulative XOR result directly.
+      parity_o = (num_bits_i == '0) ? '0 : mask[num_bits_i-1];
     end
   end
 
