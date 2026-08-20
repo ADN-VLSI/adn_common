@@ -48,11 +48,13 @@ module adn_common_parity_generator #(
       mask[i] = data_i[i] ^ mask[i-1];
     end
   end
+
+  // @foez-bhai, add comments
   always_comb begin
     if (parity_type_i) begin
-      parity_o = ~mask[num_bits_i-1];  // Odd parity: invert the final mask bit
+      parity_o = (num_bits_i == '0) ? '1 : ~mask[num_bits_i-1];  // Odd parity: invert the final mask bit
     end else begin
-      parity_o = mask[num_bits_i-1];  // Even parity: use the final mask bit directly
+      parity_o = (num_bits_i == '0) ? '0 : mask[num_bits_i-1];  // Even parity: use the final mask bit directly
     end
   end
 
