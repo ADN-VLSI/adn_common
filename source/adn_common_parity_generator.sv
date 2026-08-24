@@ -23,10 +23,10 @@ See LICENSE file in the project root for full license information
 module adn_common_parity_generator #(
     parameter int DATA_WIDTH = 8  // Width of the input data vector
 ) (
-    input  logic [$clog2(DATA_WIDTH+1):0] num_bits_i,     // Number of bits to consider
-    input  logic [        DATA_WIDTH-1:0] data_i,         // Input data to calculate parity for
-    input  logic                          parity_type_i,  // 0 for even parity, 1 for odd
-    output logic                          parity_o        // Calculated parity bit
+    input  logic [$clog2(DATA_WIDTH+1)-1:0] num_bits_i,     // Number of bits to consider
+    input  logic [          DATA_WIDTH-1:0] data_i,         // Input data to calculate parity for
+    input  logic                            parity_type_i,  // 0 for even parity, 1 for odd
+    output logic                            parity_o        // Calculated parity bit
 );
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
