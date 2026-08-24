@@ -19,7 +19,7 @@
 
 |Name|Direction|Type|Dimension|Description|
 |-|-|-|-|-|
-|num_bits_i|input|logic [$clog2(DATA_WIDTH+1):0]||Number of bits to consider|
+|num_bits_i|input|logic [$clog2(DATA_WIDTH+1)-1:0]||Number of bits to consider|
 |data_i|input|logic [ DATA_WIDTH-1:0]||Input data to calculate parity for|
 |parity_type_i|input|logic||0 for even parity, 1 for odd|
 |parity_o|output|logic||Calculated parity bit|
