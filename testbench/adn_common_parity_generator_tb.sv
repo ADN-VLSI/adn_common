@@ -43,38 +43,34 @@ module adn_common_parity_generator_tb;
   // SIGNALS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  logic [$clog2(DATA_WIDTH+1):0] num_bits_i;
-  logic [DATA_WIDTH-1:0]         data_i;
-  logic                          parity_type_i;
-  logic                          parity_o;
+  logic [$clog2(DATA_WIDTH+1)-1:0] num_bits_i;
+  logic [          DATA_WIDTH-1:0] data_i;
+  logic                            parity_type_i;
+  logic                            parity_o;
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // RTLS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
   adn_common_parity_generator #(
-    .DATA_WIDTH(DATA_WIDTH)
+      .DATA_WIDTH(DATA_WIDTH)
   ) dut (
-    .num_bits_i    (num_bits_i),
-    .data_i        (data_i),
-    .parity_type_i (parity_type_i),
-    .parity_o      (parity_o)
+      .num_bits_i   (num_bits_i),
+      .data_i       (data_i),
+      .parity_type_i(parity_type_i),
+      .parity_o     (parity_o)
   );
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // REFERENCE MODEL
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  function automatic logic calculate_expected_parity(
-    input logic [DATA_WIDTH-1:0] data,
-    input int                    num_bits,
-    input logic                  parity_type
-  );
+  function automatic logic calculate_expected_parity(input logic [DATA_WIDTH-1:0] data,
+                                                     input int num_bits, input logic parity_type);
     logic parity;
 
     parity = 1'b0;
-    for (int i = 0; i < num_bits; i++)
-      parity ^= data[i];
+    for (int i = 0; i < num_bits; i++) parity ^= data[i];
 
     // Even parity = XOR result, Odd parity = inverted XOR result
     calculate_expected_parity = parity_type ? ~parity : parity;
@@ -101,8 +97,7 @@ module adn_common_parity_generator_tb;
     if (parity_o !== expected_data) begin
       test_pass = 1'b0;
       if (debug)
-        $display("FAIL EVEN ZERO: DATA=%b EXPECTED=%0b GOT=%0b",
-                 data_i, expected_data, parity_o);
+        $display("FAIL EVEN ZERO: DATA=%b EXPECTED=%0b GOT=%0b", data_i, expected_data, parity_o);
     end
 
     // All one
@@ -113,8 +108,7 @@ module adn_common_parity_generator_tb;
       if (parity_o !== expected_data) begin
         test_pass = 1'b0;
         if (debug)
-          $display("FAIL EVEN ONE: DATA=%b EXPECTED=%0b GOT=%0b",
-                   data_i, expected_data, parity_o);
+          $display("FAIL EVEN ONE: DATA=%b EXPECTED=%0b GOT=%0b", data_i, expected_data, parity_o);
       end
     end
 
@@ -127,8 +121,9 @@ module adn_common_parity_generator_tb;
         if (parity_o !== expected_data) begin
           test_pass = 1'b0;
           if (debug)
-            $display("FAIL EVEN RANDOM: DATA=%b EXPECTED=%0b GOT=%0b",
-                     data_i, expected_data, parity_o);
+            $display(
+                "FAIL EVEN RANDOM: DATA=%b EXPECTED=%0b GOT=%0b", data_i, expected_data, parity_o
+            );
           break;
         end
       end
@@ -154,8 +149,7 @@ module adn_common_parity_generator_tb;
     if (parity_o !== expected_data) begin
       test_pass = 1'b0;
       if (debug)
-        $display("FAIL ODD ZERO: DATA=%b EXPECTED=%0b GOT=%0b",
-                 data_i, expected_data, parity_o);
+        $display("FAIL ODD ZERO: DATA=%b EXPECTED=%0b GOT=%0b", data_i, expected_data, parity_o);
     end
 
     // All one
@@ -166,8 +160,7 @@ module adn_common_parity_generator_tb;
       if (parity_o !== expected_data) begin
         test_pass = 1'b0;
         if (debug)
-          $display("FAIL ODD ONE: DATA=%b EXPECTED=%0b GOT=%0b",
-                   data_i, expected_data, parity_o);
+          $display("FAIL ODD ONE: DATA=%b EXPECTED=%0b GOT=%0b", data_i, expected_data, parity_o);
       end
     end
 
@@ -180,8 +173,9 @@ module adn_common_parity_generator_tb;
         if (parity_o !== expected_data) begin
           test_pass = 1'b0;
           if (debug)
-            $display("FAIL ODD RANDOM: DATA=%b EXPECTED=%0b GOT=%0b",
-                     data_i, expected_data, parity_o);
+            $display(
+                "FAIL ODD RANDOM: DATA=%b EXPECTED=%0b GOT=%0b", data_i, expected_data, parity_o
+            );
           break;
         end
       end
@@ -211,8 +205,14 @@ module adn_common_parity_generator_tb;
       if (parity_o !== expected_data) begin
         test_pass = 1'b0;
         if (debug)
-          $display("FAIL BOUNDARY: NUM_BITS=%0d DATA=%b TYPE=%0d EXPECTED=%0b GOT=%0b",
-                   num_bits_i, data_i, parity_type_i, expected_data, parity_o);
+          $display(
+              "FAIL BOUNDARY: NUM_BITS=%0d DATA=%b TYPE=%0d EXPECTED=%0b GOT=%0b",
+              num_bits_i,
+              data_i,
+              parity_type_i,
+              expected_data,
+              parity_o
+          );
         break;
       end
     end
@@ -238,8 +238,14 @@ module adn_common_parity_generator_tb;
       if (parity_o !== expected_data) begin
         test_pass = 1'b0;
         if (debug)
-          $display("FAIL NUM_BITS: NUM_BITS=%0d DATA=%b TYPE=%0d EXPECTED=%0b GOT=%0b",
-                   num_bits_i, data_i, parity_type_i, expected_data, parity_o);
+          $display(
+              "FAIL NUM_BITS: NUM_BITS=%0d DATA=%b TYPE=%0d EXPECTED=%0b GOT=%0b",
+              num_bits_i,
+              data_i,
+              parity_type_i,
+              expected_data,
+              parity_o
+          );
         break;
       end
     end
@@ -249,17 +255,17 @@ module adn_common_parity_generator_tb;
 
   // TC_005: CORNER DATA PATTERNS
   task automatic corner_test();
-    logic [DATA_WIDTH-1:0] patterns [4];
+    logic [DATA_WIDTH-1:0] patterns      [4];
     logic                  expected_data;
     bit                    test_pass;
 
     $display(" CORNER TEST ");
-    test_pass = 1'b1;
+    test_pass   = 1'b1;
     patterns[0] = '0;
     patterns[1] = '1;
     patterns[2] = 'h55;
     patterns[3] = 'hAA;
-    num_bits_i = DATA_WIDTH;
+    num_bits_i  = DATA_WIDTH;
 
     for (int i = 0; i < 4; i++) begin
       data_i = patterns[i];
@@ -270,8 +276,13 @@ module adn_common_parity_generator_tb;
       if (parity_o !== expected_data) begin
         test_pass = 1'b0;
         if (debug)
-          $display("FAIL CORNER: DATA=%b TYPE=%0d EXPECTED=%0b GOT=%0b",
-                   data_i, parity_type_i, expected_data, parity_o);
+          $display(
+              "FAIL CORNER: DATA=%b TYPE=%0d EXPECTED=%0b GOT=%0b",
+              data_i,
+              parity_type_i,
+              expected_data,
+              parity_o
+          );
         break;
       end
     end
@@ -293,22 +304,25 @@ module adn_common_parity_generator_tb;
     parity_type_i = $urandom_range(0, 1);
 
     base_data = '0;
-    for (int i = 0; i < selected_bits; i++)
-      base_data[i] = $urandom_range(0, 1);
+    for (int i = 0; i < selected_bits; i++) base_data[i] = $urandom_range(0, 1);
 
     expected_data = calculate_expected_parity(base_data, num_bits_i, parity_type_i);
 
     repeat (10) begin
       data_i = base_data;
-      for (int i = selected_bits; i < DATA_WIDTH; i++)
-        data_i[i] = $urandom_range(0, 1);
+      for (int i = selected_bits; i < DATA_WIDTH; i++) data_i[i] = $urandom_range(0, 1);
 
       #1;
       if (parity_o !== expected_data) begin
         test_pass = 1'b0;
         if (debug)
-          $display("FAIL UPPER BITS: DATA=%b NUM_BITS=%0d EXPECTED=%0b GOT=%0b",
-                   data_i, num_bits_i, expected_data, parity_o);
+          $display(
+              "FAIL UPPER BITS: DATA=%b NUM_BITS=%0d EXPECTED=%0b GOT=%0b",
+              data_i,
+              num_bits_i,
+              expected_data,
+              parity_o
+          );
         break;
       end
     end
@@ -326,7 +340,7 @@ module adn_common_parity_generator_tb;
     bit                    test_pass;
 
     $display(" RANDOM TEST ");
-    test_pass = 1'b1;
+    test_pass  = 1'b1;
     iterations = (test_count > 0) ? test_count : 100;
 
     repeat (iterations) begin
@@ -344,8 +358,14 @@ module adn_common_parity_generator_tb;
       if (parity_o !== expected_data) begin
         test_pass = 1'b0;
         if (debug)
-          $display("FAIL RANDOM: DATA=%b NUM_BITS=%0d TYPE=%0d EXPECTED=%0b GOT=%0b",
-                   random_data, random_bits, random_type, expected_data, parity_o);
+          $display(
+              "FAIL RANDOM: DATA=%b NUM_BITS=%0d TYPE=%0d EXPECTED=%0b GOT=%0b",
+              random_data,
+              random_bits,
+              random_type,
+              expected_data,
+              parity_o
+          );
         break;
       end
     end
@@ -371,8 +391,9 @@ module adn_common_parity_generator_tb;
     if (parity_o !== expected_data) begin
       test_pass = 1'b0;
       if (debug)
-        $display("FAIL ZERO BITS EVEN: DATA=%b EXPECTED=%0b GOT=%0b",
-                 data_i, expected_data, parity_o);
+        $display(
+            "FAIL ZERO BITS EVEN: DATA=%b EXPECTED=%0b GOT=%0b", data_i, expected_data, parity_o
+        );
     end
 
     // ODD PARITY
@@ -385,8 +406,9 @@ module adn_common_parity_generator_tb;
       if (parity_o !== expected_data) begin
         test_pass = 1'b0;
         if (debug)
-          $display("FAIL ZERO BITS ODD: DATA=%b EXPECTED=%0b GOT=%0b",
-                   data_i, expected_data, parity_o);
+          $display(
+              "FAIL ZERO BITS ODD: DATA=%b EXPECTED=%0b GOT=%0b", data_i, expected_data, parity_o
+          );
       end
     end
 
@@ -420,7 +442,7 @@ module adn_common_parity_generator_tb;
       end
 
       default: $fatal(1, "\033[1;31mUNKNOWN TEST NAME: %s\033[0m", test_name);
-      
+
     endcase
 
     $finish;

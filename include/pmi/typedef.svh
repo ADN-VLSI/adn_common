@@ -47,7 +47,7 @@ See LICENSE file in the project root for full license information
     logic                    mgnt;               \
     logic                    mack;               \
     logic [``__DW__``-1:0]   mrdata;             \
-    logic                    mrsp;              \
+    logic                    mresp;              \
   } ``__NM__``_rsp_t;                            \
 
 
