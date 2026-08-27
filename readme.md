@@ -23,6 +23,7 @@ This Repo is a collection of common modules used in ADN designs. The modules are
 [`adn_common_pipeline_join`](document/source/adn_common_pipeline_join.md)
 [`adn_common_pipeline`](document/source/adn_common_pipeline.md)
 [`adn_common_pipeline_split`](document/source/adn_common_pipeline_split.md)
+[`adn_common_pmi_width_converter_down`](document/source/adn_common_pmi_width_converter_down.md)
 [`adn_common_priority_encoder`](document/source/adn_common_priority_encoder.md)
 [`adn_common_range_checker`](document/source/adn_common_range_checker.md)
 [`adn_common_ring_counter`](document/source/adn_common_ring_counter.md)
