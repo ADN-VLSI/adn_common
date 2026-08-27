@@ -12,29 +12,31 @@
 
 |Name|Type|Dimension|Default|Description|
 |-|-|-|-|-|
-|s_req_t|type||logic|PARAMETERS|
-|s_rsp_t|type||logic||
-|m_req_t|type||logic||
-|m_rsp_t|type||logic||
+|s_req_t|type||logic|Source request type|
+|s_rsp_t|type||logic|Source response type|
+|m_req_t|type||logic|Destination request type|
+|m_rsp_t|type||logic|Destination response type|
 
 
 ## Ports
 
 |Name|Direction|Type|Dimension|Description|
 |-|-|-|-|-|
-|clk_i|input|logic||PORTS|
-|arst_ni|input|logic|||
-|s_pmi_req_i|input|s_req_t|||
-|s_pmi_rsp_o|output|s_rsp_t|||
-|m_pmi_req_o|output|m_req_t|||
-|m_pmi_rsp_i|input|m_rsp_t|||
+|clk_i|input|logic||System clock|
+|arst_ni|input|logic||Active-low asynchronous reset|
+|s_pmi_req_i|input|s_req_t||Source PMI request input|
+|s_pmi_rsp_o|output|s_rsp_t||Source PMI response output|
+|m_pmi_req_o|output|m_req_t||Destination PMI request output|
+|m_pmi_rsp_i|input|m_rsp_t||Destination PMI response input|
 
 
 ## Description
 
-@foez---bhai, write the purpose of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+### Purpose
+This module implements a width converter for the PMI (Parallel Memory Interface) protocol, designed to downsize the data bus width from a wider source interface to a narrower destination interface. It handles the serialization of wide write transactions and the deserialization of narrow read responses, ensuring data integrity across different bus widths.
 
-@foez---bhai, describe the use case of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+### Use Case
+This module is primarily used in SoC interconnects or memory controllers where a high-bandwidth master (e.g., a CPU or DMA engine) needs to communicate with a lower-bandwidth peripheral or memory slave. It acts as a bridge, breaking down large, wide-bus transactions into multiple smaller beats that the narrower slave interface can process, and reassembling the fragmented read responses back into the original wide format expected by the master.
 
 | REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
 |----------|------------|-----------------|--------------------------------------------------------|
