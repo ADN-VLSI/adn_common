@@ -1,8 +1,8 @@
 /*
 
-@foez---bhai, write the purpose of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+@foez-bhai, write the purpose of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
 
-@foez---bhai, describe the use case of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+@foez-bhai, describe the use case of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
 
 | REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
 |----------|------------|-----------------|--------------------------------------------------------|
@@ -23,6 +23,8 @@ module adn_common_pipeline_split_assertion #(
     // Clock and Reset
     input logic arst_ni,  // Active-low asynchronous reset
     input logic clk_i,    // Rising-edge clock
+
+    input logic clear_i,  // Synchronous clear to flush pipeline
 
     // Input (Upstream) Interface
     input  logic [DATA_WIDTH-1:0] data_in_i,        // Data payload from upstream
