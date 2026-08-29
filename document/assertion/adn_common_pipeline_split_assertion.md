@@ -21,6 +21,7 @@
 |-|-|-|-|-|
 |arst_ni|input|logic||Active-low asynchronous reset|
 |clk_i|input|logic||Rising-edge clock|
+|clear_i|input|logic||Synchronous clear to flush pipeline|
 |data_in_i|input|logic [DATA_WIDTH-1:0]||Data payload from upstream|
 |data_in_valid_i|input|logic||Valid signal for upstream data|
 |data_in_ready_o|output|logic||Ready signal to upstream|
@@ -34,9 +35,11 @@
 
 ## Description
 
-@foez---bhai, write the purpose of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+### Purpose
+This module provides a set of formal assertions for a pipeline split component. It validates the handshake protocol (valid/ready) on the upstream input interface and both downstream output interfaces (primary and secondary) to ensure data integrity and protocol compliance throughout the split operation.
 
-@foez---bhai, describe the use case of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+### Use Case
+This module is designed to be instantiated in formal verification environments or as a passive monitor in simulation for designs that implement a pipeline split (e.g., a 1-to-2 demultiplexer or a broadcast buffer). It ensures that the handshake signals adhere to the standard ready/valid protocol, preventing deadlocks or data loss when a single upstream stream is distributed to multiple downstream consumers.
 
 | REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
 |----------|------------|-----------------|--------------------------------------------------------|
