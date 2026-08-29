@@ -9,6 +9,7 @@ ${ADN_COMMON}/source/adn_common_cdc_fifo.sv
 ${ADN_COMMON}/source/adn_common_decoder.sv
 ${ADN_COMMON}/source/adn_common_dual_port_ram.sv
 ${ADN_COMMON}/source/adn_common_edge_detect.sv
+${ADN_COMMON}/source/adn_common_encoder.sv
 ${ADN_COMMON}/source/adn_common_fifo.sv
 ${ADN_COMMON}/source/adn_common_fixed_priority_arbiter.sv
 ${ADN_COMMON}/source/adn_common_gray_to_bin.sv
