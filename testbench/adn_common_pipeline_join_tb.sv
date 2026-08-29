@@ -91,6 +91,8 @@ module adn_common_pipeline_join_tb;
       .arst_ni                   (arst_n),
       .clk_i                     (clk),
 
+      .clear_i                   ('0), // TODO Test this pin
+
       .data_in_secondary_i       (data_in_secondary),
       .data_in_secondary_valid_i (data_in_secondary_valid),
       .data_in_secondary_ready_o (data_in_secondary_ready),

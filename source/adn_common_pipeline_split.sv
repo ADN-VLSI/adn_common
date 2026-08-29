@@ -44,6 +44,8 @@ module adn_common_pipeline_split #(
     input logic arst_ni,  // Active-low asynchronous reset
     input logic clk_i,    // Rising-edge clock
 
+    input logic clear_i,  // Synchronous clear to flush pipeline
+
     // Input (Upstream) Interface
     input  logic [DATA_WIDTH-1:0] data_in_i,        // Input data
     input  logic                  data_in_valid_i,  // Input data valid
@@ -93,6 +95,7 @@ module adn_common_pipeline_split #(
   ) u_pl (
       .arst_ni         (arst_ni),
       .clk_i           (clk_i),
+      .clear_i         (clear_i),
       .data_in_i       (data_in_i),
       .data_in_valid_i (data_in_valid_i),
       .data_in_ready_o (data_in_ready_o),
