@@ -1,5 +1,7 @@
 /*
 
+@foez-bhai, revise and update the descriptions that require modifications due to addition of pin `clear_i`
+
 ### Purpose
 The `adn_common_pipeline` module implements a single-stage pipeline register with a standard ready/valid handshake protocol. It acts as a buffer to decouple timing paths between upstream and downstream modules, allowing for improved clock frequency by inserting a register stage in the data path while maintaining flow control.
 
@@ -29,6 +31,8 @@ module adn_common_pipeline #(
     // Clock and Reset
     input logic arst_ni,  // Active-low asynchronous reset
     input logic clk_i,    // Rising-edge clock
+
+    input logic clear_i,  // @foez-bhai, add comments
 
     // Input (Upstream) Interface
     input  logic [DATA_WIDTH-1:0] data_in_i,        // Input data
@@ -61,11 +65,11 @@ module adn_common_pipeline #(
   always_comb data_out_o = data_reg;
 
   // Output valid when pipeline is full
-  always_comb data_out_valid_o = is_full;
+  always_comb data_out_valid_o = is_full & ~clear_i;
 
   // Next-state logic for pipeline full flag
   // Set when valid input accepted, clear when downstream ready and pipeline full
-  always_comb is_full_next = data_in_valid_i ? '1 : (data_out_ready_i ? '0 : is_full);
+  always_comb is_full_next = data_in_valid_i ? '1 : (data_out_ready_i ? '0 : data_out_valid_o);
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // SEQUENTIALS
