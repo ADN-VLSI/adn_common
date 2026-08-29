@@ -13,6 +13,7 @@ This Repo is a collection of common modules used in ADN designs. The modules are
 [`adn_common_decoder`](document/source/adn_common_decoder.md)
 [`adn_common_dual_port_ram`](document/source/adn_common_dual_port_ram.md)
 [`adn_common_edge_detect`](document/source/adn_common_edge_detect.md)
+[`adn_common_encoder`](document/source/adn_common_encoder.md)
 [`adn_common_fifo`](document/source/adn_common_fifo.md)
 [`adn_common_fixed_priority_arbiter`](document/source/adn_common_fixed_priority_arbiter.md)
 [`adn_common_gray_to_bin`](document/source/adn_common_gray_to_bin.md)
