@@ -1,8 +1,10 @@
 /*
 
-@foez-bhai, write the purpose of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+### Purpose
+The `adn_common_pmi_width_converter_up` module serves as a bridge between a narrow PMI (Processor Memory Interface) master and a wider PMI slave. It facilitates data-width expansion by zero-extending write data and byte strobes to the wider bus width, while truncating read data back to the narrow width on the return path. This module is designed for low-aligned, non-address-aware transactions where the downstream slave consumes the entire word.
 
-@foez-bhai, describe the use case of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+### Use Case
+This module is primarily used in SoC interconnects where a narrow IP core (e.g., a 32-bit peripheral) needs to communicate with a wider memory-mapped slave (e.g., a 64-bit register bank or memory controller). By handling the width adaptation at the interface level, it allows the narrow master to remain agnostic of the wider bus architecture, ensuring compatibility without requiring complex logic in the master itself.
 
 | REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
 |----------|------------|-----------------|--------------------------------------------------------|
@@ -51,27 +53,26 @@ See LICENSE file in the project root for full license information
 //`PMI_T(s_pmi, 32, 32)
 //`PMI_T(m_pmi, 32, 64)
 
-// @foez-bhai, add comments to the parameters, ports
 module adn_common_pmi_width_converter_up #(
-  parameter int ADDR_WIDTH   = 32,
-  parameter int S_DATA_WIDTH = 32,
-  parameter int M_DATA_WIDTH = 64,
-  parameter type s_req_t = s_pmi_req_t,
-  parameter type s_rsp_t = s_pmi_rsp_t,
-  parameter type m_req_t = m_pmi_req_t,
-  parameter type m_rsp_t = m_pmi_rsp_t
+  parameter int ADDR_WIDTH   = 32, // Width of the address bus
+  parameter int S_DATA_WIDTH = 32, // Width of the upstream (narrow) data bus
+  parameter int M_DATA_WIDTH = 64, // Width of the downstream (wide) data bus
+  parameter type s_req_t = s_pmi_req_t, // Upstream request type
+  parameter type s_rsp_t = s_pmi_rsp_t, // Upstream response type
+  parameter type m_req_t = m_pmi_req_t, // Downstream request type
+  parameter type m_rsp_t = m_pmi_rsp_t  // Downstream response type
 ) (
-  input logic clk_i,
-  input logic arst_ni,
+  input logic clk_i,   // System clock
+  input logic arst_ni, // Active-low asynchronous reset
 
-  input  s_req_t s_pmi_req_i,
-  output s_rsp_t s_pmi_rsp_o,
+  input  s_req_t s_pmi_req_i, // Upstream request input
+  output s_rsp_t s_pmi_rsp_o, // Upstream response output
 
-  output m_req_t m_pmi_req_o,
-  input  m_rsp_t m_pmi_rsp_i
+  output m_req_t m_pmi_req_o, // Downstream request output
+  input  m_rsp_t m_pmi_rsp_i  // Downstream response input
 );
-// @foez-bhai, add comments to the functional blocks, signals, and submodules
 
+  // Local parameters for byte lane calculations
   localparam int S_STRB_WIDTH = S_DATA_WIDTH / 8;
   localparam int M_STRB_WIDTH = M_DATA_WIDTH / 8;
 
@@ -97,6 +98,7 @@ module adn_common_pmi_width_converter_up #(
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // METHODS
   //////////////////////////////////////////////////////////////////////////////////////////////////
+  // Configuration validation block
   initial begin
     if (M_DATA_WIDTH <= S_DATA_WIDTH) begin
       $error("adn_common_pmi_width_converter_up: M_DATA_WIDTH (%0d) must be greater than S_DATA_WIDTH (%0d)",
