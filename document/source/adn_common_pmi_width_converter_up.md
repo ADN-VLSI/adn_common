@@ -15,10 +15,10 @@
 |ADDR_WIDTH|int||32|Width of the address bus|
 |S_DATA_WIDTH|int||32|Width of the upstream (narrow) data bus|
 |M_DATA_WIDTH|int||64|Width of the downstream (wide) data bus|
-|s_req_t|type||s_pmi_req_t|Upstream request type|
-|s_rsp_t|type||s_pmi_rsp_t|Upstream response type|
-|m_req_t|type||m_pmi_req_t|Downstream request type|
-|m_rsp_t|type||m_pmi_rsp_t|Downstream response type|
+|s_req_t|type||logic|Upstream request type|
+|s_rsp_t|type||logic|Upstream response type|
+|m_req_t|type||logic|Downstream request type|
+|m_rsp_t|type||logic|Downstream response type|
 
 
 ## Ports
