@@ -48,19 +48,15 @@ See LICENSE file in the project root for full license information
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // TYPEDEFS
 //////////////////////////////////////////////////////////////////////////////////////////////////
-//`include "pmi/typedef.svh"
-
-//`PMI_T(s_pmi, 32, 32)
-//`PMI_T(m_pmi, 32, 64)
 
 module adn_common_pmi_width_converter_up #(
   parameter int ADDR_WIDTH   = 32, // Width of the address bus
   parameter int S_DATA_WIDTH = 32, // Width of the upstream (narrow) data bus
   parameter int M_DATA_WIDTH = 64, // Width of the downstream (wide) data bus
-  parameter type s_req_t = s_pmi_req_t, // Upstream request type
-  parameter type s_rsp_t = s_pmi_rsp_t, // Upstream response type
-  parameter type m_req_t = m_pmi_req_t, // Downstream request type
-  parameter type m_rsp_t = m_pmi_rsp_t  // Downstream response type
+  parameter type s_req_t = logic, // Upstream request type
+  parameter type s_rsp_t = logic, // Upstream response type
+  parameter type m_req_t = logic, // Downstream request type
+  parameter type m_rsp_t = logic  // Downstream response type
 ) (
   input logic clk_i,   // System clock
   input logic arst_ni, // Active-low asynchronous reset
@@ -71,6 +67,36 @@ module adn_common_pmi_width_converter_up #(
   output m_req_t m_pmi_req_o, // Downstream request output
   input  m_rsp_t m_pmi_rsp_i  // Downstream response input
 );
+
+  typedef struct packed {
+    logic [ADDR_WIDTH-1:0] maddr;
+    logic                  mwe;
+    logic [S_DATA_WIDTH-1:0] mwdata;
+    logic [(S_DATA_WIDTH/8)-1:0] mstrb;
+    logic                  mreq;
+  } s_pmi_req_t;
+
+  typedef struct packed {
+    logic                  mgnt;
+    logic                  mack;
+    logic [S_DATA_WIDTH-1:0] mrdata;
+    logic                  mresp;
+  } s_pmi_rsp_t;
+
+  typedef struct packed {
+    logic [ADDR_WIDTH-1:0] maddr;
+    logic                  mwe;
+    logic [M_DATA_WIDTH-1:0] mwdata;
+    logic [(M_DATA_WIDTH/8)-1:0] mstrb;
+    logic                  mreq;
+  } m_pmi_req_t;
+
+  typedef struct packed {
+    logic                  mgnt;
+    logic                  mack;
+    logic [M_DATA_WIDTH-1:0] mrdata;
+    logic                  mresp;
+  } m_pmi_rsp_t;
 
   // Local parameters for byte lane calculations
   localparam int S_STRB_WIDTH = S_DATA_WIDTH / 8;
