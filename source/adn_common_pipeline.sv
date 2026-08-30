@@ -59,7 +59,7 @@ module adn_common_pipeline #(
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
   // Input ready when pipeline not full, or when full and downstream is ready
-  always_comb data_in_ready_o = is_full ? data_out_ready_i : arst_ni;
+  always_comb data_in_ready_o = is_full ? (data_out_ready_i | clear_i) : arst_ni;
 
   // Output data comes from pipeline register
   always_comb data_out_o = data_reg;
