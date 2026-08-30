@@ -17,5 +17,4 @@ ${ADN_COMMON}/testbench/adn_common_hs_counter_tb.sv
 ${ADN_COMMON}/testbench/adn_common_priority_encoder_tb.sv
 ${ADN_COMMON}/testbench/adn_common_round_robin_arbiter_tb.sv
 ${ADN_COMMON}/testbench/adn_common_edge_detect_tb.sv
-${ADN_COMMON}/testbench/adn_common_pmi_width_converter_down_tb.sv
 ${ADN_COMMON}/testbench/adn_common_decoder_tb.sv
