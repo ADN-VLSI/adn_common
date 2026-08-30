@@ -57,7 +57,7 @@ module adn_common_pmi_width_converter_down #(
     logic [BEAT_W:0]    issue_cnt; // Counter for tracking serialized write beats
     logic [BEAT_W:0]    ack_cnt;   // Counter for tracking deserialized read beats
     logic [WIDE_DW-1:0] rdata_acc; // Accumulator for reassembling wide read data
-    logic                mrsp_acc;  // Accumulator for capturing read response status
+    logic                mresp_acc; // Accumulator for capturing read response status
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // ASSIGNMENTS
@@ -80,8 +80,8 @@ module adn_common_pmi_width_converter_down #(
   
     // Read response assembly
     assign s_pmi_rsp_o.mack   = m_pmi_rsp_i.mack && (ack_cnt == (RATIO - 1));
-    assign s_pmi_rsp_o.mrdata = rdata_acc | ({{(WIDE_DW - NARROW_DW) {1'b0}}, m_pmi_rsp_i.mrdata} << (ack_cnt * NARROW_DW));
-    assign s_pmi_rsp_o.mrsp   = mrsp_acc | m_pmi_rsp_i.mrsp;
+    assign s_pmi_rsp_o.mrdata = rdata_acc;
+    assign s_pmi_rsp_o.mresp  = mresp_acc;
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // SUBMODULES
   //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -111,16 +111,16 @@ module adn_common_pmi_width_converter_down #(
     if (!arst_ni) begin
       ack_cnt   <= '0;
       rdata_acc <= '0;
-      mrsp_acc  <= 1'b0;
+      mresp_acc <= 1'b0;
     end else if (m_pmi_rsp_i.mack) begin
       if (ack_cnt == (RATIO - 1)) begin
-        ack_cnt   <= '0;
-        rdata_acc <= '0;
-        mrsp_acc  <= 1'b0;
+        ack_cnt <= '0;
+        rdata_acc[ack_cnt*NARROW_DW +: NARROW_DW] <= m_pmi_rsp_i.mrdata;
+        mresp_acc <= mresp_acc | m_pmi_rsp_i.mresp;
       end else begin
         ack_cnt <= ack_cnt + 1'b1;
-        rdata_acc[ack_cnt*NARROW_DW+:NARROW_DW] <= m_pmi_rsp_i.mrdata;
-        mrsp_acc <= mrsp_acc | m_pmi_rsp_i.mrsp;
+        rdata_acc[ack_cnt*NARROW_DW +: NARROW_DW] <= m_pmi_rsp_i.mrdata;
+        mresp_acc <= mresp_acc | m_pmi_rsp_i.mresp;
       end
     end
   end
