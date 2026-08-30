@@ -21,6 +21,7 @@
 |-|-|-|-|-|
 |arst_ni|input|logic||Active-low asynchronous reset, must be stable|
 |clk_i|input|logic||System clock, rising-edge triggered|
+|clear_i|input|logic||Synchronous clear to flush pipeline|
 |data_in_i|input|logic [DATA_WIDTH-1:0]||Data payload from upstream producer|
 |data_in_valid_i|input|logic||Valid signal indicating data_in_i is stable|
 |data_in_ready_o|input|logic||Ready signal indicating upstream can accept data|

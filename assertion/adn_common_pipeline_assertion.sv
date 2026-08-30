@@ -32,15 +32,17 @@ module adn_common_pipeline_assertion #(
     input logic arst_ni,  // Active-low asynchronous reset, must be stable
     input logic clk_i,    // System clock, rising-edge triggered
 
+    input logic clear_i,  // Synchronous clear to flush pipeline
+
     // Input (Upstream) Interface
-    input logic [DATA_WIDTH-1:0] data_in_i,        // Data payload from upstream producer
-    input logic                  data_in_valid_i,  // Valid signal indicating data_in_i is stable
-    input logic                  data_in_ready_o,  // Ready signal indicating upstream can accept data
+    input logic [DATA_WIDTH-1:0] data_in_i,  // Data payload from upstream producer
+    input logic data_in_valid_i,  // Valid signal indicating data_in_i is stable
+    input logic data_in_ready_o,  // Ready signal indicating upstream can accept data
 
     // Output (Downstream) Interface
-    input logic [DATA_WIDTH-1:0] data_out_o,        // Data payload to downstream consumer
-    input logic                  data_out_valid_o,  // Valid signal indicating data_out_o is stable
-    input logic                  data_out_ready_i   // Ready signal indicating downstream can accept data
+    input logic [DATA_WIDTH-1:0] data_out_o,  // Data payload to downstream consumer
+    input logic data_out_valid_o,  // Valid signal indicating data_out_o is stable
+    input logic data_out_ready_i  // Ready signal indicating downstream can accept data
 );
 
   //////////////////////////////////////////////////////////////////////////////////////////////////

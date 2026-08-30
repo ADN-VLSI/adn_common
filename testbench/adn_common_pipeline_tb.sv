@@ -41,6 +41,7 @@ module adn_common_pipeline_tb;
   ) dut (
       .arst_ni         (arst_ni),
       .clk_i           (clk_i),
+      .clear_i         ('0), // TODO test this pin
       .data_in_i       (data_in_i),
       .data_in_valid_i (data_in_valid_i),
       .data_in_ready_o (data_in_ready_o),

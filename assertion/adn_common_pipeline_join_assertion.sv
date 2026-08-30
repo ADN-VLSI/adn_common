@@ -26,6 +26,8 @@ module adn_common_pipeline_join_assertion #(
     input logic arst_ni,  // Active-low asynchronous reset
     input logic clk_i,    // Rising-edge clock signal
 
+    input logic clear_i,  // Synchronous clear to flush pipeline
+
     // Input (Upstream) Secondary Interface
     input  logic [DATA_WIDTH-1:0] data_in_secondary_i,        // Secondary input data bus
     input  logic                  data_in_secondary_valid_i,  // Secondary input valid signal

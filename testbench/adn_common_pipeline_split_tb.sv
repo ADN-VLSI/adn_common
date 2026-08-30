@@ -96,6 +96,8 @@ module adn_common_pipeline_split_tb;
       .arst_ni                    (arst_n),
       .clk_i                      (clk),
 
+      .clear_i                    ('0), // TODO Test this pin
+
       .data_in_i                  (data_in),
       .data_in_valid_i            (data_in_valid),
       .data_in_ready_o            (data_in_ready),

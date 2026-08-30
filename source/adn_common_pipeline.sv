@@ -1,18 +1,20 @@
 /*
 
 ### Purpose
-The `adn_common_pipeline` module implements a single-stage pipeline register with a standard ready/valid handshake protocol. It acts as a buffer to decouple timing paths between upstream and downstream modules, allowing for improved clock frequency by inserting a register stage in the data path while maintaining flow control.
+The `adn_common_pipeline` module implements a single-stage pipeline register with a standard ready/valid handshake protocol. It acts as a buffer to decouple timing paths between upstream and downstream modules, allowing for improved clock frequency by inserting a register stage in the data path while maintaining flow control. It includes a synchronous clear signal to flush the pipeline.
 
 ### Use Case
 This module is primarily used in high-speed digital designs to break long combinational paths. By inserting this pipeline stage between two modules, you can effectively "cut" the critical path, allowing the design to meet tighter timing constraints. It is ideal for:
 - **Inter-module communication:** Buffering data between modules operating on different logic levels or physical distances.
 - **Backpressure handling:** Managing data flow when the downstream module is temporarily unable to accept new data (e.g., due to a full FIFO or busy state).
 - **Timing closure:** Improving the maximum operating frequency ($F_{max}$) of the design by adding a single cycle of latency in exchange for a shorter combinational path.
+- **Pipeline Flushing:** Clearing the pipeline contents using the `clear_i` signal to reset the data flow state.
 
 | REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
 |----------|------------|-----------------|--------------------------------------------------------|
 | 1.0      | 2026-07-20 | Foez Ahmed      | Stable release                                         |
 | 1.1      | 2026-08-01 | Foez Ahmed      | Ratified                                               |
+| 1.2      | 2026-08-15 | Foez Ahmed      | Added clear_i for pipeline flush capability            |
 
 Author : Foez Ahmed (foez.official@gmail.com)
 This file is part of https://github.com/ADN-VLSI/adn_common
@@ -29,6 +31,8 @@ module adn_common_pipeline #(
     // Clock and Reset
     input logic arst_ni,  // Active-low asynchronous reset
     input logic clk_i,    // Rising-edge clock
+
+    input logic clear_i,  // Synchronous clear to flush pipeline
 
     // Input (Upstream) Interface
     input  logic [DATA_WIDTH-1:0] data_in_i,        // Input data
@@ -61,11 +65,11 @@ module adn_common_pipeline #(
   always_comb data_out_o = data_reg;
 
   // Output valid when pipeline is full
-  always_comb data_out_valid_o = is_full;
+  always_comb data_out_valid_o = is_full & ~clear_i;
 
   // Next-state logic for pipeline full flag
   // Set when valid input accepted, clear when downstream ready and pipeline full
-  always_comb is_full_next = data_in_valid_i ? '1 : (data_out_ready_i ? '0 : is_full);
+  always_comb is_full_next = data_in_valid_i ? '1 : (data_out_ready_i ? '0 : data_out_valid_o);
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // SEQUENTIALS
@@ -74,6 +78,8 @@ module adn_common_pipeline #(
   // Pipeline full flag with async active-low reset
   always_ff @(posedge clk_i or negedge arst_ni) begin
     if (~arst_ni) begin
+      is_full <= '0;
+    end else if (clear_i) begin
       is_full <= '0;
     end else begin
       is_full <= is_full_next;
