@@ -42,7 +42,6 @@ module adn_common_pipeline_split_tb;
   // IMPORTS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  // bring in the testbench essentials functions and macros
   `include "vip/adn_common_tb_headers.sv"
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -78,8 +77,6 @@ module adn_common_pipeline_split_tb;
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // VARIABLES
   //////////////////////////////////////////////////////////////////////////////////////////////////
-
-  bit                           is_clk_edge_aligned;
 
   logic                         ref_is_full;
   logic        [DATA_WIDTH-1:0] ref_data_reg;
@@ -118,27 +115,15 @@ module adn_common_pipeline_split_tb;
   );
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
-  // SEQUENTIALS
-  //////////////////////////////////////////////////////////////////////////////////////////////////
-
-  always @(posedge clk) begin
-    is_clk_edge_aligned <= arst_n;
-    #1ns;
-    is_clk_edge_aligned <= '0;
-  end
-
-  //////////////////////////////////////////////////////////////////////////////////////////////////
   // METHODS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  // Assert/deassert arst_n mid-test WITHOUT re-driving clk
   task automatic pulse_reset(input time low_time);
     arst_n <= '0;
     #(low_time);
     arst_n <= '1;
   endtask
 
-  // Task to Apply Reset
   task automatic apply_reset();
     #100ns;
     arst_n                   <= '0;
@@ -167,119 +152,109 @@ module adn_common_pipeline_split_tb;
     @(posedge clk);
   endtask
 
-  // Drive synchronous clear for a specified number of cycles
   task automatic drive_clear(input int cycles = 1);
-    wait (is_clk_edge_aligned);
+    @(negedge clk);
     clear <= '1;
     repeat (cycles) @(posedge clk);
-    wait (is_clk_edge_aligned);
+    @(negedge clk);
     clear <= '0;
   endtask
 
-  // Drive the upstream data/valid on a clean clock-aligned window
   task automatic drive_input(input logic [DATA_WIDTH-1:0] data, input logic valid);
-    wait (is_clk_edge_aligned);
+    @(negedge clk);
     data_in       <= data;
     data_in_valid <= valid;
     @(posedge clk);
   endtask
 
-  // Set downstream ready signals independently
   task automatic set_ready(input logic pri_rdy, input logic sec_rdy);
-    wait (is_clk_edge_aligned);
+    @(negedge clk);
     data_out_primary_ready   <= pri_rdy;
     data_out_secondary_ready <= sec_rdy;
     @(posedge clk);
   endtask
 
-  // Hold current data/valid/ready for N cycles
   task automatic hold_cycles(input int n);
     repeat (n) @(posedge clk);
   endtask
 
   task automatic start_checking();
-    // -----------------------------------------------------------------
-    // LOOP A - reference model state update.
-    // -----------------------------------------------------------------
     fork
       forever
-      @(posedge clk or negedge arst_n) begin
-        if (~arst_n) begin
-          ref_is_full  <= '0;
-          ref_data_reg <= '0;
-        end else if (clear) begin
-          ref_is_full  <= '0;
-          ref_data_reg <= '0;
-        end else begin
-          automatic
-          logic
-          exp_ready_now = ref_is_full ? (data_out_primary_ready | data_out_secondary_ready) : 1'b1;
-          ref_data_reg <= (data_in_valid && exp_ready_now) ? data_in : ref_data_reg;
-          ref_is_full  <= data_in_valid
-                           ? 1'b1
-                           : ((data_out_primary_ready | data_out_secondary_ready) ? 1'b0 : ref_is_full);
-        end
+      @(negedge arst_n) begin
+        ref_is_full  <= '0;
+        ref_data_reg <= '0;
       end
     join_none
 
-    // -----------------------------------------------------------------
-    // LOOP B - comparison/checking.
-    // -----------------------------------------------------------------
     fork
       forever
       @(posedge clk) begin
-        #1ns;  // let DUT combinational outputs settle after the edge
-
         if (arst_n) begin
-          begin
+          // Update reference state at posedge
+          automatic logic downstream_ready = data_out_primary_ready | data_out_secondary_ready;
+          automatic logic input_ready = ~ref_is_full | downstream_ready;
+          automatic logic in_handshake = data_in_valid & input_ready;
+          automatic logic out_handshake = ref_is_full & downstream_ready;
+
+          if (clear) begin
+            ref_is_full  <= '0;
+            ref_data_reg <= '0;
+          end else begin
+            if (in_handshake) begin
+              ref_data_reg <= data_in;
+              ref_is_full  <= 1'b1;
+            end else if (out_handshake) begin
+              ref_is_full <= 1'b0;
+            end
+          end
+
+          // Verify outputs after combinational logic settles
+          #1ns;
+
+          if (arst_n) begin
             automatic logic                  exp_ready;
             automatic logic                  exp_primary_valid;
             automatic logic                  exp_secondary_valid;
             automatic logic [DATA_WIDTH-1:0] exp_data;
 
-            exp_ready = ref_is_full ? (data_out_primary_ready | data_out_secondary_ready) : 1'b1;
+            exp_ready = ~ref_is_full | (data_out_primary_ready | data_out_secondary_ready);
             exp_primary_valid = ref_is_full;
             exp_secondary_valid = ref_is_full & ~data_out_primary_ready;
             exp_data = ref_data_reg;
 
-            // -----------------------------------------------------------
             // Check 1: data_in_ready_o
-            // -----------------------------------------------------------
             if (data_in_ready !== exp_ready) begin
               note_case(0);
               $display(
-                  "[%s] FAIL [%0t] data_in_ready_o mismatch: exp=%b got=%b (is_full=%b pri_rdy=%b sec_rdy=%b)",
+                  "[%s] FAIL [%0t] data_in_ready_o mismatch: exp=%b got=%b (is_full=%b pri_rdy=%b sec_rdy=%b clear=%b)",
                   test_name, $realtime, exp_ready, data_in_ready, ref_is_full,
-                  data_out_primary_ready, data_out_secondary_ready);
+                  data_out_primary_ready, data_out_secondary_ready, clear);
             end else begin
               note_case(1);
             end
 
-            // -----------------------------------------------------------
             // Check 2: primary_valid_o
-            // -----------------------------------------------------------
             if (data_out_primary_valid !== exp_primary_valid) begin
               note_case(0);
-              $display("[%s] FAIL [%0t] data_out_primary_valid_o mismatch: exp=%b got=%b",
-                       test_name, $realtime, exp_primary_valid, data_out_primary_valid);
+              $display(
+                  "[%s] FAIL [%0t] data_out_primary_valid_o mismatch: exp=%b got=%b (clear=%b)",
+                  test_name, $realtime, exp_primary_valid, data_out_primary_valid, clear);
             end else begin
               note_case(1);
             end
 
-            // -----------------------------------------------------------
             // Check 3: secondary_valid_o
-            // -----------------------------------------------------------
             if (data_out_secondary_valid !== exp_secondary_valid) begin
               note_case(0);
-              $display("[%s] FAIL [%0t] data_out_secondary_valid_o mismatch: exp=%b got=%b",
-                       test_name, $realtime, exp_secondary_valid, data_out_secondary_valid);
+              $display(
+                  "[%s] FAIL [%0t] data_out_secondary_valid_o mismatch: exp=%b got=%b (clear=%b)",
+                  test_name, $realtime, exp_secondary_valid, data_out_secondary_valid, clear);
             end else begin
               note_case(1);
             end
 
-            // -----------------------------------------------------------
-            // Check 4: primary/secondary data integrity while valid
-            // -----------------------------------------------------------
+            // Check 4: data integrity
             if (exp_primary_valid && (data_out_primary !== exp_data)) begin
               note_case(0);
               $display("[%s] FAIL [%0t] data_out_primary_o mismatch: exp=%0h got=%0h", test_name,
@@ -296,9 +271,6 @@ module adn_common_pipeline_split_tb;
               note_case(1);
             end
 
-            // -----------------------------------------------------------
-            // Transfer counters
-            // -----------------------------------------------------------
             if (data_out_primary_valid && data_out_primary_ready) begin
               primary_xfer_count <= primary_xfer_count + 1;
             end
@@ -306,22 +278,12 @@ module adn_common_pipeline_split_tb;
               secondary_xfer_count <= secondary_xfer_count + 1;
             end
 
-            // -----------------------------------------------------------
-            // Informational: Priority-drop logging
-            // -----------------------------------------------------------
             if (exp_secondary_valid_dly && !secondary_ready_dly && !primary_ready_dly &&
                 data_out_primary_ready && ref_is_full && !exp_secondary_valid) begin
               drop_event_count <= drop_event_count + 1;
               $display(
                   "[%s] INFO [%0t] Observed documented SECONDARY priority-drop event (count=%0d)",
                   test_name, $realtime, drop_event_count + 1);
-            end
-
-            if (debug) begin
-              $display(
-                  "[%s] STATE [%0t] clear=%b is_full=%b data_reg=%0h in_rdy=%b pri_vld=%b sec_vld=%b",
-                  test_name, $realtime, clear, ref_is_full, ref_data_reg, data_in_ready,
-                  data_out_primary_valid, data_out_secondary_valid);
             end
 
             exp_secondary_valid_dly <= exp_secondary_valid;
@@ -358,7 +320,6 @@ module adn_common_pipeline_split_tb;
     hold_cycles(3);
   endtask
 
-  // TC_CLR_01: Clear assertion during idle state
   task automatic run_tc_clr_01();
     apply_reset();
     set_ready(1, 1);
@@ -367,38 +328,33 @@ module adn_common_pipeline_split_tb;
     hold_cycles(3);
   endtask
 
-  // TC_CLR_02: Synchronous clear asserted while stalled (flushing valid buffer)
   task automatic run_tc_clr_02();
     apply_reset();
     set_ready(0, 0);
     drive_input(8'h55, 1);
     drive_input(8'h00, 0);
     hold_cycles(2);
-    // Flush buffered beat
     drive_clear(1);
     hold_cycles(2);
-    // Set downstream ready; ensure flushed beat does not get consumed
     set_ready(1, 1);
     hold_cycles(3);
   endtask
 
-  // TC_CLR_03: Clear asserted simultaneously with upstream valid input
   task automatic run_tc_clr_03();
     apply_reset();
     set_ready(0, 0);
-    wait (is_clk_edge_aligned);
+    @(negedge clk);
     clear         <= '1;
     data_in       <= 8'hAA;
     data_in_valid <= '1;
     @(posedge clk);
-    wait (is_clk_edge_aligned);
+    @(negedge clk);
     clear         <= '0;
     data_in_valid <= '0;
     @(posedge clk);
     hold_cycles(3);
   endtask
 
-  // TC_CLR_04: 1-cycle clear pulse and recovery
   task automatic run_tc_clr_04();
     apply_reset();
     set_ready(1, 1);
@@ -520,15 +476,15 @@ module adn_common_pipeline_split_tb;
   task automatic run_tc_random_01();
     apply_reset();
     for (int i = 0; i < 50; i++) begin
-      wait (is_clk_edge_aligned);
-      clear                    <= ($urandom_range(0, 9) == 0);  // ~10% clear injection
+      @(negedge clk);
+      clear                    <= ($urandom_range(0, 9) == 0);
       data_out_primary_ready   <= $urandom_range(0, 1);
       data_out_secondary_ready <= $urandom_range(0, 1);
       data_in                  <= $urandom;
       data_in_valid            <= $urandom_range(0, 1);
       @(posedge clk);
     end
-    wait (is_clk_edge_aligned);
+    @(negedge clk);
     clear         <= '0;
     data_in_valid <= '0;
     set_ready(1, 1);
