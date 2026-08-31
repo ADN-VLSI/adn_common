@@ -21,7 +21,7 @@
 |-|-|-|-|-|
 |arst_ni|input|logic||Active-low asynchronous reset|
 |clk_i|input|logic||Rising-edge clock|
-|clear_i|input|logic|||
+|clear_i|input|logic||Synchronous clear to flush pipeline|
 |data_in_secondary_i|input|logic [DATA_WIDTH-1:0]||Input data|
 |data_in_secondary_valid_i|input|logic||Input data valid|
 |data_in_secondary_ready_o|output|logic||Input ready|
@@ -48,5 +48,5 @@ This module is ideal for scenarios where a high-priority control or data stream 
 |----------|------------|---------------------------------|--------------------------------------------------------|
 | 0.1      | 2026-08-06 | Foez Ahmed                      | Initial version                                        |
 | 1.0      | 2026-08-06 | Foez Ahmed                      | Stable release                                         |
-| 1.1      | 2026-08-31 | Md Sakhawat Hossain Sabbir      | Added clear_i signal to flush pipeline                 |
+
 Author : Foez Ahmed (foez.official@gmail.com)
