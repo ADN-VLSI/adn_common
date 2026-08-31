@@ -9,11 +9,11 @@ This module is ideal for scenarios where a high-priority control or data stream 
 - **Telemetry/Logging:** Injecting background diagnostic data into a primary data bus only when the bus is not actively transmitting high-priority payload.
 - **Resource Sharing:** Allowing multiple masters to share a single downstream interface where one master is latency-sensitive and the other is throughput-oriented.
 
-| REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
-|----------|------------|-----------------|--------------------------------------------------------|
-| 0.1      | 2026-08-06 | Foez Ahmed      | Initial version                                        |
-| 1.0      | 2026-08-06 | Foez Ahmed      | Stable release                                         |
-
+| REVISION | DATE       | AUTHOR                          | DESCRIPTION                                            |
+|----------|------------|---------------------------------|--------------------------------------------------------|
+| 0.1      | 2026-08-06 | Foez Ahmed                      | Initial version                                        |
+| 1.0      | 2026-08-06 | Foez Ahmed                      | Stable release                                         |
+| 1.1      | 2026-08-31 | Md Sakhawat Hossain Sabbir      | Added clear_i signal to flush pipeline                 |
 Author : Foez Ahmed (foez.official@gmail.com)
 This file is part of ADN-VLSI/adn_common
 Copyright (c) 2026 ADN Semiconductors
@@ -51,7 +51,7 @@ module adn_common_pipeline_join #(
   // SIGNALS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  logic [DATA_WIDTH-1:0] pl_data;  // Multiplexed data before pipeline
+  logic [DATA_WIDTH-1:0] pl_data;   // Multiplexed data before pipeline
   logic                  pl_valid;  // Combined valid signal for pipeline
   logic                  pl_ready;  // Backpressure signal from pipeline
 
@@ -62,12 +62,12 @@ module adn_common_pipeline_join #(
   // Priority mux: select primary data if valid, otherwise secondary
   always_comb pl_data = data_in_primary_valid_i ? data_in_primary_i : data_in_secondary_i;
 
-  // Valid signal: high if either input has valid data
-  always_comb pl_valid = data_in_primary_valid_i | data_in_secondary_valid_i;
+  // Valid signal: suppress valid into pipeline when clear_i is active
+  always_comb pl_valid = ~clear_i & (data_in_primary_valid_i | data_in_secondary_valid_i);
 
-  // Flow control: primary always sees pipeline ready; secondary only sees ready if primary is idle
-  always_comb data_in_primary_ready_o = pl_ready;
-  always_comb data_in_secondary_ready_o = pl_ready & ~data_in_primary_valid_i;
+  // Flow control: reflect pipeline readiness, masked during clear to prevent illegal handshakes
+  always_comb data_in_primary_ready_o   = pl_ready & ~clear_i;
+  always_comb data_in_secondary_ready_o = pl_ready & ~clear_i & ~data_in_primary_valid_i;
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // SUBMODULES
