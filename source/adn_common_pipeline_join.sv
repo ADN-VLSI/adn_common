@@ -13,7 +13,7 @@ This module is ideal for scenarios where a high-priority control or data stream 
 |----------|------------|---------------------------------|--------------------------------------------------------|
 | 0.1      | 2026-08-06 | Foez Ahmed                      | Initial version                                        |
 | 1.0      | 2026-08-06 | Foez Ahmed                      | Stable release                                         |
-| 1.1      | 2026-08-31 | Md Sakhawat Hossain Sabbir      | Added clear_i signal to flush pipeline                 |
+
 Author : Foez Ahmed (foez.official@gmail.com)
 This file is part of ADN-VLSI/adn_common
 Copyright (c) 2026 ADN Semiconductors
