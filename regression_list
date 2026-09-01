@@ -9,3 +9,4 @@ ci_simulate adn_common_synchronizer_tb TC_ALL 100
 ci_simulate adn_common_parity_generator_tb TC_ALL 0
 ci_simulate adn_common_decoder_tb TC_ALL 1000
 ci_simulate adn_common_cdc_fifo_tb TC_ALL 1000
+ci_simulate adn_common_pipeline_tb TC_ALL 1000
