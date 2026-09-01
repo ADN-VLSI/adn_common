@@ -1,6 +1,6 @@
 /*
 | TEST CASE               | DATE       | AUTHOR       | DESCRIPTION                                                                 |
-|-------------------------|------------|--------------|------------------------------------------------------------------------------|
+|-------------------------|------------|--------------|-----------------------------------------------------------------------------|
 | TC_RST_01               | 2026-08-11 | Annim Jannat | Asynchronous reset assertion with no active transfer                        |
 | TC_RST_02               | 2026-08-11 | Annim Jannat | Asynchronous reset asserted mid-transfer (both valid + ready)               |
 | TC_RST_03               | 2026-08-11 | Annim Jannat | Asynchronous reset asserted while stalled (valid high, downstream not ready)|
@@ -15,14 +15,19 @@
 | TC_WIDTH_ONES_01        | 2026-08-11 | Annim Jannat | Data integrity check with all-ones (max value) data pattern                 |
 | TC_WIDTH_ZEROS_01       | 2026-08-11 | Annim Jannat | Data integrity check with all-zeros data pattern                            |
 | TC_BACK2BACK_STRESS_01  | 2026-08-11 | Annim Jannat | Continuous dual-stream input with independently toggling downstream ready   |
-| TC_RANDOM_01            | 2026-08-11 | Annim Jannat | Fully randomized valid/ready/data stress test over many cycles              |
-| TC_ALL                  | 2026-08-11 | Annim Jannat | Default regression suite executing all test scenarios sequentially          |
+| TC_RANDOM_01            | 2026-08-11 | Annim Jannat | Stress test over many cycles                                                |
+| TC_CLEAR_01             | 2026-09-31 | Md Sakhawat Hossain Sabbir |Pipeline full and downstream stalled - flush check             |                
+| TC_CLEAR_02             | 2026-09-01 | Md Sakhawat Hossain Sabbir |Pipeline empty - no effects                                    |               
+| TC_CLEAR_03             | 2026-09-01 | Md Sakhawat Hossain Sabbir |New beat is offered - capture-during-clear check               |               
+| TC_CLEAR_04             | 2026-09-01 | Md Sakhawat Hossain Sabbir |Continuous multi-beat stream on both interfaces                |               
+| TC_CLEAR_05             | 2026-09-01 | Md Sakhawat Hossain Sabbir |Followed by immediate resumption of transfers                  |               
+| TC_ALL                  | 2026-09-01 | Md Sakhawat Hossain Sabbir |Executing all test scenarios sequentially                      |               
 
-| REVISION | DATE       | AUTHOR       | DESCRIPTION       |
-|----------|------------|--------------|-------------------|
-| 0.1      | 2026-08-11 | Annim Jannat | Initial version   |
-
-Author : Annim Jannat (jannatannim@gmail.com)
+| REVISION | DATE       | AUTHOR       | DESCRIPTION                                     |
+|----------|------------|--------------|-------------------------------------------------|
+| 0.1      | 2026-08-11 | Annim Jannat | Initial version                                 |
+| 0.3      | 2026-08-31 | Md Sakhawat Hossain Sabbir | Stable Version                    |
+Authors : Annim Jannat (jannatannim@gmail.com) , Md Sakhawat Hossain Sabbir (sabbirone939@gmail.com)
 This file is part of ADN-VLSI/adn_common
 Copyright (c) 2026 ADN Semiconductors
 Licensed under the MIT License
@@ -43,43 +48,45 @@ module adn_common_pipeline_join_tb;
   // LOCALPARAMS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  localparam time CLKPeriod  = 10ns;
-  localparam int  DATA_WIDTH = 8;
+  localparam time CLKPeriod = 10ns;
+  localparam int DATA_WIDTH = 8;
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // SIGNALS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  logic                  clk;
-  logic                  arst_n;
+  logic                         clk;
+  logic                         arst_n;
+
+  logic                         clear;  // Synchronous clear to flush pipeline
 
   // Upstream - secondary
-  logic [DATA_WIDTH-1:0] data_in_secondary;
-  logic                  data_in_secondary_valid;
-  logic                  data_in_secondary_ready;
+  logic        [DATA_WIDTH-1:0] data_in_secondary;
+  logic                         data_in_secondary_valid;
+  logic                         data_in_secondary_ready;
 
   // Upstream - primary
-  logic [DATA_WIDTH-1:0] data_in_primary;
-  logic                  data_in_primary_valid;
-  logic                  data_in_primary_ready;
+  logic        [DATA_WIDTH-1:0] data_in_primary;
+  logic                         data_in_primary_valid;
+  logic                         data_in_primary_ready;
 
   // Downstream (joined) interface
-  logic [DATA_WIDTH-1:0] data_out;
-  logic                  data_out_valid;
-  logic                  data_out_ready;
+  logic        [DATA_WIDTH-1:0] data_out;
+  logic                         data_out_valid;
+  logic                         data_out_ready;
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // VARIABLES
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  bit                    is_clk_edge_aligned;
+  bit                           is_clk_edge_aligned;
 
-  logic                  ref_is_full;
-  logic [DATA_WIDTH-1:0] ref_data_reg;
+  logic                         ref_is_full;
+  logic        [DATA_WIDTH-1:0] ref_data_reg;
 
-  int unsigned           primary_xfer_count;
-  int unsigned           secondary_xfer_count;
-  int unsigned           secondary_starved_count;
+  int unsigned                  primary_xfer_count;
+  int unsigned                  secondary_xfer_count;
+  int unsigned                  secondary_starved_count;
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // RTLS
@@ -88,22 +95,22 @@ module adn_common_pipeline_join_tb;
   adn_common_pipeline_join #(
       .DATA_WIDTH(DATA_WIDTH)
   ) u_dut (
-      .arst_ni                   (arst_n),
-      .clk_i                     (clk),
+      .arst_ni(arst_n),
+      .clk_i  (clk),
 
-      .clear_i                   ('0), // TODO Test this pin
+      .clear_i(clear),
 
-      .data_in_secondary_i       (data_in_secondary),
-      .data_in_secondary_valid_i (data_in_secondary_valid),
-      .data_in_secondary_ready_o (data_in_secondary_ready),
+      .data_in_secondary_i      (data_in_secondary),
+      .data_in_secondary_valid_i(data_in_secondary_valid),
+      .data_in_secondary_ready_o(data_in_secondary_ready),
 
-      .data_in_primary_i         (data_in_primary),
-      .data_in_primary_valid_i   (data_in_primary_valid),
-      .data_in_primary_ready_o   (data_in_primary_ready),
+      .data_in_primary_i      (data_in_primary),
+      .data_in_primary_valid_i(data_in_primary_valid),
+      .data_in_primary_ready_o(data_in_primary_ready),
 
-      .data_out_o                (data_out),
-      .data_out_valid_o          (data_out_valid),
-      .data_out_ready_i          (data_out_ready)
+      .data_out_o      (data_out),
+      .data_out_valid_o(data_out_valid),
+      .data_out_ready_i(data_out_ready)
   );
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -131,17 +138,18 @@ module adn_common_pipeline_join_tb;
   // Task to Apply Reset (does NOT drive clk)
   task automatic apply_reset();
     #100ns;
-    arst_n                   <= '0;
-    data_in_primary          <= '0;
-    data_in_primary_valid    <= '0;
-    data_in_secondary        <= '0;
-    data_in_secondary_valid  <= '0;
-    data_out_ready           <= '0;
-    ref_is_full               <= '0;
-    ref_data_reg              <= '0;
-    primary_xfer_count        <= '0;
-    secondary_xfer_count      <= '0;
-    secondary_starved_count   <= '0;
+    arst_n                  <= '0;
+    clear                   <= '0;
+    data_in_primary         <= '0;
+    data_in_primary_valid   <= '0;
+    data_in_secondary       <= '0;
+    data_in_secondary_valid <= '0;
+    data_out_ready          <= '0;
+    ref_is_full             <= '0;
+    ref_data_reg            <= '0;
+    primary_xfer_count      <= '0;
+    secondary_xfer_count    <= '0;
+    secondary_starved_count <= '0;
     #100ns;
     arst_n <= '1;
     #100ns;
@@ -158,11 +166,11 @@ module adn_common_pipeline_join_tb;
   // Callers that only care about one stream simply pass valid=0 for the
   // other (data value is don't-care in that case).
   task automatic drive_inputs(input logic [DATA_WIDTH-1:0] pri_data, input logic pri_valid,
-                               input logic [DATA_WIDTH-1:0] sec_data, input logic sec_valid);
+                              input logic [DATA_WIDTH-1:0] sec_data, input logic sec_valid);
     wait (is_clk_edge_aligned);
-    data_in_primary       <= pri_data;
-    data_in_primary_valid <= pri_valid;
-    data_in_secondary     <= sec_data;
+    data_in_primary         <= pri_data;
+    data_in_primary_valid   <= pri_valid;
+    data_in_secondary       <= sec_data;
     data_in_secondary_valid <= sec_valid;
     @(posedge clk);
   endtask
@@ -181,6 +189,13 @@ module adn_common_pipeline_join_tb;
   task automatic set_out_ready(input logic rdy);
     wait (is_clk_edge_aligned);
     data_out_ready <= rdy;
+    @(posedge clk);
+  endtask
+
+  // Set synchronous clear independently
+  task automatic set_clear(input logic val);
+    wait (is_clk_edge_aligned);
+    clear <= val;
     @(posedge clk);
   endtask
 
@@ -209,12 +224,18 @@ module adn_common_pipeline_join_tb;
           automatic logic [DATA_WIDTH-1:0] pl_data;
           automatic logic                  exp_pl_ready_now;
 
-          pl_valid          = data_in_primary_valid | data_in_secondary_valid;
-          pl_data            = data_in_primary_valid ? data_in_primary : data_in_secondary;
-          exp_pl_ready_now = ref_is_full ? data_out_ready : 1'b1;
+          pl_valid         = data_in_primary_valid | data_in_secondary_valid;
+          pl_data          = data_in_primary_valid ? data_in_primary : data_in_secondary;
+          // While full, the pipeline stage also asserts ready when clear_i
+          // is asserted (it accepts/flushes during a clear), mirroring
+          // adn_common_pipeline's data_in_ready_o expression.
+          exp_pl_ready_now = ref_is_full ? (data_out_ready | clear) : 1'b1;
 
           ref_data_reg <= (pl_valid && exp_pl_ready_now) ? pl_data : ref_data_reg;
-          ref_is_full  <= pl_valid ? 1'b1 : (data_out_ready ? 1'b0 : ref_is_full);
+          // clear_i forces the full flag to 0 on the next edge,
+          // overriding the normal next-state logic (matches the RTL's
+          // "else if (clear_i) is_full <= '0" priority over is_full_next).
+          ref_is_full  <= clear ? 1'b0 : (pl_valid ? 1'b1 : (data_out_ready ? 1'b0 : ref_is_full));
         end
       end
     join_none
@@ -239,10 +260,12 @@ module adn_common_pipeline_join_tb;
             automatic logic                  exp_out_valid;
             automatic logic [DATA_WIDTH-1:0] exp_data;
 
-            exp_pl_ready        = ref_is_full ? data_out_ready : 1'b1;
+            exp_pl_ready        = ref_is_full ? (data_out_ready | clear) : 1'b1;
             exp_primary_ready   = exp_pl_ready;
             exp_secondary_ready = exp_pl_ready & ~data_in_primary_valid;
-            exp_out_valid       = ref_is_full;
+            // data_out_valid_o is combinationally masked by clear_i
+            // (is_full & ~clear_i), so the expected valid must be too.
+            exp_out_valid       = ref_is_full & ~clear;
             exp_data            = ref_data_reg;
 
             // -----------------------------------------------------------
@@ -250,9 +273,10 @@ module adn_common_pipeline_join_tb;
             // -----------------------------------------------------------
             if (data_in_primary_ready !== exp_primary_ready) begin
               note_case(0);
-              $display("[%s] FAIL [%0t] data_in_primary_ready_o mismatch: exp=%b got=%b (is_full=%b out_rdy=%b)",
-                        test_name, $realtime, exp_primary_ready, data_in_primary_ready,
-                        ref_is_full, data_out_ready);
+              $display(
+                  "[%s] FAIL [%0t] data_in_primary_ready_o mismatch: exp=%b got=%b (is_full=%b out_rdy=%b clear=%b)",
+                  test_name, $realtime, exp_primary_ready, data_in_primary_ready, ref_is_full,
+                  data_out_ready, clear);
             end else begin
               note_case(1);
             end
@@ -262,9 +286,10 @@ module adn_common_pipeline_join_tb;
             // -----------------------------------------------------------
             if (data_in_secondary_ready !== exp_secondary_ready) begin
               note_case(0);
-              $display("[%s] FAIL [%0t] data_in_secondary_ready_o mismatch: exp=%b got=%b (pri_vld=%b)",
-                        test_name, $realtime, exp_secondary_ready, data_in_secondary_ready,
-                        data_in_primary_valid);
+              $display(
+                  "[%s] FAIL [%0t] data_in_secondary_ready_o mismatch: exp=%b got=%b (pri_vld=%b)",
+                  test_name, $realtime, exp_secondary_ready, data_in_secondary_ready,
+                  data_in_primary_valid);
             end else begin
               note_case(1);
             end
@@ -274,8 +299,9 @@ module adn_common_pipeline_join_tb;
             // -----------------------------------------------------------
             if (data_out_valid !== exp_out_valid) begin
               note_case(0);
-              $display("[%s] FAIL [%0t] data_out_valid_o mismatch: exp=%b got=%b",
-                        test_name, $realtime, exp_out_valid, data_out_valid);
+              $display(
+                  "[%s] FAIL [%0t] data_out_valid_o mismatch: exp=%b got=%b (is_full=%b clear=%b)",
+                  test_name, $realtime, exp_out_valid, data_out_valid, ref_is_full, clear);
             end else begin
               note_case(1);
             end
@@ -285,8 +311,8 @@ module adn_common_pipeline_join_tb;
             // -----------------------------------------------------------
             if (exp_out_valid && (data_out !== exp_data)) begin
               note_case(0);
-              $display("[%s] FAIL [%0t] data_out_o mismatch: exp=%0h got=%0h",
-                        test_name, $realtime, exp_data, data_out);
+              $display("[%s] FAIL [%0t] data_out_o mismatch: exp=%0h got=%0h", test_name,
+                       $realtime, exp_data, data_out);
             end else if (exp_out_valid) begin
               note_case(1);
             end
@@ -311,14 +337,15 @@ module adn_common_pipeline_join_tb;
               secondary_starved_count <= secondary_starved_count + 1;
               if (debug) begin
                 $display("[%s] INFO [%0t] secondary starved by primary priority (count=%0d)",
-                          test_name, $realtime, secondary_starved_count + 1);
+                         test_name, $realtime, secondary_starved_count + 1);
               end
             end
 
             if (debug) begin
-              $display("[%s] STATE [%0t] is_full=%b data_reg=%0h pri_rdy=%b sec_rdy=%b out_vld=%b",
-                        test_name, $realtime, ref_is_full, ref_data_reg, data_in_primary_ready,
-                        data_in_secondary_ready, data_out_valid);
+              $display(
+                  "[%s] STATE [%0t] is_full=%b data_reg=%0h pri_rdy=%b sec_rdy=%b out_vld=%b clear=%b",
+                  test_name, $realtime, ref_is_full, ref_data_reg, data_in_primary_ready,
+                  data_in_secondary_ready, data_out_valid, clear);
             end
           end
         end
@@ -460,8 +487,8 @@ module adn_common_pipeline_join_tb;
     apply_reset();
     for (int i = 0; i < 20; i++) begin
       set_out_ready($urandom_range(0, 1));
-      drive_inputs(i[DATA_WIDTH-1:0], $urandom_range(0, 1),
-                   ~i[DATA_WIDTH-1:0], $urandom_range(0, 1));
+      drive_inputs(i[DATA_WIDTH-1:0], $urandom_range(0, 1), ~i[DATA_WIDTH-1:0], $urandom_range(0, 1
+                   ));
     end
     drive_inputs(8'h00, 0, 8'h00, 0);
     set_out_ready(1);
@@ -480,6 +507,79 @@ module adn_common_pipeline_join_tb;
     hold_cycles(5);
   endtask
 
+  task automatic run_tc_clear_01();
+    // Clear asserted while pipeline is full and downstream is stalled:
+    // data_out_valid_o should drop combinationally the same cycle, and
+    // is_full should be clear the cycle after.
+    apply_reset();
+    set_out_ready(0);
+    drive_primary(8'h77, 1);
+    drive_primary(8'h00, 0);
+    hold_cycles(2);
+    set_clear(1);
+    hold_cycles(1);
+    set_clear(0);
+    hold_cycles(3);
+  endtask
+
+  task automatic run_tc_clear_02();
+    // Clear asserted while the pipeline is empty: should be a no-op,
+    // ready must remain asserted throughout.
+    apply_reset();
+    set_out_ready(1);
+    set_clear(1);
+    hold_cycles(2);
+    set_clear(0);
+    hold_cycles(2);
+  endtask
+
+  task automatic run_tc_clear_03();
+    // Clear asserted while pipeline full/stalled, then a new beat is
+    // offered during the clear window: ready is still forced high while
+    // full & clear, so the new data may be captured even mid-flush.
+    apply_reset();
+    set_out_ready(0);
+    drive_primary(8'h11, 1);
+    drive_primary(8'h00, 0);
+    hold_cycles(2);
+    set_clear(1);
+    drive_primary(8'h99, 1);
+    hold_cycles(1);
+    drive_primary(8'h00, 0);
+    set_clear(0);
+    hold_cycles(3);
+  endtask
+
+  task automatic run_tc_clear_04();
+    // Clear held across several cycles of continuous dual-stream input:
+    // output must stay flushed the entire time despite ongoing traffic.
+    apply_reset();
+    set_out_ready(1);
+    set_clear(1);
+    for (int i = 0; i < 5; i++) begin
+      drive_inputs(i[DATA_WIDTH-1:0], 1, ~i[DATA_WIDTH-1:0], 1);
+    end
+    set_clear(0);
+    drive_inputs(8'h00, 0, 8'h00, 0);
+    hold_cycles(3);
+  endtask
+
+  task automatic run_tc_clear_05();
+    // Single-cycle clear pulse followed immediately by a normal transfer,
+    // to check the pipeline resumes cleanly right after a flush.
+    apply_reset();
+    set_out_ready(1);
+    drive_primary(8'h44, 1);
+    drive_primary(8'h00, 0);
+    hold_cycles(1);
+    set_clear(1);
+    hold_cycles(1);
+    set_clear(0);
+    drive_primary(8'h55, 1);
+    drive_primary(8'h00, 0);
+    hold_cycles(3);
+  endtask
+
   task automatic run_tc_all();
     run_tc_rst_01();
     run_tc_rst_02();
@@ -496,23 +596,28 @@ module adn_common_pipeline_join_tb;
     run_tc_width_zeros_01();
     run_tc_back2back_stress_01();
     run_tc_random_01();
+    run_tc_clear_01();
+    run_tc_clear_02();
+    run_tc_clear_03();
+    run_tc_clear_04();
+    run_tc_clear_05();
   endtask
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // PROCEDURALS
   //////////////////////////////////////////////////////////////////////////////////////////////////
-initial begin
- 
+  initial begin
+
     // Initialize clk exactly once here - never assigned anywhere else.
     // start_clock()'s free-running process takes over from this point on.
     clk = '0;
- 
+
     apply_reset();
- 
+
     start_clock();
- 
+
     start_checking();
- 
+
     case (test_name)
       "TC_RST_01":              run_tc_rst_01();
       "TC_RST_02":              run_tc_rst_02();
@@ -529,16 +634,21 @@ initial begin
       "TC_WIDTH_ZEROS_01":      run_tc_width_zeros_01();
       "TC_BACK2BACK_STRESS_01": run_tc_back2back_stress_01();
       "TC_RANDOM_01":           run_tc_random_01();
+      "TC_CLEAR_01":            run_tc_clear_01();
+      "TC_CLEAR_02":            run_tc_clear_02();
+      "TC_CLEAR_03":            run_tc_clear_03();
+      "TC_CLEAR_04":            run_tc_clear_04();
+      "TC_CLEAR_05":            run_tc_clear_05();
       "TC_ALL":                 run_tc_all();
- 
+
       default: begin
         $fatal(1, "Unrecognized test_name '%s'", test_name);
       end
     endcase
- 
+
     #100ns;
     $display("[%s] SUMMARY: primary_xfers=%0d secondary_xfers=%0d secondary_starved_events=%0d",
-              test_name, primary_xfer_count, secondary_xfer_count, secondary_starved_count);
+             test_name, primary_xfer_count, secondary_xfer_count, secondary_starved_count);
     // Finish simulation
     $finish;
   end
