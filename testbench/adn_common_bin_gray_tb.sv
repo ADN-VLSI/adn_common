@@ -32,9 +32,9 @@ module adn_common_bin_gray_tb;
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
   localparam int WIDTH = 16;
-  localparam int min_val = '0;
-  localparam int max_val = 2 ** WIDTH - 1;
-  localparam int one_third = (2 ** WIDTH) / 3;
+  localparam int MIN_VAL = '0;
+  localparam int MAX_VAL = 2 ** WIDTH - 1;
+  localparam int ONE_THIRD = (2 ** WIDTH) / 3;
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // TYPEDEFS
@@ -42,11 +42,11 @@ module adn_common_bin_gray_tb;
 
   covergroup cg_bin_gray with function sample (input logic [WIDTH-1:0] num_in);
     num_in_cp: coverpoint num_in {
-      bins zeros = {min_val};
-      bins lower = {[(min_val + 1) : (1 * one_third)]};
-      bins mid = {[(1 * one_third + 1) : (2 * one_third)]};
-      bins high = {[(2 * one_third + 1) : (max_val - 1)]};
-      bins ones = {max_val};
+      bins zeros = {MIN_VAL};
+      bins lower = {[(MIN_VAL + 1) : (1 * ONE_THIRD)]};
+      bins mid = {[(1 * ONE_THIRD + 1) : (2 * ONE_THIRD)]};
+      bins high = {[(2 * ONE_THIRD + 1) : (MAX_VAL - 1)]};
+      bins ones = {MAX_VAL};
     }
   endgroup
 
@@ -131,27 +131,27 @@ module adn_common_bin_gray_tb;
       //     randcase
 
       //       weight_zeros: begin
-      //         bin_in <= min_val;
+      //         bin_in <= MIN_VAL;
       //         weight_zeros--;
       //       end
 
       //       weight_lower: begin
-      //         bin_in <= $urandom_range((min_val + 1), (1 * one_third));
+      //         bin_in <= $urandom_range((MIN_VAL + 1), (1 * ONE_THIRD));
       //         weight_lower--;
       //       end
 
       //       weight_mid: begin
-      //         bin_in <= $urandom_range((1 * one_third + 1), (2 * one_third));
+      //         bin_in <= $urandom_range((1 * ONE_THIRD + 1), (2 * ONE_THIRD));
       //         weight_mid--;
       //       end
 
       //       weight_high: begin
-      //         bin_in <= $urandom_range((2 * one_third + 1), (max_val - 1));
+      //         bin_in <= $urandom_range((2 * ONE_THIRD + 1), (MAX_VAL - 1));
       //         weight_high--;
       //       end
 
       //       weight_ones: begin
-      //         bin_in <= max_val;
+      //         bin_in <= MAX_VAL;
       //         weight_ones--;
       //       end
 
