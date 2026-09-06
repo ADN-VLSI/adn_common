@@ -21,12 +21,13 @@ See LICENSE file in the project root for full license information
 
 module adn_common_bin_to_gray #(
     // Parameter defining the bit-width of the conversion logic
-    parameter int WIDTH = 8 
+    parameter int WIDTH = 8
 ) (
     // Input binary vector to be converted
-    input  logic [WIDTH-1:0] bin_i,  
+    input logic [WIDTH-1:0] bin_i,
+
     // Output Gray-coded vector
-    output logic [WIDTH-1:0] gray_o  
+    output logic [WIDTH-1:0] gray_o
 );
 
   //////////////////////////////////////////////////////////////////////////////////////////////////

@@ -20,10 +20,14 @@ See LICENSE file in the project root for full license information
 */
 
 module adn_common_gray_to_bin #(
-    parameter int WIDTH = 8 // Width of the input and output vectors
+    // Width of the input and output vectors
+    parameter int WIDTH = 8
 ) (
-    input  logic [WIDTH-1:0] gray_i, // Gray-coded input vector
-    output logic [WIDTH-1:0] bin_o   // Binary-coded output vector
+    // Gray-coded input vector
+    input logic [WIDTH-1:0] gray_i,
+
+    // Binary-coded output vector
+    output logic [WIDTH-1:0] bin_o
 );
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -47,7 +51,7 @@ module adn_common_gray_to_bin #(
   always_comb begin
     // The Most Significant Bit (MSB) remains the same in both Gray and Binary
     bin_o[WIDTH-1] = gray_i[WIDTH-1];
-    
+
     // Each subsequent bit is the XOR of the previous binary bit and the current Gray bit
     for (int i = WIDTH - 2; i >= 0; i--) begin
       bin_o[i] = bin_o[i+1] ^ gray_i[i];
