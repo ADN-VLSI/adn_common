@@ -64,9 +64,29 @@ module adn_common_bin_gray_tb;
   logic [WIDTH-1:0] bin_out;
   logic [WIDTH-1:0] ref_bin_out;
 
-  assign ref_gray_out = (bin_in ^ (bin_in >> 1));
-  assign gray_in      = ref_gray_out;
-  assign ref_bin_out  = bin_in;
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+  // METHODS
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+
+  function automatic logic [WIDTH-1:0] bin_to_gray(input logic [WIDTH-1:0] bin);
+    return ((bin >> 1) ^ bin);
+  endfunction
+
+  function automatic logic [WIDTH-1:0] gray_to_bin(input logic [WIDTH-1:0] gray);
+    logic [WIDTH-1:0] bin;
+    bin[WIDTH-1] = gray[WIDTH-1];
+    for (int i = WIDTH-1 - 1; i >= 0; i--) begin
+      bin[i] = bin[i+1] ^ gray[i];
+    end
+    return bin;
+  endfunction
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+  // ASSIGNMENTS
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+
+  always_comb ref_gray_out = bin_to_gray(bin_in);
+  always_comb ref_bin_out  = gray_to_bin(gray_in);
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // VARIABLES
@@ -93,6 +113,57 @@ module adn_common_bin_gray_tb;
       .bin_o (bin_out)
   );
 
+  `define SMARTER_RANDOM_DATA_GENERATION(__PORT__)                                                 \
+                                                                                                   \
+    // SMARTER RANDOM DATA GENERATION                                                              \
+    begin                                                                                          \
+      automatic int weight_zeros = 20;                                                             \
+      automatic int weight_lower = 20;                                                             \
+      automatic int weight_mid = 20;                                                               \
+      automatic int weight_high = 20;                                                              \
+      automatic int weight_ones = 20;                                                              \
+      forever begin                                                                                \
+        @(posedge clk);                                                                            \
+        randcase                                                                                   \
+                                                                                                   \
+          weight_zeros: begin                                                                      \
+            ``__PORT__`` <= MIN_VAL;                                                               \
+            weight_zeros--;                                                                        \
+          end                                                                                      \
+                                                                                                   \
+          weight_lower: begin                                                                      \
+            ``__PORT__`` <= $urandom_range((MIN_VAL + 1), (1 * ONE_THIRD));                        \
+            weight_lower--;                                                                        \
+          end                                                                                      \
+                                                                                                   \
+          weight_mid: begin                                                                        \
+            ``__PORT__`` <= $urandom_range((1 * ONE_THIRD + 1), (2 * ONE_THIRD));                  \
+            weight_mid--;                                                                          \
+          end                                                                                      \
+                                                                                                   \
+          weight_high: begin                                                                       \
+            ``__PORT__`` <= $urandom_range((2 * ONE_THIRD + 1), (MAX_VAL - 1));                    \
+            weight_high--;                                                                         \
+          end                                                                                      \
+                                                                                                   \
+          weight_ones: begin                                                                       \
+            ``__PORT__`` <= MAX_VAL;                                                               \
+            weight_ones--;                                                                         \
+          end                                                                                      \
+                                                                                                   \
+        endcase                                                                                    \
+                                                                                                   \
+        if (weight_zeros + weight_lower + weight_mid + weight_high + weight_ones == 0) begin       \
+          weight_zeros = 20;                                                                       \
+          weight_lower = 20;                                                                       \
+          weight_mid   = 20;                                                                       \
+          weight_high  = 20;                                                                       \
+          weight_ones  = 20;                                                                       \
+        end                                                                                        \
+      end                                                                                          \
+    end                                                                                            \
+
+
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // PROCEDURALS
   //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -112,60 +183,11 @@ module adn_common_bin_gray_tb;
         clk <= ~clk;
       end
 
-      // RANDOM DATA GENERATION
-      forever begin
-        @(posedge clk);
-        bin_in <= $urandom;
-      end
+      // BIN INPUT GENERATION
+      `SMARTER_RANDOM_DATA_GENERATION(bin_in)
 
-      // // SMARTER RANDOM DATA GENERATION
-      // // This is not much effective in this particular case as the gray in is not directly controlled
-      // begin
-      //   automatic int weight_zeros = 20;
-      //   automatic int weight_lower = 20;
-      //   automatic int weight_mid = 20;
-      //   automatic int weight_high = 20;
-      //   automatic int weight_ones = 20;
-      //   forever begin
-      //     @(posedge clk);
-      //     randcase
-
-      //       weight_zeros: begin
-      //         bin_in <= MIN_VAL;
-      //         weight_zeros--;
-      //       end
-
-      //       weight_lower: begin
-      //         bin_in <= $urandom_range((MIN_VAL + 1), (1 * ONE_THIRD));
-      //         weight_lower--;
-      //       end
-
-      //       weight_mid: begin
-      //         bin_in <= $urandom_range((1 * ONE_THIRD + 1), (2 * ONE_THIRD));
-      //         weight_mid--;
-      //       end
-
-      //       weight_high: begin
-      //         bin_in <= $urandom_range((2 * ONE_THIRD + 1), (MAX_VAL - 1));
-      //         weight_high--;
-      //       end
-
-      //       weight_ones: begin
-      //         bin_in <= MAX_VAL;
-      //         weight_ones--;
-      //       end
-
-      //     endcase
-
-      //     if (weight_zeros + weight_lower + weight_mid + weight_high + weight_ones == 0) begin
-      //       weight_zeros = 20;
-      //       weight_lower = 20;
-      //       weight_mid   = 20;
-      //       weight_high  = 20;
-      //       weight_ones  = 20;
-      //     end
-      //   end
-      // end
+      // GRAY INPUT GENERATION
+      `SMARTER_RANDOM_DATA_GENERATION(gray_in)
 
       // SCOREBOARDING
       forever begin
@@ -196,7 +218,7 @@ module adn_common_bin_gray_tb;
     join_none
 
     while (bin_in_cov.get_inst_coverage() < 100 || gray_in_cov.get_inst_coverage() < 100) begin
-      #100ns;
+      #10ns;
       $display("Current coverage - bin_in: %0.2f, gray_in: %0.2f", bin_in_cov.get_inst_coverage(),
                gray_in_cov.get_inst_coverage());
     end
@@ -204,5 +226,7 @@ module adn_common_bin_gray_tb;
     $finish;
 
   end
+
+  `undef SMARTER_RANDOM_DATA_GENERATION
 
 endmodule
