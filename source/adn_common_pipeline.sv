@@ -80,7 +80,7 @@ module adn_common_pipeline #(
     if (~arst_ni) begin
       is_full <= '0;
     end else if (clear_i) begin
-      is_full <= '0;
+      is_full <= data_in_valid_i;
     end else begin
       is_full <= is_full_next;
     end
