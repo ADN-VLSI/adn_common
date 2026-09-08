@@ -73,11 +73,11 @@ module adn_common_pmi_width_converter_top #(
   assign s_mresp  = s_pmi_rsp_i.mresp;
 
   // Mapping internal PMI request structure to master physical signals
-  assign m_pmi_req_i.maddr  = m_maddr;
-  assign m_pmi_req_i.mwe    = m_mwe;
-  assign m_pmi_req_i.mwdata = m_mwdata;
-  assign m_pmi_req_i.mstrb  = m_mstrb;
-  assign m_pmi_req_i.mreq   = m_mreq;
+  assign m_maddr  = m_pmi_req_i.maddr;
+  assign m_mwe    = m_pmi_req_i.mwe;
+  assign m_mwdata = m_pmi_req_i.mwdata;
+  assign m_mstrb  = m_pmi_req_i.mstrb;
+  assign m_mreq   = m_pmi_req_i.mreq;
 
   // Mapping master physical signals to internal PMI response structure
   assign m_pmi_rsp_i.mgnt   = m_mgnt;
@@ -124,15 +124,15 @@ module adn_common_pmi_width_converter_top #(
     end : g_down
     // Passthrough logic when widths are equal
     else begin : g_passthrough
-      assign m_maddr  = s_maddr;
-      assign m_mwe    = s_mwe;
-      assign m_mwdata = s_mwdata;
-      assign m_mstrb  = s_mstrb;
-      assign m_mreq   = s_mreq;
-      assign s_mgnt   = m_mgnt;
-      assign s_mack   = m_mack;
-      assign s_mrdata = m_mrdata;
-      assign s_mresp  = m_mresp;
+      assign m_pmi_req_i.maddr  = s_maddr;
+      assign m_pmi_req_i.mwe    = s_mwe;
+      assign m_pmi_req_i.mwdata = s_mwdata;
+      assign m_pmi_req_i.mstrb  = s_mstrb;
+      assign m_pmi_req_i.mreq   = s_mreq;
+      assign s_pmi_rsp_i.mgnt   = m_mgnt;
+      assign s_pmi_rsp_i.mack   = m_mack;
+      assign s_pmi_rsp_i.mrdata = m_mrdata;
+      assign s_pmi_rsp_i.mresp  = m_mresp;
     end : g_passthrough
   endgenerate
 
