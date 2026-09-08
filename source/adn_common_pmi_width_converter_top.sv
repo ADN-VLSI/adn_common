@@ -18,7 +18,7 @@ See LICENSE file in the project root for full license information
 
 */
 
-//`include "pmi/typedef.svh"
+`include "pmi/typedef.svh"
 module adn_common_pmi_width_converter_top #(
   parameter int ADDR_WIDTH     = 32, // Width of the address bus
   parameter int IN_DATA_WIDTH  = 32, // Width of the input data bus
@@ -50,8 +50,8 @@ module adn_common_pmi_width_converter_top #(
   input  logic                          m_mresp   // Master response
 );
 
-// `PMI_T(s_pmi, ADDR_WIDTH, IN_DATA_WIDTH)
-// `PMI_T(m_pmi, ADDR_WIDTH, OUT_DATA_WIDTH)
+ `PMI_T(s_pmi, ADDR_WIDTH, IN_DATA_WIDTH)
+ `PMI_T(m_pmi, ADDR_WIDTH, OUT_DATA_WIDTH)
 
   // Internal PMI request/response structures
   s_pmi_req_t s_pmi_req_i;
