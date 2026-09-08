@@ -23,6 +23,8 @@
 |req_i|input|logic [NUM_REQ-1:0]||Request vector, higher index has higher priority|
 |allow_req_i|input|logic||Global enable signal to permit granting|
 |gnt_o|output|logic [NUM_REQ-1:0]||One-hot encoded grant output|
+|addr_o|output|logic [$clog2(NUM_REQ)-1:0]||Encoded index of the granted request|
+|addr_valid_o|output|logic||Indicates if a valid grant is present|
 
 
 ## Description

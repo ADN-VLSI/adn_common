@@ -1,13 +1,17 @@
-<svg height="340" width="347" xmlns="http://www.w3.org/2000/svg">
+<svg height="340" width="431" xmlns="http://www.w3.org/2000/svg">
 <rect width="100%" height="100%" x="0" y="0" style="fill:white;stroke:white;stroke-width:0"/>
 <g style="fill:white;stroke:black;stroke-width:1">
-<rect width="232" height="225" x="60" y="60"/>
-<polygon points="10,95 10,85 30,85 40,95 60,95 40,95 30,105 10,105 10,95"/>
-<text x="65" y="85" dominant-baseline="hanging" text-anchor="start" font-size="20" style="fill:black;stroke:black;stroke-width:0">req_i</text>
-<polygon points="10,145 10,135 30,135 40,145 60,145 40,145 30,155 10,155 10,145"/>
-<text x="65" y="135" dominant-baseline="hanging" text-anchor="start" font-size="20" style="fill:black;stroke:black;stroke-width:0">allow_req_i</text>
-<polygon points="292,145 312,145 312,135 332,135 342,145 332,155 312,155 312,145 292,145"/>
-<text x="287" y="135" dominant-baseline="hanging" text-anchor="end" font-size="20" style="fill:black;stroke:black;stroke-width:0">gnt_o</text>
-<text x="176" y="300" dominant-baseline="hanging" text-anchor="middle" font-size="30" style="fill:black;stroke:black;stroke-width:0">adn_common_fixed_priority_arbiter</text>
+<rect width="316" height="225" x="60" y="60"/>
+<polygon points="10,195 10,185 30,185 40,195 60,195 40,195 30,205 10,205 10,195"/>
+<text x="65" y="185" dominant-baseline="hanging" text-anchor="start" font-size="20" style="fill:black;stroke:black;stroke-width:0">req_i</text>
+<polygon points="10,245 10,235 30,235 40,245 60,245 40,245 30,255 10,255 10,245"/>
+<text x="65" y="235" dominant-baseline="hanging" text-anchor="start" font-size="20" style="fill:black;stroke:black;stroke-width:0">allow_req_i</text>
+<polygon points="376,95 396,95 396,85 416,85 426,95 416,105 396,105 396,95 376,95"/>
+<text x="371" y="85" dominant-baseline="hanging" text-anchor="end" font-size="20" style="fill:black;stroke:black;stroke-width:0">gnt_o</text>
+<polygon points="376,195 396,195 396,185 416,185 426,195 416,205 396,205 396,195 376,195"/>
+<text x="371" y="185" dominant-baseline="hanging" text-anchor="end" font-size="20" style="fill:black;stroke:black;stroke-width:0">addr_o</text>
+<polygon points="376,245 396,245 396,235 416,235 426,245 416,255 396,255 396,245 376,245"/>
+<text x="371" y="235" dominant-baseline="hanging" text-anchor="end" font-size="20" style="fill:black;stroke:black;stroke-width:0">addr_valid_o</text>
+<text x="218" y="300" dominant-baseline="hanging" text-anchor="middle" font-size="30" style="fill:black;stroke:black;stroke-width:0">adn_common_fixed_priority_arbiter</text>
 </g>
 </svg>
