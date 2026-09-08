@@ -28,17 +28,11 @@ module adn_common_fixed_priority_arbiter #(
     input logic [NUM_REQ-1:0] req_i,       // Request vector, higher index has higher priority
     input logic               allow_req_i, // Global enable signal to permit granting
 
-    output logic [NUM_REQ-1:0] gnt_o  // One-hot encoded grant output
+    output logic [NUM_REQ-1:0] gnt_o,  // One-hot encoded grant output
+
+    output logic [$clog2(NUM_REQ)-1:0] addr_o,       // Encoded index of the granted request
+    output logic                       addr_valid_o  // Indicates if a valid grant is present
 );
-
-  //////////////////////////////////////////////////////////////////////////////////////////////////
-  // LOCALPARAMS GENERATED
-  //////////////////////////////////////////////////////////////////////////////////////////////////
-
-  // addr: Encoded index of the highest priority request
-  // addr_valid: Flag indicating if at least one request is active
-  logic [$clog2(NUM_REQ)-1:0] addr;
-  logic                       addr_valid;
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // SUBMODULES
@@ -49,9 +43,9 @@ module adn_common_fixed_priority_arbiter #(
       .NUM_WIRE           (NUM_REQ),
       .HIGH_INDEX_PRIORITY(HIGH_INDEX_PRIORITY)
   ) u_encoder (
-      .d_i   (req_i),
-      .addr_o   (addr),
-      .addr_valid_o(addr_valid)
+      .d_i         (req_i),
+      .addr_o      (addr_o),
+      .addr_valid_o(addr_valid_o)
   );
 
   // Decoder to convert the encoded index back to a one-hot grant signal
@@ -59,9 +53,9 @@ module adn_common_fixed_priority_arbiter #(
       .ADDR_WIDTH($clog2(NUM_REQ)),
       .DATA_WIDTH(NUM_REQ)
   ) u_decoder (
-      .addr_i   (addr),
-      .addr_valid_i(addr_valid & allow_req_i),
-      .d_o(gnt_o)
+      .addr_i      (addr_o),
+      .addr_valid_i(addr_valid_o & allow_req_i),
+      .d_o         (gnt_o)
   );
 
 endmodule
