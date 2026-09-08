@@ -65,11 +65,18 @@ int vcd;
 // Flag to indicate whether to enable debug mode, can be set via command line argument "DEBUG"
 int debug;
 
+covergroup test_report_group with function sample (bit case_ok);
+  coverpoint case_ok {bins pass = {1}; illegal_bins fail = {0};}
+endgroup
+
+test_report_group test_report = new();
+
 // Function to note the result of a test case. Increments the passed_cases or failed_cases counter
 // based on the pass parameter.
 function automatic void note_case(bit pass);
   if (pass) passed_cases++;
   else failed_cases++;
+  test_report.sample(pass);
 endfunction
 
 initial begin
