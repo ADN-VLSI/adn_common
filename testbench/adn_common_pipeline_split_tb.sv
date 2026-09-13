@@ -27,6 +27,9 @@
 | 0.1        | 2026-08-10 | Annim Jannat               | Initial version                                                              |
 | 1.0        | 2026-08-11 | Annim Jannat               | Stable release                                                               |
 | 1.1        | 2026-08-31 | Ahasan Ullah Khalid        | Added clear_i signal support, reference model updates, and clear testcases   |
+| 1.2        | 2026-09-13 | Annim Jannat               | Added functional coverage covergroup and sampling                           |
+| 1.3        | 2026-09-13 | Annim Jannat               | (superseded by 1.4) reference model rewritten as hold-on-stall - wrong      |
+| 1.4        | 2026-09-13 | Annim Jannat               | Reference model rewritten to exactly mirror adn_common_pipeline RTL         |
 
 Author : Annim Jannat (jannatannim@gmail.com)
 This file is part of ADN-VLSI/adn_common
@@ -50,6 +53,75 @@ module adn_common_pipeline_split_tb;
 
   localparam time CLKPeriod = 10ns;
   localparam int DATA_WIDTH = 8;
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+  // TYPEDEFS
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+
+  covergroup cg_pipeline_split with function sample (
+      input logic                      clr,
+      input logic                      in_valid,
+      input logic                      in_ready,
+      input logic                      pri_ready,
+      input logic                      sec_ready,
+      input logic                      pri_valid,
+      input logic                      sec_valid,
+      input logic [DATA_WIDTH-1:0]     din
+  );
+
+    option.per_instance = 1;
+
+    clear_cp: coverpoint clr {
+      bins clear_inactive = {1'b0};
+      bins clear_active   = {1'b1};
+    }
+
+    in_valid_cp: coverpoint in_valid {
+      bins invalid = {1'b0};
+      bins valid   = {1'b1};
+    }
+
+    in_ready_cp: coverpoint in_ready {
+      bins not_ready = {1'b0};
+      bins ready     = {1'b1};
+    }
+
+    pri_ready_cp: coverpoint pri_ready {
+      bins not_ready = {1'b0};
+      bins ready     = {1'b1};
+    }
+
+    sec_ready_cp: coverpoint sec_ready {
+      bins not_ready = {1'b0};
+      bins ready     = {1'b1};
+    }
+
+    pri_valid_cp: coverpoint pri_valid {
+      bins invalid = {1'b0};
+      bins valid   = {1'b1};
+    }
+
+    sec_valid_cp: coverpoint sec_valid {
+      bins invalid = {1'b0};
+      bins valid   = {1'b1};
+    }
+
+    din_cp: coverpoint din {
+      bins zeros  = {'0};
+      bins ones   = {{DATA_WIDTH{1'b1}}};
+      bins others = default;
+    }
+
+    // both downstream ready combinations (idle / primary-only / secondary-only / both)
+    ready_combo_cross: cross pri_ready_cp, sec_ready_cp;
+
+    // input handshake combinations
+    handshake_cross: cross in_valid_cp, in_ready_cp;
+
+    // documented secondary priority-drop scenario: primary ready while secondary held valid
+    priority_drop_cross: cross pri_ready_cp, sec_valid_cp;
+
+  endgroup
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // SIGNALS
@@ -88,6 +160,8 @@ module adn_common_pipeline_split_tb;
   int unsigned                  drop_event_count;
   int unsigned                  primary_xfer_count;
   int unsigned                  secondary_xfer_count;
+
+  cg_pipeline_split              cg_pipeline_split_cov = new();
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // RTLS
@@ -191,25 +265,39 @@ module adn_common_pipeline_split_tb;
       forever
       @(posedge clk) begin
         if (arst_n) begin
-          // Update reference state at posedge
+          // Update reference state at posedge, mirroring adn_common_pipeline exactly
+          // (the inner stage instantiated inside adn_common_pipeline_split as u_pl):
+          //
+          //   data_in_ready_o = is_full ? (data_out_ready_i | clear_i) : arst_ni
+          //   is_full_next    = data_in_valid_i ? 1 : (data_out_ready_i ? 0 : is_full)
+          //   is_full         <= clear_i ? data_in_valid_i : is_full_next
+          //   data_reg        <= data_in_i  whenever (data_in_valid_i & data_in_ready_o)
+          //
+          // Two subtleties that are easy to miss:
+          //  - clear_i ALSO unblocks readiness while full (ready|clear), it isn't only
+          //    downstream_ready that can free up the slot.
+          //  - clear_i does NOT force-flush when data_in_valid_i is high the same cycle:
+          //    is_full becomes data_in_valid_i, so a concurrent valid input is still
+          //    captured even while clear is asserted.
           automatic logic downstream_ready = data_out_primary_ready | data_out_secondary_ready;
-          automatic logic input_ready = ~ref_is_full | downstream_ready;
-          automatic logic in_handshake = data_in_valid & input_ready;
-          automatic logic out_handshake = ref_is_full & downstream_ready;
+          // Readiness computed from the state going INTO this edge (pre-update ref_is_full),
+          // exactly like the RTL's combinational data_in_ready_o just before the clock edge.
+          automatic logic pre_ready = ref_is_full ? (downstream_ready | clear) : 1'b1;
+          automatic logic in_accept = data_in_valid & pre_ready;
 
-          if (clear) begin
-            ref_is_full  <= '0;
-            ref_data_reg <= '0;
-          end else begin
-            if (in_handshake) begin
-              ref_data_reg <= data_in;
-              ref_is_full  <= 1'b1;
-            end else if (out_handshake) begin
-              ref_is_full <= 1'b0;
-            end
+          if (in_accept) begin
+            ref_data_reg <= data_in;
           end
 
-          // Verify outputs after combinational logic settles
+          if (clear) begin
+            ref_is_full <= data_in_valid;
+          end else begin
+            ref_is_full <= data_in_valid ? 1'b1 : (downstream_ready ? 1'b0 : ref_is_full);
+          end
+
+          // Verify outputs after combinational logic settles. By this point the nonblocking
+          // updates above have taken effect, so ref_is_full/ref_data_reg here are the POST-edge
+          // (new) values - matching the DUT's registered outputs at the same point in time.
           #1ns;
 
           if (arst_n) begin
@@ -218,9 +306,10 @@ module adn_common_pipeline_split_tb;
             automatic logic                  exp_secondary_valid;
             automatic logic [DATA_WIDTH-1:0] exp_data;
 
-            exp_ready = ~ref_is_full | (data_out_primary_ready | data_out_secondary_ready);
-            exp_primary_valid = ref_is_full;
-            exp_secondary_valid = ref_is_full & ~data_out_primary_ready;
+            exp_ready = ref_is_full ? (data_out_primary_ready | data_out_secondary_ready | clear)
+                : 1'b1;
+            exp_primary_valid = ref_is_full & ~clear;
+            exp_secondary_valid = ref_is_full & ~clear & ~data_out_primary_ready;
             exp_data = ref_data_reg;
 
             // Check 1: data_in_ready_o
@@ -290,6 +379,19 @@ module adn_common_pipeline_split_tb;
             primary_ready_dly       <= data_out_primary_ready;
             secondary_ready_dly     <= data_out_secondary_ready;
           end
+        end
+      end
+    join_none
+  endtask
+
+  task automatic start_coverage();
+    fork
+      forever
+      @(posedge clk) begin
+        if (arst_n) begin
+          cg_pipeline_split_cov.sample(clear, data_in_valid, data_in_ready, data_out_primary_ready,
+                                        data_out_secondary_ready, data_out_primary_valid,
+                                        data_out_secondary_valid, data_in);
         end
       end
     join_none
@@ -526,6 +628,8 @@ module adn_common_pipeline_split_tb;
 
     start_checking();
 
+    start_coverage();
+
     case (test_name)
       "TC_RST_01":           run_tc_rst_01();
       "TC_RST_02":           run_tc_rst_02();
@@ -546,16 +650,17 @@ module adn_common_pipeline_split_tb;
       "TC_WIDTH_ZEROS_01":   run_tc_width_allzeros_01();
       "TC_BACK2BACK_STRESS": run_tc_back2back_stress_01();
       "TC_RANDOM_01":        run_tc_random_01();
-      "TC_ALL":              run_tc_all();
 
       default: begin
-        $fatal(1, "Unrecognized test_name '%s'", test_name);
+      TC_ALL :              run_tc_all();
       end
     endcase
 
     #100ns;
     $display("[%s] SUMMARY: primary_xfers=%0d secondary_xfers=%0d priority_drop_events=%0d",
              test_name, primary_xfer_count, secondary_xfer_count, drop_event_count);
+    $display("[%s] COVERAGE: cg_pipeline_split=%0.2f%%", test_name,
+             cg_pipeline_split_cov.get_inst_coverage());
     $finish;
   end
 
