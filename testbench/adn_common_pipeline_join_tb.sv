@@ -1,32 +1,33 @@
 /*
-| TEST CASE               | DATE       | AUTHOR       | DESCRIPTION                                                                 |
-|-------------------------|------------|--------------|-----------------------------------------------------------------------------|
-| TC_RST_01               | 2026-08-11 | Annim Jannat | Asynchronous reset assertion with no active transfer                        |
-| TC_RST_02               | 2026-08-11 | Annim Jannat | Asynchronous reset asserted mid-transfer (both valid + ready)               |
-| TC_RST_03               | 2026-08-11 | Annim Jannat | Asynchronous reset asserted while stalled (valid high, downstream not ready)|
-| TC_BASIC_PRI_01         | 2026-08-11 | Annim Jannat | Single-beat transfer on primary only, downstream always ready               |
-| TC_BASIC_SEC_01         | 2026-08-11 | Annim Jannat | Single-beat transfer on secondary only, downstream always ready             |
-| TC_BACK2BACK_PRI_01     | 2026-08-11 | Annim Jannat | Back-to-back multi-beat transfer on primary, downstream always ready        |
-| TC_PRIORITY_01          | 2026-08-11 | Annim Jannat | Both primary and secondary valid simultaneously - primary priority check    |
-| TC_SEC_STARVE_01        | 2026-08-11 | Annim Jannat | Secondary held valid while primary is continuously valid - starvation check |
-| TC_SEC_RECOVER_01       | 2026-08-11 | Annim Jannat | Secondary starved while primary present, then primary drops - secondary xfer|
-| TC_STALL_OUT_01         | 2026-08-11 | Annim Jannat | Downstream not ready - backpressure propagates to both primary/secondary    |
-| TC_VALID_TOGGLE_01      | 2026-08-11 | Annim Jannat | Primary/secondary valid toggling independently while downstream ready       |
-| TC_WIDTH_ONES_01        | 2026-08-11 | Annim Jannat | Data integrity check with all-ones (max value) data pattern                 |
-| TC_WIDTH_ZEROS_01       | 2026-08-11 | Annim Jannat | Data integrity check with all-zeros data pattern                            |
-| TC_BACK2BACK_STRESS_01  | 2026-08-11 | Annim Jannat | Continuous dual-stream input with independently toggling downstream ready   |
-| TC_RANDOM_01            | 2026-08-11 | Annim Jannat | Stress test over many cycles                                                |
-| TC_CLEAR_01             | 2026-09-31 | Md Sakhawat Hossain Sabbir |Pipeline full and downstream stalled - flush check             |                
-| TC_CLEAR_02             | 2026-09-01 | Md Sakhawat Hossain Sabbir |Pipeline empty - no effects                                    |               
-| TC_CLEAR_03             | 2026-09-01 | Md Sakhawat Hossain Sabbir |New beat is offered - capture-during-clear check               |               
-| TC_CLEAR_04             | 2026-09-01 | Md Sakhawat Hossain Sabbir |Continuous multi-beat stream on both interfaces                |               
-| TC_CLEAR_05             | 2026-09-01 | Md Sakhawat Hossain Sabbir |Followed by immediate resumption of transfers                  |               
-| TC_ALL                  | 2026-09-01 | Md Sakhawat Hossain Sabbir |Executing all test scenarios sequentially                      |               
+| TEST CASE               | DATE       | AUTHOR                     | DESCRIPTION                                                                 |
+|-------------------------|------------|----------------------------|-----------------------------------------------------------------------------|
+| TC_RST_01               | 2026-08-11 | Annim Jannat               | Asynchronous reset assertion with no active transfer                        |
+| TC_RST_02               | 2026-08-11 | Annim Jannat               | Asynchronous reset asserted mid-transfer (both valid + ready)               |
+| TC_RST_03               | 2026-08-11 | Annim Jannat               | Asynchronous reset asserted while stalled (valid high, downstream not ready)|
+| TC_BASIC_PRI_01         | 2026-08-11 | Annim Jannat               | Single-beat transfer on primary only, downstream always ready               |
+| TC_BASIC_SEC_01         | 2026-08-11 | Annim Jannat               | Single-beat transfer on secondary only, downstream always ready             |
+| TC_BACK2BACK_PRI_01     | 2026-08-11 | Annim Jannat               | Back-to-back multi-beat transfer on primary, downstream always ready        |
+| TC_PRIORITY_01          | 2026-08-11 | Annim Jannat               | Both primary and secondary valid simultaneously - primary priority check    |
+| TC_SEC_STARVE_01        | 2026-08-11 | Annim Jannat               | Secondary held valid while primary is continuously valid - starvation check |
+| TC_SEC_RECOVER_01       | 2026-08-11 | Annim Jannat               | Secondary starved while primary present, then primary drops - secondary xfer|
+| TC_STALL_OUT_01         | 2026-08-11 | Annim Jannat               | Downstream not ready - backpressure propagates to both primary/secondary    |
+| TC_VALID_TOGGLE_01      | 2026-08-11 | Annim Jannat               | Primary/secondary valid toggling independently while downstream ready       |
+| TC_WIDTH_ONES_01        | 2026-08-11 | Annim Jannat               | Data integrity check with all-ones (max value) data pattern                 |
+| TC_WIDTH_ZEROS_01       | 2026-08-11 | Annim Jannat               | Data integrity check with all-zeros data pattern                            |
+| TC_BACK2BACK_STRESS_01  | 2026-08-11 | Annim Jannat               | Continuous dual-stream input with independently toggling downstream ready   |
+| TC_RANDOM_01            | 2026-08-11 | Annim Jannat               | Stress test over many cycles                                                |
+| TC_CLEAR_01             | 2026-09-31 | Md Sakhawat Hossain Sabbir |Pipeline full and downstream stalled - flush check                           |                
+| TC_CLEAR_02             | 2026-09-01 | Md Sakhawat Hossain Sabbir |Pipeline empty - no effects                                                  |               
+| TC_CLEAR_03             | 2026-09-01 | Md Sakhawat Hossain Sabbir |New beat is offered - capture-during-clear check                             |               
+| TC_CLEAR_04             | 2026-09-01 | Md Sakhawat Hossain Sabbir |Continuous multi-beat stream on both interfaces                              |               
+| TC_CLEAR_05             | 2026-09-01 | Md Sakhawat Hossain Sabbir |Followed by immediate resumption of transfers                                |               
+| TC_ALL                  | 2026-09-01 | Md Sakhawat Hossain Sabbir |Executing all test scenarios sequentially                                    |               
 
 | REVISION | DATE       | AUTHOR       | DESCRIPTION                                     |
-|----------|------------|--------------|-------------------------------------------------|
-| 0.1      | 2026-08-11 | Annim Jannat | Initial version                                 |
-| 0.3      | 2026-08-31 | Md Sakhawat Hossain Sabbir | Stable Version                    |
+|----------|------------|----------------------------|-----------------------------------|
+| 0.1      | 2026-08-11 | Annim Jannat               | Initial version                   |
+| 0.2      | 2026-08-31 | Md Sakhawat Hossain Sabbir | Stable Version                    |
+| 0.3      | 2026-09-13 | Md Sakhawat Hossain Sabbir | Added coverage                    |
 Authors : Annim Jannat (jannatannim@gmail.com) , Md Sakhawat Hossain Sabbir (sabbirone939@gmail.com)
 This file is part of ADN-VLSI/adn_common
 Copyright (c) 2026 ADN Semiconductors
@@ -87,6 +88,66 @@ module adn_common_pipeline_join_tb;
   int unsigned                  primary_xfer_count;
   int unsigned                  secondary_xfer_count;
   int unsigned                  secondary_starved_count;
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+  // FUNCTIONAL COVERAGE
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+
+  covergroup pipeline_join_cov @(posedge clk);
+    option.per_instance = 1;
+
+    cp_reset: coverpoint arst_n {bins asserted = {0}; bins deasserted = {1};}
+
+    cp_clear: coverpoint clear {bins inactive = {0}; bins active = {1};}
+
+    cp_input_valid: coverpoint {
+      data_in_primary_valid, data_in_secondary_valid
+    } {
+      bins idle = {2'b00};
+      bins secondary_only = {2'b01};
+      bins primary_only = {2'b10};
+      bins both = {2'b11};
+    }
+
+    // 2'b01 is unreachable because primary ready follows the shared pipeline ready.
+    cp_input_ready: coverpoint {
+      data_in_primary_ready, data_in_secondary_ready
+    } {
+      bins both_not_ready = {2'b00}; bins primary_only = {2'b10}; bins both_ready = {2'b11};
+    }
+
+    cp_output_handshake: coverpoint {
+      data_out_valid, data_out_ready
+    } {
+      bins idle = {2'b00};
+      bins ready_only = {2'b01};
+      bins stalled = {2'b10};
+      bins transfer = {2'b11};
+    }
+
+    cp_primary_accept: coverpoint (data_in_primary_valid && data_in_primary_ready) {
+      bins no_accept = {0}; bins accept = {1};
+    }
+
+    cp_secondary_accept: coverpoint (data_in_secondary_valid && data_in_secondary_ready) {
+      bins no_accept = {0}; bins accept = {1};
+    }
+
+    cp_priority_block: coverpoint
+        (data_in_primary_valid && data_in_secondary_valid && !data_in_secondary_ready) {
+      bins no_block = {0}; bins primary_wins = {1};
+    }
+
+    cp_selected_data: coverpoint (data_in_primary_valid ? data_in_primary : data_in_secondary) {
+      bins zero = {'0};
+      bins all_ones = {{DATA_WIDTH{1'b1}}};
+      bins a5 = {8'hA5};
+      bins alternating_5a = {8'h5A};
+    }
+  endgroup
+
+  pipeline_join_cov pipeline_join_cov_inst = new();
+
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // RTLS
@@ -232,10 +293,9 @@ module adn_common_pipeline_join_tb;
           exp_pl_ready_now = ref_is_full ? (data_out_ready | clear) : 1'b1;
 
           ref_data_reg <= (pl_valid && exp_pl_ready_now) ? pl_data : ref_data_reg;
-          // clear_i forces the full flag to 0 on the next edge,
-          // overriding the normal next-state logic (matches the RTL's
-          // "else if (clear_i) is_full <= '0" priority over is_full_next).
-          ref_is_full  <= clear ? 1'b0 : (pl_valid ? 1'b1 : (data_out_ready ? 1'b0 : ref_is_full));
+          // During clear, the RTL retains a valid input beat so capture during
+          // the flush window is preserved for the following cycle.
+          ref_is_full  <= clear ? pl_valid : (pl_valid ? 1'b1 : (data_out_ready ? 1'b0 : ref_is_full));
         end
       end
     join_none
@@ -608,8 +668,6 @@ module adn_common_pipeline_join_tb;
   //////////////////////////////////////////////////////////////////////////////////////////////////
   initial begin
 
-    // Initialize clk exactly once here - never assigned anywhere else.
-    // start_clock()'s free-running process takes over from this point on.
     clk = '0;
 
     apply_reset();
@@ -646,10 +704,24 @@ module adn_common_pipeline_join_tb;
       end
     endcase
 
-    #100ns;
     $display("[%s] SUMMARY: primary_xfers=%0d secondary_xfers=%0d secondary_starved_events=%0d",
              test_name, primary_xfer_count, secondary_xfer_count, secondary_starved_count);
-    // Finish simulation
+
+    if (pipeline_join_cov_inst.get_inst_coverage() < 100.0) begin
+
+      $display("WARNING: Functional coverage is below 100%%");
+
+    end else begin
+
+      $display("FUNCTIONAL COVERAGE: 100%%");
+
+    end
+
+    #100ns;
+
     $finish;
+
   end
+
+
 endmodule
