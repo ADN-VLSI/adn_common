@@ -1,0 +1,33 @@
+[*]
+[*] GTKWave Analyzer v3.3.100 (w)1999-2019 BSI
+[*] Mon Sep 14 16:39:29 2026
+[*]
+[dumpfile] "build/adn_common_dual_port_ram_tb.vcd"
+[dumpfile_mtime] "Mon Sep 14 16:37:50 2026"
+[dumpfile_size] 6504
+[savefile] "wcfg/adn_common_dual_port_ram_tb.gtkw"
+[timestart] 0
+[size] 1920 1129
+[pos] -269 -269
+*-15.769774 86500 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] adn_common_dual_port_ram_tb.
+[sst_width] 197
+[signals_width] 150
+[sst_expanded] 1
+[sst_vpaned_height] 339
+@28
+adn_common_dual_port_ram_tb.dut.clk_i
+@200
+-
+@22
+adn_common_dual_port_ram_tb.dut.wr_addr_i[7:0]
+adn_common_dual_port_ram_tb.dut.wr_data_i[31:0]
+@29
+adn_common_dual_port_ram_tb.dut.wr_en_i
+@200
+-
+@22
+adn_common_dual_port_ram_tb.dut.rd_addr_i[7:0]
+adn_common_dual_port_ram_tb.dut.rd_data_o[31:0]
+[pattern_trace] 1
+[pattern_trace] 0

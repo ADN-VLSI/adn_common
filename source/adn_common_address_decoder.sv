@@ -9,6 +9,7 @@ To use this module, instantiate it by specifying the `ADDR_WIDTH`, `SLAVE_ID_WID
 | REVISION | DATE       | AUTHOR             | DESCRIPTION                                         |
 |----------|------------|--------------------|-----------------------------------------------------|
 | 1.0      | 2026-07-30 | Adnan Sami Anirban | Stable release                                      |
+| 1.1      | 2026-09-14 | Foez Ahmed         | New ports (addr_o, addr_valid_o) added in FP ARB    |
 
 Author : Adnan Sami Anirban (adnananirban259@gmail.com)
 This file is part of ADN-VLSI/adn_common
@@ -72,9 +73,11 @@ module adn_common_address_decoder #(
       .NUM_REQ            (NUM_RULES),
       .HIGH_INDEX_PRIORITY(1)
   ) u_fixed_priority_arbiter (
-      .req_i      (match),
-      .allow_req_i(1'b1),
-      .gnt_o      (gnt)
+      .req_i       (match),
+      .allow_req_i (1'b1),
+      .gnt_o       (gnt),
+      .addr_o      (),
+      .addr_valid_o()
   );
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
