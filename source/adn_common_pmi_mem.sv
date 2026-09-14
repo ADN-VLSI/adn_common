@@ -1,8 +1,10 @@
 /*
 
-@foez-bhai, write the purpose of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+### Purpose
+This module provides a generic, latency-configurable memory interface wrapper based on the PMI (Processor Memory Interface) protocol. It facilitates read and write operations to a dual-port RAM while managing byte-level write strobes and synchronization latency.
 
-@foez-bhai, describe the use case of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+### Use Case
+This module is designed to act as a bridge between a high-level processor memory interface (PMI) and low-level physical memory primitives. It is primarily used in SoC designs where memory access latency needs to be tuned for timing closure or synchronization across clock domains. By abstracting the byte-strobe logic and providing a configurable pipeline depth, it allows designers to drop in a standard memory block without manually handling the complexities of read-modify-write cycles or synchronization stages.
 
 | REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
 |----------|------------|-----------------|--------------------------------------------------------|
@@ -17,20 +19,17 @@ See LICENSE file in the project root for full license information
 
 */
 
-// @foez-bhai, add comments to the parameters, ports
 module adn_common_pmi_mem #(
-    parameter type pmi_req_t = logic,
-    parameter type pmi_rsp_t = logic,
-    parameter int  LATENCY   = 5
+    parameter type pmi_req_t = logic, // PMI request structure type
+    parameter type pmi_rsp_t = logic, // PMI response structure type
+    parameter int  LATENCY   = 5      // Pipeline latency for memory access
 ) (
-    input logic arst_ni,
-    input logic clk_i,
+    input logic arst_ni, // Asynchronous active-low reset
+    input logic clk_i,   // System clock
 
-    input  pmi_req_t req_i,
-    output pmi_rsp_t rsp_o
+    input  pmi_req_t req_i, // PMI request input
+    output pmi_rsp_t rsp_o  // PMI response output
 );
-
-  // @foez-bhai, add comments to the functional blocks, signals, and submodules
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // LOCALPARAMS GENERATED
@@ -45,21 +44,24 @@ module adn_common_pmi_mem #(
   // SIGNALS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  logic [DATA_WIDTH/8-1:0][7:0] wdata;
-  logic [DATA_WIDTH/8-1:0][7:0] rdata;
-  logic [  ADDR_WIDTH-1:0]      addr;
+  logic [DATA_WIDTH/8-1:0][7:0] wdata; // Write data bus with byte-level granularity
+  logic [DATA_WIDTH/8-1:0][7:0] rdata; // Read data bus from memory
+  logic [  ADDR_WIDTH-1:0]      addr;  // Memory address bus
 
-  logic                         do_write;
+  logic                         do_write; // Internal write enable signal
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // ASSIGNMENTS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
+  // Grant logic and response initialization
   always_comb rsp_o.mgnt = req_i.mreq;
   always_comb rsp_o.mresp = '0;
 
+  // Write enable logic gated by request validity
   always_comb do_write = req_i.mwe & req_i.mreq;
 
+  // Read-Modify-Write logic: Merge write data with existing data based on strobes
   always_comb begin
     foreach (wdata[i]) begin
       wdata[i] = req_i.mstrb[i] ? req_i.mwdata[i*8+:8] : rdata[i];
@@ -70,6 +72,7 @@ module adn_common_pmi_mem #(
   // SUBMODULES
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
+  // Pipeline synchronizer to manage access latency and clock domain crossing
   adn_common_synchronizer #(
       .WIDTH      (DATA_WIDTH + 1),
       .STAGES     (LATENCY),
@@ -82,6 +85,7 @@ module adn_common_pmi_mem #(
       .data_o ({rsp_o.mack, rsp_o.mrdata})
   );
 
+  // Dual-port RAM primitive for data storage
   adn_common_dual_port_ram #(
       .DATA_WIDTH(DATA_WIDTH),
       .ADDR_WIDTH(ADDR_WIDTH)
@@ -95,4 +99,3 @@ module adn_common_pmi_mem #(
   );
 
 endmodule
-
