@@ -1,8 +1,8 @@
 /*
 
-@foez---bhai, write the purpose of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+@foez-bhai, write the purpose of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
 
-@foez---bhai, describe the use case of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+@foez-bhai, describe the use case of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
 
 | REVISION | DATE       | AUTHOR          | DESCRIPTION                                            |
 |----------|------------|-----------------|--------------------------------------------------------|
@@ -17,7 +17,7 @@ See LICENSE file in the project root for full license information
 
 */
 
-// @foez---bhai, add comments to the parameters, ports
+// @foez-bhai, add comments to the parameters, ports
 module adn_common_pmi_mem #(
     parameter type pmi_req_t = logic,
     parameter type pmi_rsp_t = logic,
@@ -30,7 +30,7 @@ module adn_common_pmi_mem #(
     output pmi_rsp_t rsp_o
 );
 
-  // @foez---bhai, add comments to the functional blocks, signals, and submodules
+  // @foez-bhai, add comments to the functional blocks, signals, and submodules
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // LOCALPARAMS GENERATED
@@ -38,23 +38,33 @@ module adn_common_pmi_mem #(
 
   localparam int ADDR_WIDTH = $bits(type (req_i.maddr));
   localparam int DATA_WIDTH = $bits(type (req_i.mwdata));
-  localparam int RSP_WIDTH = $bits(type (rsp_o));
-  localparam int DROP_BITS = $clog2(DATA_WIDTH / 8);
+  localparam int RSP_WIDTH  = $bits(type (rsp_o));
+  localparam int DROP_BITS  = $clog2(DATA_WIDTH / 8);
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // SIGNALS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  logic [DATA_WIDTH-1:0] rdata;
-  logic                  ack;
-  logic [ADDR_WIDTH-1:0] addr;
+  logic [DATA_WIDTH/8-1:0][7:0] wdata;
+  logic [DATA_WIDTH/8-1:0][7:0] rdata;
+  logic [  ADDR_WIDTH-1:0]      addr;
+
+  logic                         do_write;
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // ASSIGNMENTS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  assign rsp_o.mgnt  = req_i.mreq;
-  assign rsp_o.mresp = '0;
+  always_comb rsp_o.mgnt = req_i.mreq;
+  always_comb rsp_o.mresp = '0;
+
+  always_comb do_write = req_i.mwe & req_i.mreq;
+
+  always_comb begin
+    foreach (wdata[i]) begin
+      wdata[i] = req_i.mstrb[i] ? req_i.mwdata[i*8+:8] : rdata[i];
+    end
+  end
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // SUBMODULES
@@ -68,22 +78,21 @@ module adn_common_pmi_mem #(
       .clk_i  (clk_i),
       .arst_ni(arst_ni),
       .en_i   (1'b1),
-      .data_i ({ack, rdata}),
+      .data_i ({req_i.mreq, rdata}),
       .data_o ({rsp_o.mack, rsp_o.mrdata})
   );
 
-  // TODO generic mem
-
-  //////////////////////////////////////////////////////////////////////////////////////////////////
-  // SEQUENTIALS
-  //////////////////////////////////////////////////////////////////////////////////////////////////
-
-  // TODO WRITE
-  // TODO READ
-
-  //////////////////////////////////////////////////////////////////////////////////////////////////
-  // METHODS
-  //////////////////////////////////////////////////////////////////////////////////////////////////
+  adn_common_dual_port_ram #(
+      .DATA_WIDTH(DATA_WIDTH),
+      .ADDR_WIDTH(ADDR_WIDTH)
+  ) u_mem (
+      .clk_i    (clk_i),
+      .wr_en_i  (do_write),
+      .wr_addr_i(addr),
+      .wr_data_i(wdata),
+      .rd_addr_i(addr),
+      .rd_data_o(rdata)
+  );
 
 endmodule
 
