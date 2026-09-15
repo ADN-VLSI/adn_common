@@ -25,6 +25,7 @@ This Repo is a collection of common modules used in ADN designs. The modules are
 [`adn_common_pipeline`](document/source/adn_common_pipeline.md)
 [`adn_common_pipeline_split`](document/source/adn_common_pipeline_split.md)
 [`adn_common_pmi_mem`](document/source/adn_common_pmi_mem.md)
+[`adn_common_pmi_nxm_crossbar`](document/source/adn_common_pmi_nxm_crossbar.md)
 [`adn_common_pmi_width_converter_down`](document/source/adn_common_pmi_width_converter_down.md)
 [`adn_common_pmi_width_converter_top`](document/source/adn_common_pmi_width_converter_top.md)
 [`adn_common_pmi_width_converter_up`](document/source/adn_common_pmi_width_converter_up.md)
