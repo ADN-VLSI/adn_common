@@ -1,6 +1,6 @@
 # adn_common_pmi_nxm_crossbar (module)
 
-### Author: Ahasan Ullah Khalid (aukhalid02@gmail.com)
+### Author: Ahasan Ullah Khalid (aukhalid02@gmail.com), Md Sakib Hasan SHawon, Md Sakhawat Hossain Sabbir, Annim Jannat
 
 ### Source: adn_common_pmi_nxm_crossbar.sv
 
@@ -50,4 +50,4 @@
 | 0.1      | 2026-09-15 | Ahasan Ullah Khalid                                                                  | Initial version                                        |
 | 1.0      | 2026-09-15 | Ahasan Ullah Khalid, Md Sakib Hasan SHawon, Md Sakhawat Hossain Sabbir, Annim Jannat | Stable release                                         |
 
-Author : Ahasan Ullah Khalid (aukhalid02@gmail.com)
+Author : Ahasan Ullah Khalid (aukhalid02@gmail.com), Md Sakib Hasan SHawon, Md Sakhawat Hossain Sabbir, Annim Jannat
