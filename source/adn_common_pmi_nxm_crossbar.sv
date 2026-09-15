@@ -9,7 +9,7 @@
 | 0.1      | 2026-09-15 | Ahasan Ullah Khalid                                                                  | Initial version                                        |
 | 1.0      | 2026-09-15 | Ahasan Ullah Khalid, Md Sakib Hasan SHawon, Md Sakhawat Hossain Sabbir, Annim Jannat | Stable release                                         |
 
-Author : Ahasan Ullah Khalid (aukhalid02@gmail.com)
+Author : Ahasan Ullah Khalid (aukhalid02@gmail.com), Md Sakib Hasan SHawon, Md Sakhawat Hossain Sabbir, Annim Jannat
 This file is part of ADN-VLSI/adn_common
 Copyright (c) 2026 ADN Semiconductors
 Licensed under the MIT License
