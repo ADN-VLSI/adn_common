@@ -20,12 +20,13 @@
 |FIFO_DEPTH_LOG2|int||4||
 |pmi_req_t|type||logic||
 |pmi_rsp_t|type||logic||
+|FIFO_SUPPORTS_SIMULTANEOUS_POP_PUSH|bit||1'b0|See "POP-AWARE READY" caveat above. Defaults to 0 (safe) until the underlying FIFO/counter components are confirmed to support simultaneous full+pop+push.|
 |MID_W|int||(NUM_MASTERS > 1) ? $clog2(NUM_MASTERS) : 1|Derived parameters|
 |SID_W|int||(NUM_SLAVES > 1) ? $clog2(NUM_SLAVES) : 1||
 |TRACK_W|int||SID_W + 1|TRACK_W: SID bits + 1 decode-error flag bit|
 |DEC_ERR_SID|logic [TRACK_W-1:0]||TRACK_W'(NUM_SLAVES)||
-|REQ_W|int||ADDR_WIDTH + 1 + DATA_WIDTH + (DATA_WIDTH / 8) + 1|Request flat bus: maddr + mwe + mwdata + mstrb + mreq|
-|RSP_PAYLOAD_W|int||DATA_WIDTH + 1|Response payload (no mgnt/mack — those are control, not data)|
+|REQ_PAYLOAD_W|int||ADDR_WIDTH + 1 + DATA_WIDTH + (DATA_WIDTH / 8)|Pure payload bus: maddr + mwe + mwdata + mstrb (clean separation from mreq)|
+|RSP_PAYLOAD_W|int||DATA_WIDTH + 1|Response payload: mrdata + mresp|
 
 
 ## Ports
@@ -38,7 +39,7 @@
 |m_rsp_o|output|pmi_rsp_t [NUM_MASTERS-1:0]|||
 |s_req_o|output|pmi_req_t [NUM_SLAVES-1:0]||Slave ports (crossbar acts as master toward these)|
 |s_rsp_i|input|pmi_rsp_t [NUM_SLAVES-1:0]|||
-|min_addr_i|input|logic [ADDR_WIDTH-1:0]|[NUM_RULES]|Static address map (tie to constants at SoC level)|
+|min_addr_i|input|logic [ADDR_WIDTH-1:0]|[NUM_RULES]|Static address map|
 |max_addr_i|input|logic [ADDR_WIDTH-1:0]|[NUM_RULES]||
 |slave_map_i|input|logic [ SID_W-1:0]|[NUM_RULES]||
 
