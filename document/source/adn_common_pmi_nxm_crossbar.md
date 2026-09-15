@@ -20,10 +20,12 @@
 |FIFO_DEPTH_LOG2|int||4||
 |pmi_req_t|type||logic||
 |pmi_rsp_t|type||logic||
-|MID_W|int||$clog2(NUM_MASTERS)|Derived parameters|
-|SID_W|int||$clog2(NUM_SLAVES)||
-|REQ_W|int||ADDR_WIDTH + 1 + DATA_WIDTH + (DATA_WIDTH / 8) + 1|req fields: maddr + mwe + mwdata + mstrb + mreq|
-|RSP_PAYLOAD_W|int||DATA_WIDTH + 1|rsp fields: mrdata + mresp|
+|MID_W|int||(NUM_MASTERS > 1) ? $clog2(NUM_MASTERS) : 1|Derived parameters|
+|SID_W|int||(NUM_SLAVES > 1) ? $clog2(NUM_SLAVES) : 1||
+|TRACK_W|int||SID_W + 1|TRACK_W: SID bits + 1 decode-error flag bit|
+|DEC_ERR_SID|logic [TRACK_W-1:0]||TRACK_W'(NUM_SLAVES)||
+|REQ_W|int||ADDR_WIDTH + 1 + DATA_WIDTH + (DATA_WIDTH / 8) + 1|Request flat bus: maddr + mwe + mwdata + mstrb + mreq|
+|RSP_PAYLOAD_W|int||DATA_WIDTH + 1|Response payload (no mgnt/mack — those are control, not data)|
 
 
 ## Ports
@@ -32,11 +34,11 @@
 |-|-|-|-|-|
 |clk_i|input|logic|||
 |arst_ni|input|logic|||
-|m_req_i|input|pmi_req_t [NUM_MASTERS-1:0]||Master ports|
+|m_req_i|input|pmi_req_t [NUM_MASTERS-1:0]||Master ports (crossbar acts as slave toward these)|
 |m_rsp_o|output|pmi_rsp_t [NUM_MASTERS-1:0]|||
-|s_req_o|output|pmi_req_t [NUM_SLAVES-1:0]||Slave ports|
+|s_req_o|output|pmi_req_t [NUM_SLAVES-1:0]||Slave ports (crossbar acts as master toward these)|
 |s_rsp_i|input|pmi_rsp_t [NUM_SLAVES-1:0]|||
-|min_addr_i|input|logic [ADDR_WIDTH-1:0]|[NUM_RULES]|Static address map|
+|min_addr_i|input|logic [ADDR_WIDTH-1:0]|[NUM_RULES]|Static address map (tie to constants at SoC level)|
 |max_addr_i|input|logic [ADDR_WIDTH-1:0]|[NUM_RULES]||
 |slave_map_i|input|logic [ SID_W-1:0]|[NUM_RULES]||
 
