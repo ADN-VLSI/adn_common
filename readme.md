@@ -33,7 +33,6 @@ This Repo is a collection of common modules used in ADN designs. The modules are
 [`adn_common_range_checker`](document/source/adn_common_range_checker.md)
 [`adn_common_ring_counter`](document/source/adn_common_ring_counter.md)
 [`adn_common_rotating_xbar`](document/source/adn_common_rotating_xbar.md)
-[`adn_common_round_robin_arbiter`](document/source/adn_common_round_robin_arbiter.md)
 [`adn_common_synchronizer`](document/source/adn_common_synchronizer.md)
 [`adn_common_xbar`](document/source/adn_common_xbar.md)
 
