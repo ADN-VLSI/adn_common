@@ -18,6 +18,8 @@
 |DATA_WIDTH|int||32||
 |NUM_RULES|int||4||
 |FIFO_DEPTH_LOG2|int||4||
+|pmi_req_t|type||logic||
+|pmi_rsp_t|type||logic||
 |MID_W|int||$clog2(NUM_MASTERS)|Derived parameters|
 |SID_W|int||$clog2(NUM_SLAVES)||
 |REQ_W|int||ADDR_WIDTH + 1 + DATA_WIDTH + (DATA_WIDTH / 8) + 1|req fields: maddr + mwe + mwdata + mstrb + mreq|
