@@ -19,12 +19,14 @@ See LICENSE file in the project root for full license information
 
 // @foez---bhai, add comments to the parameters, ports
 module adn_common_pmi_nxm_crossbar #(
-    parameter int NUM_MASTERS     = 4,
-    parameter int NUM_SLAVES      = 4,
-    parameter int ADDR_WIDTH      = 32,
-    parameter int DATA_WIDTH      = 32,
-    parameter int NUM_RULES       = 4,
-    parameter int FIFO_DEPTH_LOG2 = 4,
+    parameter int  NUM_MASTERS     = 4,
+    parameter int  NUM_SLAVES      = 4,
+    parameter int  ADDR_WIDTH      = 32,
+    parameter int  DATA_WIDTH      = 32,
+    parameter int  NUM_RULES       = 4,
+    parameter int  FIFO_DEPTH_LOG2 = 4,
+    parameter type pmi_req_t       = logic,
+    parameter type pmi_rsp_t       = logic,
 
     // Derived parameters
     localparam int MID_W = $clog2(NUM_MASTERS),
