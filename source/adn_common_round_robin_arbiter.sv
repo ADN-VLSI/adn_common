@@ -106,14 +106,7 @@ module adn_common_pmi_nxm_crossbar #(
   end
 
   //==========================================================================
-  // 2. SLAVE-SIDE ARBITRATION & MASTER-ID TRACKING
-  //
-  // BUG-1 FIX: Break the combinatorial loop by registering the last-granted
-  // master index (arb_gnt_mid_q) and using THAT to look up resp_fifo_ready.
-  // This is safe because:
-  //  - A new grant can only occur after the previous one was accepted.
-  //  - The "last winner" master is exactly whose resp_fifo[j] slot we must
-  //    protect before issuing another grant.
+  // SLAVE-SIDE ARBITRATION & MASTER-ID TRACKING
   //==========================================================================
   logic [ NUM_SLAVES-1:0][NUM_MASTERS-1:0] arb_gnt_oh;
   logic [ NUM_SLAVES-1:0][      MID_W-1:0] arb_gnt_mid;
@@ -163,7 +156,7 @@ module adn_common_pmi_nxm_crossbar #(
       else if (arb_gnt_valid[j]) arb_gnt_mid_q[j] <= arb_gnt_mid[j];
     end
 
-    // BUG-2 FIX: PIPELINED=0 → output is always from registered RAM.
+    // PIPELINED=0 → output is always from registered RAM.
     // No bypass path means mid_fifo_head is stable (registered) and cannot
     // alias to a new push's data on the same pop cycle.
     adn_common_fifo #(
@@ -185,12 +178,7 @@ module adn_common_pmi_nxm_crossbar #(
   end  // GEN_SLAVE_ARB
 
   //==========================================================================
-  // 3. MASTER GRANT GENERATION  (PR-3, PR-6, Reset behavior)
-  //
-  //  mgnt → master only when:
-  //   - Physical path: slave arbiter grants master i for slave j
-  //   - Error   path: address not found, tracker has space
-  //  During reset: output is forced to 0 in Section 7.
+  // MASTER GRANT GENERATION  (PR-3, PR-6, Reset behavior)
   //==========================================================================
   logic [NUM_MASTERS-1:0] master_mgnt;
   logic [NUM_MASTERS-1:0] req_accepted;
@@ -255,11 +243,7 @@ module adn_common_pmi_nxm_crossbar #(
   end
 
   //==========================================================================
-  // 5. PER-MASTER TRANSACTION ORDER TRACKER  (PR-10)
-  //
-  //  Tracks: which slave (or DEC_ERR_SID) each outstanding transaction
-  //  belongs to, in strict issue order.  The head entry gates which
-  //  per-(master,slave) resp FIFO we drain next.
+  // PER-MASTER TRANSACTION ORDER TRACKER  (PR-10)
   //==========================================================================
   logic [NUM_MASTERS-1:0][TRACK_W-1:0] track_fifo_in;
   logic [NUM_MASTERS-1:0][TRACK_W-1:0] track_fifo_head;
@@ -306,16 +290,7 @@ module adn_common_pmi_nxm_crossbar #(
   end  // GEN_TRACKER
 
   //==========================================================================
-  // 6. PER-(MASTER, SLAVE) RESPONSE STAGING FIFOs  (PR-9, PR-10)
-  //
-  //  One FIFO per (master, slave) pair captures the response payload as
-  //  soon as the slave asserts mack for that master's transaction.
-  //  The head of the master's track_fifo tells Section 7 WHICH per-slave
-  //  FIFO to drain next, ensuring strict in-order delivery (PR-10).
-  //
-  //  BUG-2 FIX: mid_fifo uses PIPELINED=0 so mid_fifo_head is always
-  //  a registered value. slave_resp_popped only fires when mid_fifo_valid
-  //  is asserted (FIFO non-empty), eliminating bypass-path ambiguity.
+  // PER-(MASTER, SLAVE) RESPONSE STAGING FIFOs  (PR-9, PR-10)
   //==========================================================================
   logic [NUM_MASTERS-1:0][NUM_SLAVES-1:0][RSP_PAYLOAD_W-1:0] resp_fifo_out;
   logic [NUM_MASTERS-1:0][NUM_SLAVES-1:0]                    resp_fifo_valid;
@@ -362,15 +337,7 @@ module adn_common_pmi_nxm_crossbar #(
   end  // GEN_M_RESP_QUEUES
 
   //==========================================================================
-  // 7. RESPONSE DISPATCH TO MASTERS  (PR-9, PR-10, PR-11, PR-12, Reset)
-  //
-  //  Drains the per-master transaction tracker (track_fifo) strictly
-  //  head-first. Whichever slave (or error token) is at the head of the
-  //  tracker is the ONLY source from which mack is issued this cycle.
-  //  This enforces PMI PR-10 (in-order) regardless of which slave responds
-  //  first.
-  //
-  //  PR-6/Reset: mgnt and mack are forced to 0 during arst_ni=0.
+  // RESPONSE DISPATCH TO MASTERS  (PR-9, PR-10, PR-11, PR-12, Reset)
   //==========================================================================
   always_comb begin
     for (int i = 0; i < NUM_MASTERS; i++) begin
