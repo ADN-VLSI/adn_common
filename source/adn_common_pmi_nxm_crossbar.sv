@@ -63,7 +63,7 @@ module adn_common_pmi_nxm_crossbar #(
 );
 
   //==========================================================================
-  // 1. ADDRESS DECODING
+  // ADDRESS DECODING
   //==========================================================================
   logic [NUM_MASTERS-1:0][SID_W-1:0] dec_sid;
   logic [NUM_MASTERS-1:0]            dec_found;
@@ -106,7 +106,7 @@ module adn_common_pmi_nxm_crossbar #(
   end
 
   //==========================================================================
-  // 2. SLAVE-SIDE ARBITRATION & ELIGIBLE REQUEST FILTERING
+  // SLAVE-SIDE ARBITRATION & ELIGIBLE REQUEST FILTERING
   //==========================================================================
   logic [ NUM_SLAVES-1:0][NUM_MASTERS-1:0] arb_gnt_oh;
   logic [ NUM_SLAVES-1:0][      MID_W-1:0] arb_gnt_mid;
@@ -185,7 +185,7 @@ module adn_common_pmi_nxm_crossbar #(
   end
 
   //==========================================================================
-  // 3. MASTER GRANT GENERATION
+  // MASTER GRANT GENERATION
   //==========================================================================
   logic [NUM_MASTERS-1:0] master_mgnt;
   logic [NUM_MASTERS-1:0] req_accepted;
@@ -208,7 +208,7 @@ module adn_common_pmi_nxm_crossbar #(
   end
 
   //==========================================================================
-  // 4. REQUEST PAYLOAD CROSSBAR
+  // REQUEST PAYLOAD CROSSBAR
   //==========================================================================
   logic [NUM_MASTERS-1:0][REQ_PAYLOAD_W-1:0] req_xbar_in;
   logic [ NUM_SLAVES-1:0][REQ_PAYLOAD_W-1:0] req_xbar_out;
@@ -245,7 +245,7 @@ module adn_common_pmi_nxm_crossbar #(
   end
 
   //==========================================================================
-  // 5. PER-MASTER TRANSACTION ORDER TRACKING & DECODE ERROR COUNTER
+  // PER-MASTER TRANSACTION ORDER TRACKING & DECODE ERROR COUNTER
   //==========================================================================
   logic [NUM_MASTERS-1:0][TRACK_W-1:0] track_fifo_in;
   logic [NUM_MASTERS-1:0][TRACK_W-1:0] track_fifo_head;
@@ -289,15 +289,15 @@ module adn_common_pmi_nxm_crossbar #(
         .data_out_ready_i (dec_err_retired[i])
     );
 
-    // Independent, loop-safe formulation mirroring the dispatch logic in
-    // Sec. 8, used only for the pop-aware ready calculation in Sec. 1/2.
+    // Independent, loop-safe formulation mirroring the dispatch logic
+    // used only for the pop-aware ready calculation in Sec. 1/2.
     assign err_counter_will_retire[i] = track_fifo_valid[i]
         & (track_fifo_head[i] == DEC_ERR_SID)
         & dec_err_has_pending[i];
   end
 
   //==========================================================================
-  // 6. SLAVE RESPONSE ROUTING & ZERO-LATENCY BYPASS
+  // SLAVE RESPONSE ROUTING & ZERO-LATENCY BYPASS
   //==========================================================================
   logic [NUM_SLAVES-1:0][        MID_W-1:0] resp_target_mid;
   logic [NUM_SLAVES-1:0]                    slave_resp_valid;
@@ -348,7 +348,7 @@ module adn_common_pmi_nxm_crossbar #(
   end
 
   //==========================================================================
-  // 7. PER-(MASTER, SLAVE) RESPONSE STAGING FIFOs
+  // PER-(MASTER, SLAVE) RESPONSE STAGING FIFOs
   //==========================================================================
   logic [NUM_MASTERS-1:0][NUM_SLAVES-1:0][RSP_PAYLOAD_W-1:0] resp_fifo_out;
   logic [NUM_MASTERS-1:0][NUM_SLAVES-1:0]                    resp_fifo_valid;
@@ -385,7 +385,7 @@ module adn_common_pmi_nxm_crossbar #(
   end
 
   //==========================================================================
-  // 8. STRICT ORDERED RESPONSE DISPATCH TO MASTERS
+  // STRICT ORDERED RESPONSE DISPATCH TO MASTERS
   //==========================================================================
   always_comb begin
     for (int i = 0; i < NUM_MASTERS; i++) begin
