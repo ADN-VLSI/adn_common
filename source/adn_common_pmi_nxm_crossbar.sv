@@ -29,43 +29,43 @@ module adn_common_pmi_nxm_crossbar #(
     parameter type pmi_rsp_t       = logic,
 
     // Derived parameters
-    localparam int MID_W = $clog2(NUM_MASTERS),
-    localparam int SID_W = $clog2(NUM_SLAVES),
+    localparam int MID_W = (NUM_MASTERS > 1) ? $clog2(NUM_MASTERS) : 1,
+    localparam int SID_W = (NUM_SLAVES > 1) ? $clog2(NUM_SLAVES) : 1,
+    // TRACK_W: SID bits + 1 decode-error flag bit
+    localparam int TRACK_W = SID_W + 1,
+    localparam logic [TRACK_W-1:0] DEC_ERR_SID = TRACK_W'(NUM_SLAVES),
 
-    // req fields: maddr + mwe + mwdata + mstrb + mreq
-    localparam int REQ_W = ADDR_WIDTH + 1 + DATA_WIDTH + (DATA_WIDTH / 8) + 1,
-    // rsp fields: mrdata + mresp
+    // Request flat bus: maddr + mwe + mwdata + mstrb + mreq
+    localparam int REQ_W         = ADDR_WIDTH + 1 + DATA_WIDTH + (DATA_WIDTH / 8) + 1,
+    // Response payload (no mgnt/mack — those are control, not data)
     localparam int RSP_PAYLOAD_W = DATA_WIDTH + 1
 ) (
     input logic clk_i,
     input logic arst_ni,
 
-    // Master ports
+    // Master ports (crossbar acts as slave toward these)
     input  pmi_req_t [NUM_MASTERS-1:0] m_req_i,
     output pmi_rsp_t [NUM_MASTERS-1:0] m_rsp_o,
 
-    // Slave ports
+    // Slave ports (crossbar acts as master toward these)
     output pmi_req_t [NUM_SLAVES-1:0] s_req_o,
     input  pmi_rsp_t [NUM_SLAVES-1:0] s_rsp_i,
 
-    // Static address map
+    // Static address map (tie to constants at SoC level)
     input logic [ADDR_WIDTH-1:0] min_addr_i [NUM_RULES],
     input logic [ADDR_WIDTH-1:0] max_addr_i [NUM_RULES],
     input logic [     SID_W-1:0] slave_map_i[NUM_RULES]
 );
 
   //==========================================================================
-  // ADDRESS DECODING & ERROR GENERATION
+  // 1. ADDRESS DECODING
   //==========================================================================
   logic [NUM_MASTERS-1:0][SID_W-1:0] dec_sid;
   logic [NUM_MASTERS-1:0]            dec_found;
-  logic [NUM_MASTERS-1:0]            dec_mreq;
-  logic [NUM_MASTERS-1:0]            sid_fifo_in_ready;
-
-  // Decode error internal handling (Default Slave per Master)
-  logic [NUM_MASTERS-1:0]            dec_err_active;
-  logic [NUM_MASTERS-1:0]            dec_err_gnt;
-  logic [NUM_MASTERS-1:0]            dec_err_mack;
+  logic [NUM_MASTERS-1:0]            dec_valid_req;  // mreq & found & fifo space
+  logic [NUM_MASTERS-1:0]            dec_error_req;  // mreq & !found & fifo space
+  logic [NUM_MASTERS-1:0]            track_fifo_ready;
+  logic [NUM_MASTERS-1:0]            err_counter_ready;
 
   for (genvar i = 0; i < NUM_MASTERS; i++) begin : GEN_ADDR_DEC
     adn_common_address_decoder #(
@@ -81,82 +81,98 @@ module adn_common_pmi_nxm_crossbar #(
         .addr_found_o (dec_found[i])
     );
 
-    // Default Slave State Machine: Immediate grant + next-cycle error response
-    assign dec_err_gnt[i] = m_req_i[i].mreq && !dec_found[i] && !dec_err_active[i];
+    // Physical request: address hit AND tracker has room
+    assign dec_valid_req[i] = m_req_i[i].mreq & dec_found[i] & track_fifo_ready[i];
 
-    always_ff @(posedge clk_i or negedge arst_ni) begin
-      if (!arst_ni) begin
-        dec_err_active[i] <= 1'b0;
-        dec_err_mack[i]   <= 1'b0;
-      end else begin
-        dec_err_mack[i]   <= dec_err_gnt[i];
-        dec_err_active[i] <= dec_err_gnt[i];
-      end
-    end
-
-    // Real requests to crossbar: Must have valid address decode AND space in SID tracker
-    assign dec_mreq[i] = m_req_i[i].mreq && dec_found[i] && sid_fifo_in_ready[i];
+    // Decode-error request: no hit, tracker + err-counter both have room
+    assign dec_error_req[i] = m_req_i[i].mreq & ~dec_found[i]
+                                 & track_fifo_ready[i] & err_counter_ready[i];
   end
 
-  //==========================================================================
-  // SLAVE REQUEST MATRIX GENERATION
-  //==========================================================================
+  // Build per-slave request bitmap: which masters are targeting slave j
   logic [NUM_SLAVES-1:0][NUM_MASTERS-1:0] req_to_slave;
 
   always_comb begin
     req_to_slave = '0;
     for (int i = 0; i < NUM_MASTERS; i++) begin
-      if (dec_mreq[i]) begin
-        req_to_slave[dec_sid[i]][i] = 1'b1;
-      end
+      if (dec_valid_req[i]) req_to_slave[dec_sid[i]][i] = 1'b1;
     end
   end
 
   //==========================================================================
-  // SLAVE-SIDE ARBITRATION & MASTER TRACKING FIFO
+  // SLAVE-SIDE ARBITRATION & MASTER-ID TRACKING
   //==========================================================================
-  logic [NUM_SLAVES-1:0][NUM_MASTERS-1:0] arb_gnt_oh;
-  logic [NUM_SLAVES-1:0][      MID_W-1:0] arb_gnt_mid;
-  logic [NUM_SLAVES-1:0]                  arb_gnt_valid;
-  logic [NUM_SLAVES-1:0]                  mid_fifo_in_ready;
-  logic [NUM_SLAVES-1:0][      MID_W-1:0] mid_fifo_head;
-  logic [NUM_SLAVES-1:0]                  mid_fifo_valid;
-  logic [NUM_SLAVES-1:0]                  slave_resp_popped;
+  logic [ NUM_SLAVES-1:0][NUM_MASTERS-1:0] arb_gnt_oh;
+  logic [ NUM_SLAVES-1:0][      MID_W-1:0] arb_gnt_mid;
+  logic [ NUM_SLAVES-1:0]                  arb_gnt_valid;
+  logic [ NUM_SLAVES-1:0]                  mid_fifo_ready;
+
+  // Registered last-granted master index per slave  (BUG-1 FIX)
+  logic [ NUM_SLAVES-1:0][      MID_W-1:0] arb_gnt_mid_q;
+
+  // Per-(master,slave) resp FIFO ready (populated in Section 6)
+  logic [NUM_MASTERS-1:0][ NUM_SLAVES-1:0] resp_fifo_ready;
+
+  // Look up using REGISTERED index — loop-free
+  logic [ NUM_SLAVES-1:0]                  target_resp_fifo_ready;
+  always_comb begin
+    for (int j = 0; j < NUM_SLAVES; j++)
+    target_resp_fifo_ready[j] = resp_fifo_ready[arb_gnt_mid_q[j]][j];
+  end
+
+  // Head of master-id FIFO per slave  (BUG-2: PIPELINED=0 on mid FIFO)
+  logic [NUM_SLAVES-1:0][MID_W-1:0] mid_fifo_head;
+  logic [NUM_SLAVES-1:0]            mid_fifo_valid;
+  logic [NUM_SLAVES-1:0]            slave_resp_popped;
 
   for (genvar j = 0; j < NUM_SLAVES; j++) begin : GEN_SLAVE_ARB
-    // Arbiter grants only when the slave is ready AND tracker FIFO can accept entry
+
+    // allow grant only when:
+    //   · slave is ready (s_rsp_i.mgnt)
+    //   · mid_fifo has room
+    //   · the would-be-winner master's per-slave resp FIFO has room
+    //     (uses REGISTERED mid index — no comb loop)
     adn_common_round_robin_arbiter #(
         .NUM_REQ(NUM_MASTERS)
     ) u_rr_arb (
         .clk_i           (clk_i),
         .arst_ni         (arst_ni),
-        .allow_req_i     (s_rsp_i[j].mgnt && mid_fifo_in_ready[j]),
+        .allow_req_i     (s_rsp_i[j].mgnt & mid_fifo_ready[j] & target_resp_fifo_ready[j]),
         .req_i           (req_to_slave[j]),
         .gnt_addr_valid_o(arb_gnt_valid[j]),
         .gnt_addr_o      (arb_gnt_mid[j]),
         .gnt_o           (arb_gnt_oh[j])
     );
 
-    // Tracks which master owns transactions currently running in Slave j
+    // Register the winning master index for next cycle's FIFO-ready check
+    always_ff @(posedge clk_i or negedge arst_ni) begin
+      if (~arst_ni) arb_gnt_mid_q[j] <= '0;
+      else if (arb_gnt_valid[j]) arb_gnt_mid_q[j] <= arb_gnt_mid[j];
+    end
+
+    // PIPELINED=0 → output is always from registered RAM.
+    // No bypass path means mid_fifo_head is stable (registered) and cannot
+    // alias to a new push's data on the same pop cycle.
     adn_common_fifo #(
         .DATA_WIDTH(MID_W),
         .FIFO_SIZE (FIFO_DEPTH_LOG2),
-        .PIPELINED (1)
+        .PIPELINED (0)                 // <-- deliberate: avoid bypass-path race
     ) u_mid_fifo (
         .arst_ni         (arst_ni),
         .clk_i           (clk_i),
         .data_in_i       (arb_gnt_mid[j]),
         .data_in_valid_i (arb_gnt_valid[j]),
-        .data_in_ready_o (mid_fifo_in_ready[j]),
+        .data_in_ready_o (mid_fifo_ready[j]),
         .count_o         (),
         .data_out_o      (mid_fifo_head[j]),
         .data_out_valid_o(mid_fifo_valid[j]),
         .data_out_ready_i(slave_resp_popped[j])
     );
-  end
+
+  end  // GEN_SLAVE_ARB
 
   //==========================================================================
-  // MASTER GRANT (mgnt) GENERATION
+  // MASTER GRANT GENERATION  (PR-3, PR-6, Reset behavior)
   //==========================================================================
   logic [NUM_MASTERS-1:0] master_mgnt;
   logic [NUM_MASTERS-1:0] req_accepted;
@@ -164,22 +180,18 @@ module adn_common_pmi_nxm_crossbar #(
   always_comb begin
     master_mgnt = '0;
     for (int i = 0; i < NUM_MASTERS; i++) begin
-      if (dec_err_gnt[i]) begin
-        master_mgnt[i] = 1'b1;
-      end else if (dec_mreq[i]) begin
-        master_mgnt[i] = arb_gnt_oh[dec_sid[i]][i];
-      end
+      if (dec_error_req[i]) master_mgnt[i] = 1'b1;
+      else if (dec_valid_req[i]) master_mgnt[i] = arb_gnt_oh[dec_sid[i]][i];
     end
   end
 
   always_comb begin
-    for (int i = 0; i < NUM_MASTERS; i++) begin
-      req_accepted[i] = dec_mreq[i] && master_mgnt[i];
-    end
+    for (int i = 0; i < NUM_MASTERS; i++)
+    req_accepted[i] = (dec_valid_req[i] | dec_error_req[i]) & master_mgnt[i];
   end
 
   //==========================================================================
-  // REQUEST CROSSBAR (Masters → Slaves)
+  // 4. REQUEST CROSSBAR  (N masters → M slaves)
   //==========================================================================
   logic [NUM_MASTERS-1:0][REQ_W-1:0] req_xbar_in;
   logic [ NUM_SLAVES-1:0][REQ_W-1:0] req_xbar_out;
@@ -188,13 +200,14 @@ module adn_common_pmi_nxm_crossbar #(
   always_comb begin
     for (int i = 0; i < NUM_MASTERS; i++) begin
       req_xbar_in[i] = {
-        m_req_i[i].maddr, m_req_i[i].mwe, m_req_i[i].mwdata, m_req_i[i].mstrb, dec_mreq[i]
+        m_req_i[i].maddr,
+        m_req_i[i].mwe,
+        m_req_i[i].mwdata,
+        m_req_i[i].mstrb,
+        dec_valid_req[i]  // gated mreq (not the raw one)
       };
     end
-
-    for (int j = 0; j < NUM_SLAVES; j++) begin
-      req_xbar_sel[j] = arb_gnt_mid[j];
-    end
+    for (int j = 0; j < NUM_SLAVES; j++) req_xbar_sel[j] = arb_gnt_mid[j];
   end
 
   adn_common_xbar #(
@@ -207,113 +220,165 @@ module adn_common_pmi_nxm_crossbar #(
       .out_o(req_xbar_out)
   );
 
-  // Unpack request fields to slaves
   always_comb begin
     for (int j = 0; j < NUM_SLAVES; j++) begin
       {
-        s_req_o[j].maddr,
-        s_req_o[j].mwe,
-        s_req_o[j].mwdata,
-        s_req_o[j].mstrb,
-        s_req_o[j].mreq
+                s_req_o[j].maddr,
+                s_req_o[j].mwe,
+                s_req_o[j].mwdata,
+                s_req_o[j].mstrb,
+                s_req_o[j].mreq         // overridden below
       } = req_xbar_out[j];
 
-      // Gated by grant validity to slave
-      s_req_o[j].mreq = req_xbar_out[j][0] && arb_gnt_valid[j];
+      // mreq to slave: valid only on a real arbitration grant,
+      // AND arst_ni guards the line (PR-1, reset rule)
+      s_req_o[j].mreq = req_xbar_out[j][0] & arb_gnt_valid[j] & arst_ni;
     end
   end
 
   //==========================================================================
-  // MASTER-SIDE ORDER TRACKING (Slave-ID FIFO)
+  // PER-MASTER TRANSACTION ORDER TRACKER  (PR-10)
   //==========================================================================
-  logic [NUM_MASTERS-1:0][SID_W-1:0] sid_fifo_head;
-  logic [NUM_MASTERS-1:0]            sid_fifo_valid;
-  logic [NUM_MASTERS-1:0]            master_resp_consumed;
+  logic [NUM_MASTERS-1:0][TRACK_W-1:0] track_fifo_in;
+  logic [NUM_MASTERS-1:0][TRACK_W-1:0] track_fifo_head;
+  logic [NUM_MASTERS-1:0]              track_fifo_valid;
+  logic [NUM_MASTERS-1:0]              master_resp_consumed;
+  logic [NUM_MASTERS-1:0]              dec_err_accepted;
+  logic [NUM_MASTERS-1:0]              dec_err_retired;
+  logic [NUM_MASTERS-1:0]              dec_err_has_pending;
 
-  for (genvar i = 0; i < NUM_MASTERS; i++) begin : GEN_SID_FIFO
+  for (genvar i = 0; i < NUM_MASTERS; i++) begin : GEN_TRACKER
+    assign dec_err_accepted[i] = dec_error_req[i] & master_mgnt[i];
+    assign track_fifo_in[i] = dec_error_req[i] ? DEC_ERR_SID : TRACK_W'(dec_sid[i]);
+
     adn_common_fifo #(
-        .DATA_WIDTH(SID_W),
+        .DATA_WIDTH(TRACK_W),
         .FIFO_SIZE (FIFO_DEPTH_LOG2),
         .PIPELINED (1)
-    ) u_sid_fifo (
+    ) u_master_track_fifo (
         .arst_ni         (arst_ni),
         .clk_i           (clk_i),
-        .data_in_i       (dec_sid[i]),
+        .data_in_i       (track_fifo_in[i]),
         .data_in_valid_i (req_accepted[i]),
-        .data_in_ready_o (sid_fifo_in_ready[i]),
+        .data_in_ready_o (track_fifo_ready[i]),
         .count_o         (),
-        .data_out_o      (sid_fifo_head[i]),
-        .data_out_valid_o(sid_fifo_valid[i]),
+        .data_out_o      (track_fifo_head[i]),
+        .data_out_valid_o(track_fifo_valid[i]),
         .data_out_ready_i(master_resp_consumed[i])
     );
-  end
+
+    // Separate counter tracks outstanding decode-error responses
+    adn_common_hs_counter #(
+        .DEPTH    (1 << FIFO_DEPTH_LOG2),
+        .PIPELINED(1)
+    ) u_err_counter (
+        .clk_i            (clk_i),
+        .arst_ni          (arst_ni),
+        .data_in_valid_i  (dec_err_accepted[i]),
+        .data_in_ready_o  (err_counter_ready[i]),
+        .count_o          (),
+        .passing_through_o(),
+        .data_out_valid_o (dec_err_has_pending[i]),
+        .data_out_ready_i (dec_err_retired[i])
+    );
+  end  // GEN_TRACKER
 
   //==========================================================================
-  // RESPONSE ROUTING & PER-MASTER STAGING BUFFERS
+  // PER-(MASTER, SLAVE) RESPONSE STAGING FIFOs  (PR-9, PR-10)
   //==========================================================================
-  // Staging register per (Master, Slave) to capture early/out-of-order completions
-  logic [NUM_MASTERS-1:0][NUM_SLAVES-1:0][RSP_PAYLOAD_W-1:0] resp_buffer_data;
-  logic [NUM_MASTERS-1:0][NUM_SLAVES-1:0]                    resp_buffer_valid;
+  logic [NUM_MASTERS-1:0][NUM_SLAVES-1:0][RSP_PAYLOAD_W-1:0] resp_fifo_out;
+  logic [NUM_MASTERS-1:0][NUM_SLAVES-1:0]                    resp_fifo_valid;
+  logic [NUM_MASTERS-1:0][NUM_SLAVES-1:0]                    resp_fifo_pop;
 
-  always_ff @(posedge clk_i or negedge arst_ni) begin
-    if (!arst_ni) begin
-      resp_buffer_valid <= '0;
-      resp_buffer_data  <= '0;
-    end else begin
-      // Step A: Capture returning responses from slaves into targeted buffer slot
-      for (int j = 0; j < NUM_SLAVES; j++) begin
-        if (s_rsp_i[j].mack && mid_fifo_valid[j]) begin
-          resp_buffer_data[mid_fifo_head[j]][j]  <= {s_rsp_i[j].mrdata, s_rsp_i[j].mresp};
-          resp_buffer_valid[mid_fifo_head[j]][j] <= 1'b1;
-        end
-      end
+  // slave_has_dest: slave j has a valid mack AND we know which master owns it
+  logic [ NUM_SLAVES-1:0]                                    slave_has_dest;
 
-      // Step B: Clear buffer slot when the master consumes it in-order
-      for (int i = 0; i < NUM_MASTERS; i++) begin
-        if (master_resp_consumed[i] && !dec_err_mack[i]) begin
-          resp_buffer_valid[i][sid_fifo_head[i]] <= 1'b0;
-        end
-      end
-    end
-  end
-
-  // Slave FIFO pops immediately when the slave's response is safely captured
   always_comb begin
     for (int j = 0; j < NUM_SLAVES; j++) begin
-      slave_resp_popped[j] = s_rsp_i[j].mack && mid_fifo_valid[j];
+      // mid_fifo_valid ensures we know the destination master (no guess)
+      slave_has_dest[j]    = s_rsp_i[j].mack & mid_fifo_valid[j];
+      // Pop the master-id FIFO only when we have a valid destination
+      slave_resp_popped[j] = slave_has_dest[j];
     end
   end
 
+  for (genvar i = 0; i < NUM_MASTERS; i++) begin : GEN_M_RESP_QUEUES
+    for (genvar j = 0; j < NUM_SLAVES; j++) begin : GEN_S_RESP_QUEUE
+
+      // Push exactly when slave j responds AND this master is at the
+      // head of slave j's master-id FIFO (mid_fifo_head is registered
+      // thanks to PIPELINED=0 on u_mid_fifo — BUG-2 FIX)
+      logic push_resp;
+      assign push_resp = slave_has_dest[j] & (mid_fifo_head[j] == MID_W'(i));
+
+      adn_common_fifo #(
+          .DATA_WIDTH(RSP_PAYLOAD_W),
+          .FIFO_SIZE (FIFO_DEPTH_LOG2),
+          .PIPELINED (1)
+      ) u_resp_fifo (
+          .arst_ni         (arst_ni),
+          .clk_i           (clk_i),
+          .data_in_i       ({s_rsp_i[j].mrdata, s_rsp_i[j].mresp}),
+          .data_in_valid_i (push_resp),
+          .data_in_ready_o (resp_fifo_ready[i][j]),
+          .count_o         (),
+          .data_out_o      (resp_fifo_out[i][j]),
+          .data_out_valid_o(resp_fifo_valid[i][j]),
+          .data_out_ready_i(resp_fifo_pop[i][j])
+      );
+
+    end
+  end  // GEN_M_RESP_QUEUES
+
   //==========================================================================
-  // DRIVE RESPONSES BACK TO MASTERS
+  // RESPONSE DISPATCH TO MASTERS  (PR-9, PR-10, PR-11, PR-12, Reset)
   //==========================================================================
   always_comb begin
     for (int i = 0; i < NUM_MASTERS; i++) begin
-      m_rsp_o[i].mgnt = master_mgnt[i];
-      m_rsp_o[i].mack = 1'b0;
-      m_rsp_o[i].mrdata = '0;
-      m_rsp_o[i].mresp = 1'b0;
+      // Safe defaults (also cover reset path — arst_ni gate below)
+      m_rsp_o[i].mgnt         = arst_ni ? master_mgnt[i] : 1'b0;
+      m_rsp_o[i].mack         = 1'b0;
+      m_rsp_o[i].mrdata       = '0;
+      m_rsp_o[i].mresp        = 1'b0;
       master_resp_consumed[i] = 1'b0;
+      dec_err_retired[i]      = 1'b0;
 
-      if (dec_err_mack[i]) begin
-        // Priority A: Internal unmapped decode error response
-        m_rsp_o[i].mack   = 1'b1;
-        m_rsp_o[i].mresp  = 1'b1;  // ERROR code
-        m_rsp_o[i].mrdata = '0;
-      end else if (sid_fifo_valid[i]) begin
-        // Priority B: Check if the transaction at the head of SID FIFO has returned
-        int cur_sid;
-        cur_sid = sid_fifo_head[i];
+      for (int j = 0; j < NUM_SLAVES; j++) resp_fifo_pop[i][j] = 1'b0;
 
-        if (resp_buffer_valid[i][cur_sid]) begin
-          m_rsp_o[i].mack                       = 1'b1;
-          {m_rsp_o[i].mrdata, m_rsp_o[i].mresp} = resp_buffer_data[i][cur_sid];
-          master_resp_consumed[i]               = 1'b1;
+      // Only retire responses when out of reset and tracker is non-empty
+      if (track_fifo_valid[i] & arst_ni) begin
+
+        if (track_fifo_head[i] == DEC_ERR_SID) begin
+          //----------------------------------------------------------
+          // Head is a decode-error token: synthesise an ERROR response
+          // immediately, no slave involved (PR-9: one mack per req)
+          //----------------------------------------------------------
+          if (dec_err_has_pending[i]) begin
+            m_rsp_o[i].mack         = 1'b1;
+            m_rsp_o[i].mresp        = 1'b1;  // PMI ERROR
+            m_rsp_o[i].mrdata       = '0;
+            master_resp_consumed[i] = 1'b1;  // pop track_fifo
+            dec_err_retired[i]      = 1'b1;  // pop err_counter
+          end
+
+        end else begin
+          //----------------------------------------------------------
+          // Head is a physical slave SID: wait for that slave's
+          // staging FIFO to have data (guarantees in-order delivery)
+          //----------------------------------------------------------
+          automatic int unsigned target_sid;
+          target_sid = int'(track_fifo_head[i][SID_W-1:0]);
+
+          if (resp_fifo_valid[i][target_sid]) begin
+            m_rsp_o[i].mack                       = 1'b1;
+            {m_rsp_o[i].mrdata, m_rsp_o[i].mresp} = resp_fifo_out[i][target_sid];
+            resp_fifo_pop[i][target_sid]          = 1'b1;
+            master_resp_consumed[i]               = 1'b1;
+          end
+
         end
       end
     end
   end
 
 endmodule
-
-
