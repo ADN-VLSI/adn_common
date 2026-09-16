@@ -12,36 +12,36 @@
 
 |Name|Type|Dimension|Default|Description|
 |-|-|-|-|-|
-|NUM_MASTERS|int||4|Number of master ports|
-|NUM_SLAVES|int||4|Number of slave ports|
-|ADDR_WIDTH|int||32|Width of address bus|
-|DATA_WIDTH|int||32|Width of data bus|
-|NUM_RULES|int||4|Number of address map rules|
-|FIFO_DEPTH_LOG2|int||4|Log2 of FIFO depth for tracking|
-|pmi_req_t|type||logic|PMI request struct type|
-|pmi_rsp_t|type||logic|PMI response struct type|
-|FIFO_SUPPORTS_SIMULTANEOUS_POP_PUSH|bit||1'b0|See "POP-AWARE READY" caveat below. Defaults to 0 (safe) until the underlying FIFO/counter components are confirmed to support simultaneous full+pop+push.|
+|NUM_MASTERS|int||4||
+|NUM_SLAVES|int||4||
+|ADDR_WIDTH|int||32||
+|DATA_WIDTH|int||32||
+|NUM_RULES|int||4||
+|FIFO_DEPTH_LOG2|int||4||
+|pmi_req_t|type||logic||
+|pmi_rsp_t|type||logic||
+|FIFO_SUPPORTS_SIMULTANEOUS_POP_PUSH|bit||1'b0||
 |MID_W|int||(NUM_MASTERS > 1) ? $clog2(NUM_MASTERS) : 1|Derived parameters|
 |SID_W|int||(NUM_SLAVES > 1) ? $clog2(NUM_SLAVES) : 1||
-|TRACK_W|int||SID_W + 1|TRACK_W: SID bits + 1 decode-error flag bit|
+|TRACK_W|int||SID_W + 1||
 |DEC_ERR_SID|logic [TRACK_W-1:0]||TRACK_W'(NUM_SLAVES)||
-|REQ_PAYLOAD_W|int||ADDR_WIDTH + 1 + DATA_WIDTH + (DATA_WIDTH / 8)|Pure payload bus: maddr + mwe + mwdata + mstrb (clean separation from mreq)|
-|RSP_PAYLOAD_W|int||DATA_WIDTH + 1|Response payload: mrdata + mresp|
+|REQ_PAYLOAD_W|int||ADDR_WIDTH + 1 + DATA_WIDTH + (DATA_WIDTH / 8)|Pure payload definitions|
+|RSP_PAYLOAD_W|int||DATA_WIDTH + 1||
 
 
 ## Ports
 
 |Name|Direction|Type|Dimension|Description|
 |-|-|-|-|-|
-|clk_i|input|logic||System clock|
-|arst_ni|input|logic||Asynchronous active-low reset|
-|m_req_i|input|pmi_req_t [NUM_MASTERS-1:0]||Master request inputs|
-|m_rsp_o|output|pmi_rsp_t [NUM_MASTERS-1:0]||Master response outputs|
-|s_req_o|output|pmi_req_t [NUM_SLAVES-1:0]||Slave request outputs|
-|s_rsp_i|input|pmi_rsp_t [NUM_SLAVES-1:0]||Slave response inputs|
-|min_addr_i|input|logic [ADDR_WIDTH-1:0]|[NUM_RULES]|Minimum address for each rule|
-|max_addr_i|input|logic [ADDR_WIDTH-1:0]|[NUM_RULES]|Maximum address for each rule|
-|slave_map_i|input|logic [ SID_W-1:0]|[NUM_RULES]|Slave ID for each rule|
+|clk_i|input|logic|||
+|arst_ni|input|logic|||
+|m_req_i|input|pmi_req_t [NUM_MASTERS-1:0]||Master-side interfaces (Crossbar functions as Slave to Masters)|
+|m_rsp_o|output|pmi_rsp_t [NUM_MASTERS-1:0]|||
+|s_req_o|output|pmi_req_t [NUM_SLAVES-1:0]||Slave-side interfaces (Crossbar functions as Master to Slaves)|
+|s_rsp_i|input|pmi_rsp_t [NUM_SLAVES-1:0]|||
+|min_addr_i|input|logic [ADDR_WIDTH-1:0]|[NUM_RULES]|Address range mapping rules|
+|max_addr_i|input|logic [ADDR_WIDTH-1:0]|[NUM_RULES]||
+|slave_map_i|input|logic [ SID_W-1:0]|[NUM_RULES]||
 
 
 ## Description
