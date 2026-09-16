@@ -23,6 +23,7 @@ See LICENSE file in the project root for full license information
 
 */
 
+
 module adn_common_pmi_nxm_crossbar #(
     parameter int  NUM_MASTERS                         = 4,
     parameter int  NUM_SLAVES                          = 4,
@@ -62,7 +63,7 @@ module adn_common_pmi_nxm_crossbar #(
 );
 
   //==========================================================================
-  // 1. ADDRESS DECODING & REQUEST QUALIFICATION
+  // 1. ADDRESS DECODING & PER-MASTER REQUEST QUALIFICATION
   //==========================================================================
   logic [NUM_MASTERS-1:0][SID_W-1:0] dec_sid;
   logic [NUM_MASTERS-1:0]            dec_found;
@@ -71,8 +72,6 @@ module adn_common_pmi_nxm_crossbar #(
 
   logic [NUM_MASTERS-1:0]            track_fifo_ready;
   logic [NUM_MASTERS-1:0]            err_counter_ready;
-  logic [NUM_MASTERS-1:0]            err_counter_will_retire;
-  logic [NUM_MASTERS-1:0]            err_counter_can_accept;
 
   for (genvar i = 0; i < NUM_MASTERS; i++) begin : GEN_ADDR_DEC
     adn_common_address_decoder #(
@@ -88,11 +87,12 @@ module adn_common_pmi_nxm_crossbar #(
         .addr_found_o (dec_found[i])
     );
 
+    // PR-2, PR-4, PR-6: A request can only proceed if the master tracker has slot
     assign dec_valid_req[i] = m_req_i[i].mreq & dec_found[i] & track_fifo_ready[i] & arst_ni;
-    assign dec_error_req[i] = m_req_i[i].mreq & ~dec_found[i] & track_fifo_ready[i] & err_counter_can_accept[i] & arst_ni;
+    assign dec_error_req[i] = m_req_i[i].mreq & ~dec_found[i] & track_fifo_ready[i] & err_counter_ready[i] & arst_ni;
   end
 
-  // Build slave target matrix
+  // Build slave target request matrix
   logic [NUM_SLAVES-1:0][NUM_MASTERS-1:0] req_to_slave;
   always_comb begin
     req_to_slave = '0;
@@ -104,7 +104,7 @@ module adn_common_pmi_nxm_crossbar #(
   end
 
   //==========================================================================
-  // 2. SLAVE ARBITRATION & FLOW-CONTROLLED ELIGIBILITY
+  // 2. SLAVE ARBITRATION & POP-AWARE FLOW CONTROL
   //==========================================================================
   logic [ NUM_SLAVES-1:0][NUM_MASTERS-1:0] arb_gnt_oh;
   logic [ NUM_SLAVES-1:0][      MID_W-1:0] arb_gnt_mid;
@@ -119,14 +119,20 @@ module adn_common_pmi_nxm_crossbar #(
   logic [NUM_MASTERS-1:0][ NUM_SLAVES-1:0] resp_fifo_can_accept;
   logic [ NUM_SLAVES-1:0][NUM_MASTERS-1:0] req_eligible;
 
-  // Pop-aware readiness calculations to avoid false backpressure deadlocks
-  assign mid_fifo_can_accept    = mid_fifo_ready | (FIFO_SUPPORTS_SIMULTANEOUS_POP_PUSH ? mid_fifo_will_pop : '0);
-  assign resp_fifo_can_accept   = resp_fifo_ready | (FIFO_SUPPORTS_SIMULTANEOUS_POP_PUSH ? resp_fifo_will_pop : '0);
-  assign err_counter_can_accept = err_counter_ready | (FIFO_SUPPORTS_SIMULTANEOUS_POP_PUSH ? err_counter_will_retire : '0);
+  // Pop-aware readiness calculations to prevent false backpressure deadlocks
+  assign mid_fifo_can_accept  = mid_fifo_ready | (FIFO_SUPPORTS_SIMULTANEOUS_POP_PUSH ? mid_fifo_will_pop : 1'b0);
+
+  for (genvar i = 0; i < NUM_MASTERS; i++) begin : GEN_RESP_CAN_ACCEPT
+    for (genvar j = 0; j < NUM_SLAVES; j++) begin : GEN_RESP_CAN_ACCEPT_INNER
+      assign resp_fifo_can_accept[i][j] = resp_fifo_ready[i][j] | 
+                (FIFO_SUPPORTS_SIMULTANEOUS_POP_PUSH ? resp_fifo_will_pop[i][j] : 1'b0);
+    end
+  end
 
   always_comb begin
     for (int j = 0; j < NUM_SLAVES; j++) begin
       for (int i = 0; i < NUM_MASTERS; i++) begin
+        // A master's request is only eligible if its designated response queue has space
         req_eligible[j][i] = req_to_slave[j][i] & resp_fifo_can_accept[i][j];
       end
     end
@@ -180,6 +186,7 @@ module adn_common_pmi_nxm_crossbar #(
     master_mgnt = '0;
     for (int i = 0; i < NUM_MASTERS; i++) begin
       if (dec_error_req[i]) begin
+        // Synthetic grant for unmapped address space
         master_mgnt[i] = 1'b1;
       end else if (dec_valid_req[i]) begin
         master_mgnt[i] = arb_gnt_oh[dec_sid[i]][i];
@@ -227,7 +234,7 @@ module adn_common_pmi_nxm_crossbar #(
   end
 
   //==========================================================================
-  // 5. PER-MASTER TRANSACTION TRACKING & SYNTHETIC ERROR GENERATOR
+  // 5. TRANSACTION TRACKING & SYNTHETIC ERROR GENERATOR
   //==========================================================================
   logic [NUM_MASTERS-1:0][TRACK_W-1:0] track_fifo_in;
   logic [NUM_MASTERS-1:0][TRACK_W-1:0] track_fifo_head;
@@ -270,14 +277,10 @@ module adn_common_pmi_nxm_crossbar #(
         .data_out_valid_o (dec_err_has_pending[i]),
         .data_out_ready_i (dec_err_retired[i])
     );
-
-    assign err_counter_will_retire[i] = track_fifo_valid[i]
-            & (track_fifo_head[i] == DEC_ERR_SID)
-            & dec_err_has_pending[i];
   end
 
   //==========================================================================
-  // 6. SLAVE RESPONSE ROUTING & ZERO-LATENCY BYPASS
+  // 6. SLAVE RESPONSE ROUTING & ZERO-LATENCY BYPASS (BUG 1 & 5 RESOLVED)
   //==========================================================================
   logic [NUM_SLAVES-1:0][        MID_W-1:0] resp_target_mid;
   logic [NUM_SLAVES-1:0]                    slave_resp_valid;
@@ -285,6 +288,9 @@ module adn_common_pmi_nxm_crossbar #(
 
   for (genvar j = 0; j < NUM_SLAVES; j++) begin : GEN_SLAVE_TRACK_BYPASS
     wire slave_req_sent = arb_gnt_valid[j] & arst_ni;
+
+    // BUG 5 FIX: Response is raw-valid ONLY if there are actually outstanding requests
+    // or a zero-latency request in flight right now.
     wire slave_resp_valid_raw = s_rsp_i[j].mack & ((slave_outstanding_cnt[j] > 0) | slave_req_sent);
 
     always_ff @(posedge clk_i or negedge arst_ni) begin
@@ -301,22 +307,28 @@ module adn_common_pmi_nxm_crossbar #(
       end
     end
 
+    // BUG 1 FIX: Strictly differentiate between queued and direct bypass routing
     always_comb begin
       mid_fifo_push[j]    = 1'b0;
       mid_fifo_pop[j]     = 1'b0;
-      slave_resp_valid[j] = slave_resp_valid_raw;
+      slave_resp_valid[j] = 1'b0;
       resp_target_mid[j]  = '0;
 
       if (slave_resp_valid_raw) begin
         if (mid_fifo_valid[j]) begin
-          // Pop active head from MID FIFO
-          resp_target_mid[j] = mid_fifo_head[j];
-          mid_fifo_pop[j]    = 1'b1;
-          mid_fifo_push[j]   = slave_req_sent;
-        end else if (slave_req_sent) begin
-          // Zero-latency direct bypass route
-          resp_target_mid[j] = arb_gnt_mid[j];
-          mid_fifo_push[j]   = 1'b0;
+          // Multi-cycle in-flight transaction: must take head of MID FIFO
+          resp_target_mid[j]  = mid_fifo_head[j];
+          slave_resp_valid[j] = 1'b1;
+          mid_fifo_pop[j]     = 1'b1;
+          mid_fifo_push[j]    = slave_req_sent;  // Simultaneous push/pop
+        end else if (slave_req_sent && (slave_outstanding_cnt[j] == 0)) begin
+          // Zero-latency bypass: valid ONLY when no previous requests are outstanding
+          resp_target_mid[j]  = arb_gnt_mid[j];
+          slave_resp_valid[j] = 1'b1;
+          mid_fifo_push[j]    = 1'b0;
+        end else begin
+          // If outstanding count > 0 but mid_fifo is still registering its entry
+          mid_fifo_push[j] = slave_req_sent;
         end
       end else begin
         mid_fifo_push[j] = slave_req_sent;
@@ -352,6 +364,7 @@ module adn_common_pmi_nxm_crossbar #(
           .data_out_ready_i(resp_fifo_pop[i][j])
       );
 
+      // BUG 2 FIX: Gate will_pop with master_track_fifo ready state to avoid false eligibility
       assign resp_fifo_will_pop[i][j] = track_fifo_valid[i]
                 & (track_fifo_head[i] != DEC_ERR_SID)
                 & (track_fifo_head[i][SID_W-1:0] == SID_W'(j))
@@ -360,7 +373,7 @@ module adn_common_pmi_nxm_crossbar #(
   end
 
   //==========================================================================
-  // 8. STRICT ORDERED RESPONSE DISPATCH (PR-1, PR-3, PR-5 COMPLIANT)
+  // 8. STRICT ORDERED RESPONSE DISPATCH (PR-9, PR-10, PR-11, PR-12, PR-13)
   //==========================================================================
   always_comb begin
     for (int i = 0; i < NUM_MASTERS; i++) begin
@@ -377,9 +390,10 @@ module adn_common_pmi_nxm_crossbar #(
 
       if (arst_ni && track_fifo_valid[i]) begin
         if (track_fifo_head[i] == DEC_ERR_SID) begin
+          // Unmapped address transaction completion (PR-9, PR-10)
           if (dec_err_has_pending[i]) begin
             m_rsp_o[i].mack         = 1'b1;
-            m_rsp_o[i].mresp        = 1'b1;  // PMI Error Response
+            m_rsp_o[i].mresp        = 1'b1;  // PMI Error Response code
             m_rsp_o[i].mrdata       = '0;
             master_resp_consumed[i] = 1'b1;
             dec_err_retired[i]      = 1'b1;
@@ -388,6 +402,7 @@ module adn_common_pmi_nxm_crossbar #(
           automatic int unsigned target_sid;
           target_sid = int'(track_fifo_head[i][SID_W-1:0]);
 
+          // Deliver strictly in issue order from designated slave queue
           if (resp_fifo_valid[i][target_sid]) begin
             m_rsp_o[i].mack                       = 1'b1;
             {m_rsp_o[i].mrdata, m_rsp_o[i].mresp} = resp_fifo_out[i][target_sid];
