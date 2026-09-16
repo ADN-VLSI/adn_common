@@ -24,56 +24,51 @@ See LICENSE file in the project root for full license information
 */
 
 module adn_common_pmi_nxm_crossbar #(
-    parameter int  NUM_MASTERS     = 4,                 // Number of master ports
-    parameter int  NUM_SLAVES      = 4,                 // Number of slave ports
-    parameter int  ADDR_WIDTH      = 32,                // Width of address bus
-    parameter int  DATA_WIDTH      = 32,                // Width of data bus
-    parameter int  NUM_RULES       = 4,                 // Number of address map rules
-    parameter int  FIFO_DEPTH_LOG2 = 4,                 // Log2 of FIFO depth for tracking
-    parameter type pmi_req_t       = logic,             // PMI request struct type
-    parameter type pmi_rsp_t       = logic,             // PMI response struct type
-
-    // See "POP-AWARE READY" caveat below. Defaults to 0 (safe) until the
-    // underlying FIFO/counter components are confirmed to support
-    // simultaneous full+pop+push.
-    parameter bit FIFO_SUPPORTS_SIMULTANEOUS_POP_PUSH = 1'b0,
+    parameter int  NUM_MASTERS                         = 4,
+    parameter int  NUM_SLAVES                          = 4,
+    parameter int  ADDR_WIDTH                          = 32,
+    parameter int  DATA_WIDTH                          = 32,
+    parameter int  NUM_RULES                           = 4,
+    parameter int  FIFO_DEPTH_LOG2                     = 4,
+    parameter type pmi_req_t                           = logic,
+    parameter type pmi_rsp_t                           = logic,
+    parameter bit  FIFO_SUPPORTS_SIMULTANEOUS_POP_PUSH = 1'b0,
 
     // Derived parameters
-    localparam int MID_W = (NUM_MASTERS > 1) ? $clog2(NUM_MASTERS) : 1,
-    localparam int SID_W = (NUM_SLAVES > 1) ? $clog2(NUM_SLAVES) : 1,
-    // TRACK_W: SID bits + 1 decode-error flag bit
-    localparam int TRACK_W = SID_W + 1,
+    localparam int                 MID_W       = (NUM_MASTERS > 1) ? $clog2(NUM_MASTERS) : 1,
+    localparam int                 SID_W       = (NUM_SLAVES > 1) ? $clog2(NUM_SLAVES) : 1,
+    localparam int                 TRACK_W     = SID_W + 1,
     localparam logic [TRACK_W-1:0] DEC_ERR_SID = TRACK_W'(NUM_SLAVES),
 
-    // Pure payload bus: maddr + mwe + mwdata + mstrb (clean separation from mreq)
+    // Pure payload definitions
     localparam int REQ_PAYLOAD_W = ADDR_WIDTH + 1 + DATA_WIDTH + (DATA_WIDTH / 8),
-    // Response payload: mrdata + mresp
     localparam int RSP_PAYLOAD_W = DATA_WIDTH + 1
 ) (
-    input logic clk_i,                                  // System clock
-    input logic arst_ni,                                // Asynchronous active-low reset
+    input logic clk_i,
+    input logic arst_ni,
 
-    // Master ports (crossbar acts as slave toward these)
-    input  pmi_req_t [NUM_MASTERS-1:0] m_req_i,         // Master request inputs
-    output pmi_rsp_t [NUM_MASTERS-1:0] m_rsp_o,         // Master response outputs
+    // Master-side interfaces (Crossbar functions as Slave to Masters)
+    input  pmi_req_t [NUM_MASTERS-1:0] m_req_i,
+    output pmi_rsp_t [NUM_MASTERS-1:0] m_rsp_o,
 
-    // Slave ports (crossbar acts as master toward these)
-    output pmi_req_t [NUM_SLAVES-1:0] s_req_o,          // Slave request outputs
-    input  pmi_rsp_t [NUM_SLAVES-1:0] s_rsp_i,          // Slave response inputs
+    // Slave-side interfaces (Crossbar functions as Master to Slaves)
+    output pmi_req_t [NUM_SLAVES-1:0] s_req_o,
+    input  pmi_rsp_t [NUM_SLAVES-1:0] s_rsp_i,
 
-    // Static address map
-    input logic [ADDR_WIDTH-1:0] min_addr_i [NUM_RULES], // Minimum address for each rule
-    input logic [ADDR_WIDTH-1:0] max_addr_i [NUM_RULES], // Maximum address for each rule
-    input logic [     SID_W-1:0] slave_map_i[NUM_RULES]  // Slave ID for each rule
+    // Address range mapping rules
+    input logic [ADDR_WIDTH-1:0] min_addr_i [NUM_RULES],
+    input logic [ADDR_WIDTH-1:0] max_addr_i [NUM_RULES],
+    input logic [     SID_W-1:0] slave_map_i[NUM_RULES]
 );
 
   //==========================================================================
-  // ADDRESS DECODING
+  // 1. ADDRESS DECODING & REQUEST QUALIFICATION
   //==========================================================================
   logic [NUM_MASTERS-1:0][SID_W-1:0] dec_sid;
   logic [NUM_MASTERS-1:0]            dec_found;
   logic [NUM_MASTERS-1:0]            dec_valid_req;
   logic [NUM_MASTERS-1:0]            dec_error_req;
+
   logic [NUM_MASTERS-1:0]            track_fifo_ready;
   logic [NUM_MASTERS-1:0]            err_counter_ready;
   logic [NUM_MASTERS-1:0]            err_counter_will_retire;
@@ -93,13 +88,11 @@ module adn_common_pmi_nxm_crossbar #(
         .addr_found_o (dec_found[i])
     );
 
-    // Request qualification. track_fifo_ready is intentionally NOT
-    // pop-aware (see header item 2) -- only err_counter_can_accept is.
-    assign dec_valid_req[i] = m_req_i[i].mreq & dec_found[i] & track_fifo_ready[i];
-    assign dec_error_req[i] = m_req_i[i].mreq & ~dec_found[i] & track_fifo_ready[i] & err_counter_can_accept[i];
+    assign dec_valid_req[i] = m_req_i[i].mreq & dec_found[i] & track_fifo_ready[i] & arst_ni;
+    assign dec_error_req[i] = m_req_i[i].mreq & ~dec_found[i] & track_fifo_ready[i] & err_counter_can_accept[i] & arst_ni;
   end
 
-  // Build per-slave target matrix
+  // Build slave target matrix
   logic [NUM_SLAVES-1:0][NUM_MASTERS-1:0] req_to_slave;
   always_comb begin
     req_to_slave = '0;
@@ -111,12 +104,12 @@ module adn_common_pmi_nxm_crossbar #(
   end
 
   //==========================================================================
-  // SLAVE-SIDE ARBITRATION & ELIGIBLE REQUEST FILTERING
+  // 2. SLAVE ARBITRATION & FLOW-CONTROLLED ELIGIBILITY
   //==========================================================================
   logic [ NUM_SLAVES-1:0][NUM_MASTERS-1:0] arb_gnt_oh;
   logic [ NUM_SLAVES-1:0][      MID_W-1:0] arb_gnt_mid;
-  logic [ NUM_SLAVES-1:0]                  arb_gnt_valid;   // ACCEPTED grant (mgnt-gated)
-  logic [ NUM_SLAVES-1:0]                  arb_cand_valid;  // NEW: CANDIDATE exists (mgnt-independent)
+  logic [ NUM_SLAVES-1:0]                  arb_gnt_valid;
+
   logic [ NUM_SLAVES-1:0]                  mid_fifo_ready;
   logic [ NUM_SLAVES-1:0]                  mid_fifo_will_pop;
   logic [ NUM_SLAVES-1:0]                  mid_fifo_can_accept;
@@ -126,48 +119,26 @@ module adn_common_pmi_nxm_crossbar #(
   logic [NUM_MASTERS-1:0][ NUM_SLAVES-1:0] resp_fifo_can_accept;
   logic [ NUM_SLAVES-1:0][NUM_MASTERS-1:0] req_eligible;
 
-  // POP-AWARE READY: each "will_pop"/"can_accept" signal below is built
-  // only from registered/state signals and primary slave inputs (mack),
-  // never from this-cycle grant/allow signals, so there is no
-  // combinational loop through the arbiter.
-  assign mid_fifo_can_accept = mid_fifo_ready
-      | (FIFO_SUPPORTS_SIMULTANEOUS_POP_PUSH ? mid_fifo_will_pop : '0);
-
-  assign resp_fifo_can_accept = resp_fifo_ready
-      | (FIFO_SUPPORTS_SIMULTANEOUS_POP_PUSH ? resp_fifo_will_pop : '0);
-
-  assign err_counter_can_accept = err_counter_ready
-      | (FIFO_SUPPORTS_SIMULTANEOUS_POP_PUSH ? err_counter_will_retire : '0);
+  // Pop-aware readiness calculations to avoid false backpressure deadlocks
+  assign mid_fifo_can_accept    = mid_fifo_ready | (FIFO_SUPPORTS_SIMULTANEOUS_POP_PUSH ? mid_fifo_will_pop : '0);
+  assign resp_fifo_can_accept   = resp_fifo_ready | (FIFO_SUPPORTS_SIMULTANEOUS_POP_PUSH ? resp_fifo_will_pop : '0);
+  assign err_counter_can_accept = err_counter_ready | (FIFO_SUPPORTS_SIMULTANEOUS_POP_PUSH ? err_counter_will_retire : '0);
 
   always_comb begin
     for (int j = 0; j < NUM_SLAVES; j++) begin
       for (int i = 0; i < NUM_MASTERS; i++) begin
-        // Request is eligible only when the specific master's response staging FIFO has space
-        // (or is draining this cycle -- see POP-AWARE READY above).
         req_eligible[j][i] = req_to_slave[j][i] & resp_fifo_can_accept[i][j];
       end
-
-      // FIX (PR-2/PR-3 compliance): a candidate winner exists whenever any
-      // master is eligible for slave j, REGARDLESS of s_rsp_i[j].mgnt.
-      // This is exactly equal to the arbiter's internal fpa_gnt_addr_valid
-      // (OR-reduction is invariant under the arbiter's internal request
-      // rotation), so it reproduces the arbiter's "candidate exists" flag
-      // without adding a port to adn_common_round_robin_arbiter or touching
-      // allow_req_i. Used below to drive the slave-facing mreq/address so
-      // that the payload the slave sees never depends on that slave's own
-      // mgnt output (avoids a combinational loop through mgnt).
-      arb_cand_valid[j] = (|req_eligible[j]) & arst_ni;
     end
   end
 
-  // Master ID tracking per slave
+  // Master ID tracking per slave port
   logic [NUM_SLAVES-1:0][MID_W-1:0] mid_fifo_head;
   logic [NUM_SLAVES-1:0]            mid_fifo_valid;
   logic [NUM_SLAVES-1:0]            mid_fifo_push;
   logic [NUM_SLAVES-1:0]            mid_fifo_pop;
 
   for (genvar j = 0; j < NUM_SLAVES; j++) begin : GEN_SLAVE_ARB
-    // Arbiter instantiation UNCHANGED -- no new ports, no modified logic.
     adn_common_round_robin_arbiter #(
         .NUM_REQ(NUM_MASTERS)
     ) u_rr_arb (
@@ -196,14 +167,11 @@ module adn_common_pmi_nxm_crossbar #(
         .data_out_ready_i(mid_fifo_pop[j])
     );
 
-    // Independent, loop-safe formulation of "will this FIFO be popped this
-    // cycle", used only for the pop-aware ready calculation above. Must
-    // stay logically consistent with the real mid_fifo_pop[j] in Sec. 6.
     assign mid_fifo_will_pop[j] = mid_fifo_valid[j] & s_rsp_i[j].mack;
   end
 
   //==========================================================================
-  // MASTER GRANT GENERATION
+  // 3. MASTER GRANT COMBINATORIAL GENERATION
   //==========================================================================
   logic [NUM_MASTERS-1:0] master_mgnt;
   logic [NUM_MASTERS-1:0] req_accepted;
@@ -214,8 +182,6 @@ module adn_common_pmi_nxm_crossbar #(
       if (dec_error_req[i]) begin
         master_mgnt[i] = 1'b1;
       end else if (dec_valid_req[i]) begin
-        // Unchanged: a master's own mgnt legitimately depends on the
-        // slave's ACCEPTED grant -- that's downstream causality, not a loop.
         master_mgnt[i] = arb_gnt_oh[dec_sid[i]][i];
       end
     end
@@ -228,7 +194,7 @@ module adn_common_pmi_nxm_crossbar #(
   end
 
   //==========================================================================
-  // REQUEST PAYLOAD CROSSBAR
+  // 4. REQUEST PAYLOAD CROSSBAR
   //==========================================================================
   logic [NUM_MASTERS-1:0][REQ_PAYLOAD_W-1:0] req_xbar_in;
   logic [ NUM_SLAVES-1:0][REQ_PAYLOAD_W-1:0] req_xbar_out;
@@ -239,12 +205,7 @@ module adn_common_pmi_nxm_crossbar #(
       req_xbar_in[i] = {m_req_i[i].maddr, m_req_i[i].mwe, m_req_i[i].mwdata, m_req_i[i].mstrb};
     end
     for (int j = 0; j < NUM_SLAVES; j++) begin
-      // FIX: select is driven by arb_cand_valid (mgnt-independent), not
-      // arb_gnt_valid. Per PMI PR-2/PR-3, the slave must be shown a valid
-      // address before/independent of whatever it decides about mgnt --
-      // using the accepted-grant flag here would make the payload the
-      // slave sees depend on the slave's own mgnt output.
-      req_xbar_sel[j] = arb_cand_valid[j] ? arb_gnt_mid[j] : '0;
+      req_xbar_sel[j] = arb_gnt_valid[j] ? arb_gnt_mid[j] : '0;
     end
   end
 
@@ -260,24 +221,13 @@ module adn_common_pmi_nxm_crossbar #(
 
   always_comb begin
     for (int j = 0; j < NUM_SLAVES; j++) begin
-      // Because req_xbar_sel[j] holds steady on the same candidate master
-      // as long as that master's own request stays asserted (arbiter's
-      // last_gnt/rotation only advances on an ACCEPTED grant, never on a
-      // mere candidate), this bus naturally stays stable across cycles
-      // where mgnt=0 -- satisfying PR-4 for the crossbar's own s_req_o
-      // interface toward each slave.
       {s_req_o[j].maddr, s_req_o[j].mwe, s_req_o[j].mwdata, s_req_o[j].mstrb} = req_xbar_out[j];
-
-      // FIX: mreq must be an independent input to the slave's
-      // accept-decision, not a function of its output (PR-3: "accepted
-      // only on cycles where mreq=1 AND mgnt=1" requires mreq itself to
-      // not depend on mgnt).
-      s_req_o[j].mreq = arb_cand_valid[j];
+      s_req_o[j].mreq = arb_gnt_valid[j] & arst_ni;
     end
   end
 
   //==========================================================================
-  // PER-MASTER TRANSACTION ORDER TRACKING & DECODE ERROR COUNTER
+  // 5. PER-MASTER TRANSACTION TRACKING & SYNTHETIC ERROR GENERATOR
   //==========================================================================
   logic [NUM_MASTERS-1:0][TRACK_W-1:0] track_fifo_in;
   logic [NUM_MASTERS-1:0][TRACK_W-1:0] track_fifo_head;
@@ -321,25 +271,19 @@ module adn_common_pmi_nxm_crossbar #(
         .data_out_ready_i (dec_err_retired[i])
     );
 
-    // Independent, loop-safe formulation mirroring the dispatch logic
-    // used only for the pop-aware ready calculation in Sec. 1/2.
     assign err_counter_will_retire[i] = track_fifo_valid[i]
-        & (track_fifo_head[i] == DEC_ERR_SID)
-        & dec_err_has_pending[i];
+            & (track_fifo_head[i] == DEC_ERR_SID)
+            & dec_err_has_pending[i];
   end
 
   //==========================================================================
-  // SLAVE RESPONSE ROUTING & ZERO-LATENCY BYPASS
+  // 6. SLAVE RESPONSE ROUTING & ZERO-LATENCY BYPASS
   //==========================================================================
   logic [NUM_SLAVES-1:0][        MID_W-1:0] resp_target_mid;
   logic [NUM_SLAVES-1:0]                    slave_resp_valid;
-
-  // Per-slave outstanding count -- see header item D for what this models.
   logic [NUM_SLAVES-1:0][FIFO_DEPTH_LOG2:0] slave_outstanding_cnt;
 
   for (genvar j = 0; j < NUM_SLAVES; j++) begin : GEN_SLAVE_TRACK_BYPASS
-    // Unchanged: acceptance-derived (arb_gnt_valid), correctly gates
-    // counting/tracking of transactions the slave actually took.
     wire slave_req_sent = arb_gnt_valid[j] & arst_ni;
     wire slave_resp_valid_raw = s_rsp_i[j].mack & ((slave_outstanding_cnt[j] > 0) | slave_req_sent);
 
@@ -352,7 +296,7 @@ module adn_common_pmi_nxm_crossbar #(
         })
           2'b10:   slave_outstanding_cnt[j] <= slave_outstanding_cnt[j] + 1'b1;
           2'b01:   slave_outstanding_cnt[j] <= slave_outstanding_cnt[j] - 1'b1;
-          default: ;  // 2'b11 and 2'b00 net change is 0
+          default: ;  // Net zero change
         endcase
       end
     end
@@ -365,13 +309,12 @@ module adn_common_pmi_nxm_crossbar #(
 
       if (slave_resp_valid_raw) begin
         if (mid_fifo_valid[j]) begin
-          // Case 1: Active entries in FIFO, pop head and route response
+          // Pop active head from MID FIFO
           resp_target_mid[j] = mid_fifo_head[j];
           mid_fifo_pop[j]    = 1'b1;
           mid_fifo_push[j]   = slave_req_sent;
         end else if (slave_req_sent) begin
-          // Case 2: Zero-latency same-cycle response when FIFO is empty
-          // Direct bypass to response queue without queuing into MID FIFO
+          // Zero-latency direct bypass route
           resp_target_mid[j] = arb_gnt_mid[j];
           mid_fifo_push[j]   = 1'b0;
         end
@@ -382,7 +325,7 @@ module adn_common_pmi_nxm_crossbar #(
   end
 
   //==========================================================================
-  // PER-(MASTER, SLAVE) RESPONSE STAGING FIFOs
+  // 7. PER-(MASTER, SLAVE) RESPONSE QUEUES (N x M ARRAY)
   //==========================================================================
   logic [NUM_MASTERS-1:0][NUM_SLAVES-1:0][RSP_PAYLOAD_W-1:0] resp_fifo_out;
   logic [NUM_MASTERS-1:0][NUM_SLAVES-1:0]                    resp_fifo_valid;
@@ -409,17 +352,15 @@ module adn_common_pmi_nxm_crossbar #(
           .data_out_ready_i(resp_fifo_pop[i][j])
       );
 
-      // Independent, loop-safe formulation mirroring the dispatch logic in
-      // Sec. 8, used only for the pop-aware ready calculation in Sec. 2.
       assign resp_fifo_will_pop[i][j] = track_fifo_valid[i]
-          & (track_fifo_head[i] != DEC_ERR_SID)
-          & (track_fifo_head[i][SID_W-1:0] == SID_W'(j))
-          & resp_fifo_valid[i][j];
+                & (track_fifo_head[i] != DEC_ERR_SID)
+                & (track_fifo_head[i][SID_W-1:0] == SID_W'(j))
+                & resp_fifo_valid[i][j];
     end
   end
 
   //==========================================================================
-  // STRICT ORDERED RESPONSE DISPATCH TO MASTERS
+  // 8. STRICT ORDERED RESPONSE DISPATCH (PR-1, PR-3, PR-5 COMPLIANT)
   //==========================================================================
   always_comb begin
     for (int i = 0; i < NUM_MASTERS; i++) begin
@@ -438,7 +379,7 @@ module adn_common_pmi_nxm_crossbar #(
         if (track_fifo_head[i] == DEC_ERR_SID) begin
           if (dec_err_has_pending[i]) begin
             m_rsp_o[i].mack         = 1'b1;
-            m_rsp_o[i].mresp        = 1'b1;  // PMI Error
+            m_rsp_o[i].mresp        = 1'b1;  // PMI Error Response
             m_rsp_o[i].mrdata       = '0;
             master_resp_consumed[i] = 1'b1;
             dec_err_retired[i]      = 1'b1;
