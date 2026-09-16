@@ -12,15 +12,15 @@
 
 |Name|Type|Dimension|Default|Description|
 |-|-|-|-|-|
-|NUM_MASTERS|int||4||
-|NUM_SLAVES|int||4||
-|ADDR_WIDTH|int||32||
-|DATA_WIDTH|int||32||
-|NUM_RULES|int||4||
-|FIFO_DEPTH_LOG2|int||4||
-|pmi_req_t|type||logic||
-|pmi_rsp_t|type||logic||
-|FIFO_SUPPORTS_SIMULTANEOUS_POP_PUSH|bit||1'b0|See "POP-AWARE READY" caveat above. Defaults to 0 (safe) until the underlying FIFO/counter components are confirmed to support simultaneous full+pop+push.|
+|NUM_MASTERS|int||4|Number of master ports|
+|NUM_SLAVES|int||4|Number of slave ports|
+|ADDR_WIDTH|int||32|Width of address bus|
+|DATA_WIDTH|int||32|Width of data bus|
+|NUM_RULES|int||4|Number of address map rules|
+|FIFO_DEPTH_LOG2|int||4|Log2 of FIFO depth for tracking|
+|pmi_req_t|type||logic|PMI request struct type|
+|pmi_rsp_t|type||logic|PMI response struct type|
+|FIFO_SUPPORTS_SIMULTANEOUS_POP_PUSH|bit||1'b0|See "POP-AWARE READY" caveat below. Defaults to 0 (safe) until the underlying FIFO/counter components are confirmed to support simultaneous full+pop+push.|
 |MID_W|int||(NUM_MASTERS > 1) ? $clog2(NUM_MASTERS) : 1|Derived parameters|
 |SID_W|int||(NUM_SLAVES > 1) ? $clog2(NUM_SLAVES) : 1||
 |TRACK_W|int||SID_W + 1|TRACK_W: SID bits + 1 decode-error flag bit|
@@ -33,22 +33,28 @@
 
 |Name|Direction|Type|Dimension|Description|
 |-|-|-|-|-|
-|clk_i|input|logic|||
-|arst_ni|input|logic|||
-|m_req_i|input|pmi_req_t [NUM_MASTERS-1:0]||Master ports (crossbar acts as slave toward these)|
-|m_rsp_o|output|pmi_rsp_t [NUM_MASTERS-1:0]|||
-|s_req_o|output|pmi_req_t [NUM_SLAVES-1:0]||Slave ports (crossbar acts as master toward these)|
-|s_rsp_i|input|pmi_rsp_t [NUM_SLAVES-1:0]|||
-|min_addr_i|input|logic [ADDR_WIDTH-1:0]|[NUM_RULES]|Static address map|
-|max_addr_i|input|logic [ADDR_WIDTH-1:0]|[NUM_RULES]||
-|slave_map_i|input|logic [ SID_W-1:0]|[NUM_RULES]||
+|clk_i|input|logic||System clock|
+|arst_ni|input|logic||Asynchronous active-low reset|
+|m_req_i|input|pmi_req_t [NUM_MASTERS-1:0]||Master request inputs|
+|m_rsp_o|output|pmi_rsp_t [NUM_MASTERS-1:0]||Master response outputs|
+|s_req_o|output|pmi_req_t [NUM_SLAVES-1:0]||Slave request outputs|
+|s_rsp_i|input|pmi_rsp_t [NUM_SLAVES-1:0]||Slave response inputs|
+|min_addr_i|input|logic [ADDR_WIDTH-1:0]|[NUM_RULES]|Minimum address for each rule|
+|max_addr_i|input|logic [ADDR_WIDTH-1:0]|[NUM_RULES]|Maximum address for each rule|
+|slave_map_i|input|logic [ SID_W-1:0]|[NUM_RULES]|Slave ID for each rule|
 
 
 ## Description
 
-@foez---bhai, write the purpose of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+### Purpose
+This module implements an N-master to M-slave crossbar switch for the PMI (Protocol Memory Interface) protocol. It provides address decoding, arbitration, request routing, and response tracking to ensure strict transaction ordering and protocol compliance.
 
-@foez---bhai, describe the use case of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+### Use Case
+The `adn_common_pmi_nxm_crossbar` is designed for high-performance SoC interconnects where multiple masters (e.g., CPUs, DMA engines) need to access multiple memory-mapped slave peripherals or memory controllers simultaneously. It acts as a central switching fabric that:
+- Decodes master requests based on a static address map.
+- Arbitrates access to slaves using a round-robin scheme to ensure fairness.
+- Maintains strict transaction ordering by tracking request-response pairs per master.
+- Handles protocol-level flow control and error reporting (e.g., address decoding errors) while preventing combinational loops in the request/grant handshake.
 
 | REVISION | DATE       | AUTHOR                                                                               | DESCRIPTION                                            |
 |----------|------------|--------------------------------------------------------------------------------------|--------------------------------------------------------|

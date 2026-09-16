@@ -1,8 +1,14 @@
 /*
 
-@foez-bhai, write the purpose of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+### Purpose
+This module implements an N-master to M-slave crossbar switch for the PMI (Protocol Memory Interface) protocol. It provides address decoding, arbitration, request routing, and response tracking to ensure strict transaction ordering and protocol compliance.
 
-@foez-bhai, describe the use case of this module in markdown format here. This is already in multi-line comment, so don't add any additional comment syntax.
+### Use Case
+The `adn_common_pmi_nxm_crossbar` is designed for high-performance SoC interconnects where multiple masters (e.g., CPUs, DMA engines) need to access multiple memory-mapped slave peripherals or memory controllers simultaneously. It acts as a central switching fabric that:
+- Decodes master requests based on a static address map.
+- Arbitrates access to slaves using a round-robin scheme to ensure fairness.
+- Maintains strict transaction ordering by tracking request-response pairs per master.
+- Handles protocol-level flow control and error reporting (e.g., address decoding errors) while preventing combinational loops in the request/grant handshake.
 
 | REVISION | DATE       | AUTHOR                                                                               | DESCRIPTION                                            |
 |----------|------------|--------------------------------------------------------------------------------------|--------------------------------------------------------|
@@ -17,17 +23,15 @@ See LICENSE file in the project root for full license information
 
 */
 
-// @foez-bhai, add comments to the parameters, ports
-
 module adn_common_pmi_nxm_crossbar #(
-    parameter int  NUM_MASTERS     = 4,
-    parameter int  NUM_SLAVES      = 4,
-    parameter int  ADDR_WIDTH      = 32,
-    parameter int  DATA_WIDTH      = 32,
-    parameter int  NUM_RULES       = 4,
-    parameter int  FIFO_DEPTH_LOG2 = 4,
-    parameter type pmi_req_t       = logic,
-    parameter type pmi_rsp_t       = logic,
+    parameter int  NUM_MASTERS     = 4,                 // Number of master ports
+    parameter int  NUM_SLAVES      = 4,                 // Number of slave ports
+    parameter int  ADDR_WIDTH      = 32,                // Width of address bus
+    parameter int  DATA_WIDTH      = 32,                // Width of data bus
+    parameter int  NUM_RULES       = 4,                 // Number of address map rules
+    parameter int  FIFO_DEPTH_LOG2 = 4,                 // Log2 of FIFO depth for tracking
+    parameter type pmi_req_t       = logic,             // PMI request struct type
+    parameter type pmi_rsp_t       = logic,             // PMI response struct type
 
     // See "POP-AWARE READY" caveat below. Defaults to 0 (safe) until the
     // underlying FIFO/counter components are confirmed to support
@@ -46,21 +50,21 @@ module adn_common_pmi_nxm_crossbar #(
     // Response payload: mrdata + mresp
     localparam int RSP_PAYLOAD_W = DATA_WIDTH + 1
 ) (
-    input logic clk_i,
-    input logic arst_ni,
+    input logic clk_i,                                  // System clock
+    input logic arst_ni,                                // Asynchronous active-low reset
 
     // Master ports (crossbar acts as slave toward these)
-    input  pmi_req_t [NUM_MASTERS-1:0] m_req_i,
-    output pmi_rsp_t [NUM_MASTERS-1:0] m_rsp_o,
+    input  pmi_req_t [NUM_MASTERS-1:0] m_req_i,         // Master request inputs
+    output pmi_rsp_t [NUM_MASTERS-1:0] m_rsp_o,         // Master response outputs
 
     // Slave ports (crossbar acts as master toward these)
-    output pmi_req_t [NUM_SLAVES-1:0] s_req_o,
-    input  pmi_rsp_t [NUM_SLAVES-1:0] s_rsp_i,
+    output pmi_req_t [NUM_SLAVES-1:0] s_req_o,          // Slave request outputs
+    input  pmi_rsp_t [NUM_SLAVES-1:0] s_rsp_i,          // Slave response inputs
 
     // Static address map
-    input logic [ADDR_WIDTH-1:0] min_addr_i [NUM_RULES],
-    input logic [ADDR_WIDTH-1:0] max_addr_i [NUM_RULES],
-    input logic [     SID_W-1:0] slave_map_i[NUM_RULES]
+    input logic [ADDR_WIDTH-1:0] min_addr_i [NUM_RULES], // Minimum address for each rule
+    input logic [ADDR_WIDTH-1:0] max_addr_i [NUM_RULES], // Maximum address for each rule
+    input logic [     SID_W-1:0] slave_map_i[NUM_RULES]  // Slave ID for each rule
 );
 
   //==========================================================================
@@ -455,4 +459,3 @@ module adn_common_pmi_nxm_crossbar #(
   end
 
 endmodule
-
