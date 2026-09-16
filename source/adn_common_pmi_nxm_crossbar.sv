@@ -18,6 +18,7 @@ See LICENSE file in the project root for full license information
 */
 
 // @foez---bhai, add comments to the parameters, ports
+
 module adn_common_pmi_nxm_crossbar #(
     parameter int  NUM_MASTERS     = 4,
     parameter int  NUM_SLAVES      = 4,
@@ -28,7 +29,7 @@ module adn_common_pmi_nxm_crossbar #(
     parameter type pmi_req_t       = logic,
     parameter type pmi_rsp_t       = logic,
 
-    // See "POP-AWARE READY" caveat above. Defaults to 0 (safe) until the
+    // See "POP-AWARE READY" caveat below. Defaults to 0 (safe) until the
     // underlying FIFO/counter components are confirmed to support
     // simultaneous full+pop+push.
     parameter bit FIFO_SUPPORTS_SIMULTANEOUS_POP_PUSH = 1'b0,
@@ -110,7 +111,8 @@ module adn_common_pmi_nxm_crossbar #(
   //==========================================================================
   logic [ NUM_SLAVES-1:0][NUM_MASTERS-1:0] arb_gnt_oh;
   logic [ NUM_SLAVES-1:0][      MID_W-1:0] arb_gnt_mid;
-  logic [ NUM_SLAVES-1:0]                  arb_gnt_valid;
+  logic [ NUM_SLAVES-1:0]                  arb_gnt_valid;   // ACCEPTED grant (mgnt-gated)
+  logic [ NUM_SLAVES-1:0]                  arb_cand_valid;  // NEW: CANDIDATE exists (mgnt-independent)
   logic [ NUM_SLAVES-1:0]                  mid_fifo_ready;
   logic [ NUM_SLAVES-1:0]                  mid_fifo_will_pop;
   logic [ NUM_SLAVES-1:0]                  mid_fifo_can_accept;
@@ -140,6 +142,17 @@ module adn_common_pmi_nxm_crossbar #(
         // (or is draining this cycle -- see POP-AWARE READY above).
         req_eligible[j][i] = req_to_slave[j][i] & resp_fifo_can_accept[i][j];
       end
+
+      // FIX (PR-2/PR-3 compliance): a candidate winner exists whenever any
+      // master is eligible for slave j, REGARDLESS of s_rsp_i[j].mgnt.
+      // This is exactly equal to the arbiter's internal fpa_gnt_addr_valid
+      // (OR-reduction is invariant under the arbiter's internal request
+      // rotation), so it reproduces the arbiter's "candidate exists" flag
+      // without adding a port to adn_common_round_robin_arbiter or touching
+      // allow_req_i. Used below to drive the slave-facing mreq/address so
+      // that the payload the slave sees never depends on that slave's own
+      // mgnt output (avoids a combinational loop through mgnt).
+      arb_cand_valid[j] = (|req_eligible[j]) & arst_ni;
     end
   end
 
@@ -150,6 +163,7 @@ module adn_common_pmi_nxm_crossbar #(
   logic [NUM_SLAVES-1:0]            mid_fifo_pop;
 
   for (genvar j = 0; j < NUM_SLAVES; j++) begin : GEN_SLAVE_ARB
+    // Arbiter instantiation UNCHANGED -- no new ports, no modified logic.
     adn_common_round_robin_arbiter #(
         .NUM_REQ(NUM_MASTERS)
     ) u_rr_arb (
@@ -196,6 +210,8 @@ module adn_common_pmi_nxm_crossbar #(
       if (dec_error_req[i]) begin
         master_mgnt[i] = 1'b1;
       end else if (dec_valid_req[i]) begin
+        // Unchanged: a master's own mgnt legitimately depends on the
+        // slave's ACCEPTED grant -- that's downstream causality, not a loop.
         master_mgnt[i] = arb_gnt_oh[dec_sid[i]][i];
       end
     end
@@ -219,9 +235,12 @@ module adn_common_pmi_nxm_crossbar #(
       req_xbar_in[i] = {m_req_i[i].maddr, m_req_i[i].mwe, m_req_i[i].mwdata, m_req_i[i].mstrb};
     end
     for (int j = 0; j < NUM_SLAVES; j++) begin
-      // Explicitly gate the select with the grant-valid flag so the xbar
-      // never "selects" a stale/arbitrary MID while the slave is idle.
-      req_xbar_sel[j] = arb_gnt_valid[j] ? arb_gnt_mid[j] : '0;
+      // FIX: select is driven by arb_cand_valid (mgnt-independent), not
+      // arb_gnt_valid. Per PMI PR-2/PR-3, the slave must be shown a valid
+      // address before/independent of whatever it decides about mgnt --
+      // using the accepted-grant flag here would make the payload the
+      // slave sees depend on the slave's own mgnt output.
+      req_xbar_sel[j] = arb_cand_valid[j] ? arb_gnt_mid[j] : '0;
     end
   end
 
@@ -237,10 +256,19 @@ module adn_common_pmi_nxm_crossbar #(
 
   always_comb begin
     for (int j = 0; j < NUM_SLAVES; j++) begin
+      // Because req_xbar_sel[j] holds steady on the same candidate master
+      // as long as that master's own request stays asserted (arbiter's
+      // last_gnt/rotation only advances on an ACCEPTED grant, never on a
+      // mere candidate), this bus naturally stays stable across cycles
+      // where mgnt=0 -- satisfying PR-4 for the crossbar's own s_req_o
+      // interface toward each slave.
       {s_req_o[j].maddr, s_req_o[j].mwe, s_req_o[j].mwdata, s_req_o[j].mstrb} = req_xbar_out[j];
 
-      // Explicit handshake mreq: valid grant and active reset
-      s_req_o[j].mreq = arb_gnt_valid[j] & arst_ni;
+      // FIX: mreq must be an independent input to the slave's
+      // accept-decision, not a function of its output (PR-3: "accepted
+      // only on cycles where mreq=1 AND mgnt=1" requires mreq itself to
+      // not depend on mgnt).
+      s_req_o[j].mreq = arb_cand_valid[j];
     end
   end
 
@@ -306,6 +334,8 @@ module adn_common_pmi_nxm_crossbar #(
   logic [NUM_SLAVES-1:0][FIFO_DEPTH_LOG2:0] slave_outstanding_cnt;
 
   for (genvar j = 0; j < NUM_SLAVES; j++) begin : GEN_SLAVE_TRACK_BYPASS
+    // Unchanged: acceptance-derived (arb_gnt_valid), correctly gates
+    // counting/tracking of transactions the slave actually took.
     wire slave_req_sent = arb_gnt_valid[j] & arst_ni;
     wire slave_resp_valid_raw = s_rsp_i[j].mack & ((slave_outstanding_cnt[j] > 0) | slave_req_sent);
 
@@ -425,5 +455,4 @@ module adn_common_pmi_nxm_crossbar #(
   end
 
 endmodule
-
 
